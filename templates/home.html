@@ -1,8 +1,12 @@
 <html>
     <head>
         <title>E</title>
+        <link rel="stylesheet" type="text/css" href="/static/style.css">
+        <meta name="google-signin-client_id" content="203450520052-4olsv1k1uj6ditok97qncbho9n8usk36.apps.googleusercontent.com">
     </head>
     <body>
+        <div class="g-signin2" data-onsuccess="onSignIn"></div>
+        <a href="#" id="logout" onclick="signOut();">Sign out</a>
         <div id="update"></div>
     </body>
     <script src="https://apis.google.com/js/platform.js" async defer></script>
