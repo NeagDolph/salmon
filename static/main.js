@@ -1,6 +1,8 @@
-socket = io();
+var socket = io();
 var guser;
 var profile;
+var classes = [];
+var offcampus;
 
 
 // socket.emit("location", {
@@ -9,7 +11,10 @@ var profile;
 // });
 
 socket.on("update", obj => {
-    $("#update").text(obj.count)
+    classes = obj.classes
+    offcampus = obj.offcampus
+    $("#update").text(classes)
+    $("#offcampus").text("OffCampus: " + offcampus)
 });
 
 function onSignIn(googleUser) {
@@ -25,6 +30,10 @@ function onSignIn(googleUser) {
         data: {idtoken: id_token}
     }).done(function() {
         console.log("login successful")
+        if (classes.length == 0) {
+            console.log("REDIR")
+            window.location.reload()
+        }
         $("#logout").show()
     }).fail(function(e) {
         console.log("login failed", e)

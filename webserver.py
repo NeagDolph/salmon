@@ -60,23 +60,31 @@ def login():
         userdata = cur.fetchone()
 
         if not userdata:
-            userid = uuid.uuid4()
+            userid = str(uuid.uuid4())
             session["userid"] = str(userid)
+            session["offcampus"] = 1
 
             print("User doesnt exist")
 
             cur.execute("INSERT INTO users VALUES (?,?,?,1)", (email, name, str(userid),))
+            cur.execute("INSERT INTO classes VALUES (?,1)", (str(userid),))
         else:
             print("User exists")
-            session["userid"] = userdata[2]
+            userid = userdata[2]
+            session["userid"] = userid
+            cur.execute('SELECT * FROM classes WHERE userid=?', (userid,))
+            offcampus = cur.fetchone()[1]
+            session["offcampus"] = offcampus
             
         session["email"] = email
         session["name"] = name
+        session["usertype"] = 1
         
         conn.commit()
 
         print("SUCCESS")
         return "success"
+
 
 
 @app.route("/logout")
@@ -85,53 +93,97 @@ def logout():
     return redirect("/")
 
 
-# @socketio.on("location")
-# def msg(obj):
-#     token = session.get("token", False)
 
-#     emit(
-#         "usermove", {
-#             'token': token,
-#             'x': obj["x"],
-#             'y': obj["y"]
-#         },
-#         room="main",
-#         json=True)
+@socketio.on('joinroom')
+def joinroom():
+    pass
+
+
+@app.route("/getclasses", methods=["POST"])
+def ajaxgetclasses():
+    userid = session.get("userid", False)
+
+    if userid:
+        classes = getclasses(userid)
+        socketio.emit('update', {'classes': classes}, room=userid)
+        return "", 200
+    else:
+        return "", 403
+
+
 
 
 @socketio.on('connect')
 def connect():
-    token = session.get("token", False)
+    print("join room")
+    userid = session.get("userid", "")
 
-    if token:
-        join_room(token)
+    if not userid:
+        return
+
+
+    if session.get("usertype", False) == 1:
+        join_room("students")
+        join_room(userid)
+
+        classes = getclasses(userid)
+        socketio.emit('update', {'classes': classes, 'offcampus': session.get("offcampus", 2)}, room=userid)
+
+        print("connected and joined room students")
+    elif session.get("usertype", False) == 2:
+        join_room("teachers")
+    print("connected")
+
+
+@app.route('/changestatus', methods=["POST"])
+def changestatus():
+    # Add teacher auth to this func
+    email = request.form.get("email")
+    try:
+        newstatus = int(request.form.get("newstatus"))
+    except:
+        return "Not valid status"
+
+    print("status", newstatus)
+
+    cur = conn.cursor()
+    cur.execute('SELECT * FROM users WHERE email=?', (email,))
+    result = cur.fetchone()
+
+    if result:
+        userid = result[2]
+
+        cur.execute("UPDATE classes SET offcampus=? WHERE userid=?", (newstatus, userid,))
+
+        session["offcampus"] = newstatus
+
+        socketio.emit('update', {'classes': getclasses(userid), 'offcampus': newstatus}, room=userid)
+        conn.commit()
+
+        return "offcampus for user " + email + " has been updates"
+    else:
+        if "@alt.app" in email:
+            return "User is not altitude user"
+        return "User does not exist"
+
+def getclasses(userid):
+    cur = conn.cursor()
+
+
+    return ["Calculus AB", "Calculus BC", "Statistics", "Ooga Baga"]
 
 def getcreds(idtoken):
     try:
-        # Specify the CLIENT_ID of the app that accesses the backend:
         idinfo = id_token.verify_oauth2_token(idtoken, requests.Request(), "203450520052-4olsv1k1uj6ditok97qncbho9n8usk36.apps.googleusercontent.com")
-
-        # Or, if multiple clients access the backend server:
-        # idinfo = id_token.verify_oauth2_token(token, requests.Request())
-        # if idinfo['aud'] not in [CLIENT_ID_1, CLIENT_ID_2, CLIENT_ID_3]:
-        #     raise ValueError('Could not verify audience.')
 
         if idinfo['iss'] not in ['accounts.google.com', 'https://accounts.google.com']:
             raise ValueError('Wrong issuer.')
 
-        # If auth request is from a G Suite domain:
-        # if idinfo['hd'] != GSUITE_DOMAIN_NAME:
-        #     raise ValueError('Wrong hosted domain.')
-
-        # ID token is valid. Get the user's Google Account ID from the decoded token.
-        userid = idinfo['sub']
         print("IDINFO", idinfo)
 
         return idinfo
     except ValueError:
         return False
-        # Invalid token
-        pass
 
 if __name__ == "__main__":
     conn = sqlite3.connect('sqlite.db', check_same_thread=False)
