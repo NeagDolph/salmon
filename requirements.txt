@@ -2,3 +2,4 @@ flask
 flask-session
 flask-socketio
 google-auth
+requests
