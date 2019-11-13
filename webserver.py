@@ -15,7 +15,7 @@ from google.auth.transport import requests
 from flask import jsonify
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'schloop'
+app.config['SECRET_KEY'] = 'schloopy'
 socketio = SocketIO(app)
 
 SESSION_TYPE = 'filesystem'
