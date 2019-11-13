@@ -25,7 +25,6 @@ Session(app)
 users = {}
 
 admins = ["0cd38e5c-d75a-4990-84ce-ceb3b4beb1cb", "d826f81e-3854-4d1b-9c4f-1539d663b865"]
-# admins = []
 
 conn = sqlite3.connect('sqlite.db', check_same_thread=False)
 
@@ -86,21 +85,19 @@ def login():
 
             print("User doesnt exist")
 
-            cur.execute("INSERT INTO users VALUES (?,?,?,1)", (email, name, str(userid),))
-            cur.execute("INSERT INTO classes VALUES (?,1)", (str(userid),))
+            cur.execute("INSERT INTO users VALUES (?,?,?,1,0)", (email, name, str(userid),))
 
             updateusers()
         else:
             print("User exists")
             userid = userdata[2]
             student = userdata[3]
+            offcampus = userdata[4]
             session["userid"] = userid
             if student == 2:
                 session["teacher"] = True
             else:
                 session["teacher"] = False
-            cur.execute('SELECT * FROM classes WHERE userid=?', (userid,))
-            offcampus = cur.fetchone()[1]
             session["offcampus"] = offcampus
             
         session["email"] = email
@@ -181,7 +178,7 @@ def changestatus():
             if result:
                 userid = result[2]
 
-                cur.execute("UPDATE classes SET offcampus=? WHERE userid=?", (newstatus, userid,))
+                cur.execute("UPDATE users SET offcampus=? WHERE userid=?", (newstatus, userid,))
 
                 session["offcampus"] = newstatus
 

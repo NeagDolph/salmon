@@ -93,6 +93,7 @@ $(document).ready(function() {
 })
 
 function update(obj) {
+    console.log("UPDAT", obj)
     classes = obj.classes
     offcampus = obj.offcampus
 
@@ -115,7 +116,7 @@ function onSignIn(googleUser) {
         data: {idtoken: id_token}
     }).done(function(e) {
         console.log("login successful")
-        if (classes.length == 0) {
+        if (classes.length == 0 && !teacher) {
             console.log("REDIR", e)
             update(e)
         }
