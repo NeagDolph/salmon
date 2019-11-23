@@ -31,9 +31,24 @@ conn = sqlite3.connect('sqlite.db', check_same_thread=False)
 
 @app.route("/")
 def slash():
+    # check if teacher in database
     email = session.get("email", False)
     userid = session.get("userid", "")
     teacher = session.get("teacher")
+
+
+    if userid:
+        cur = conn.cursor()
+        cur.execute('SELECT student FROM users WHERE userid=?', (userid,))
+
+        student = cur.fetchone()
+
+        if 2 in student:
+            session["teacher"] = True
+            teacher = True
+        else:
+            session["teacher"] = False
+            teacher = False
 
     if userid in admins:
         return render_template("home.html", admin=True, teacher=True)
@@ -55,7 +70,7 @@ def login():
         return "error", 500
 
     if userid:
-        return "success"
+        return jsonify({'classes': getclasses(userid)})
     else:
         cur = conn.cursor()
         credentials = getcreds(idtoken)
@@ -108,10 +123,7 @@ def login():
 
         print("SUCCESS")
 
-        classes = getclasses(userid)
-
-        
-        return jsonify({'classes': classes, 'offcampus': session.get("offcampus", 2)})
+        return jsonify({'classes': getclasses(userid)})
 
 
 
@@ -120,6 +132,14 @@ def logout():
     session.clear()
     return redirect("/")
 
+
+@app.route('/scripts/<path:filename>')
+def custom_script(filename):
+    return send_from_directory("/root/salmon/scripts", filename)
+
+@app.route('/styles/<path:filename>')
+def custom_style(filename):
+    return send_from_directory("/root/salmon/styles", filename)
 
 @app.route("/getclasses", methods=["POST"])
 def ajaxgetclasses():
@@ -266,10 +286,8 @@ def updateusers():
 
 
 def getclasses(userid):
-    cur = conn.cursor()
-
-
-    return ["Calculus AB", "Calculus BC", "Statistics", "Ooga Biga"]
+    # cur = conn.cursor()
+    return [{"name": "Calculus AB", "status": 0}, {"name": "Calculus BC", "status": 1}, {"name": "Statistics", "status": 0}, {"name": "Ooga Biga", "status": 1}]
 
 def getcreds(idtoken):
     try:

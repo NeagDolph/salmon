@@ -1,64 +1,75 @@
-
+<!DOCTYPE html>
 <html>
-    <head>
-        <title>E</title>
-        <link rel="stylesheet" type="text/css" href="/static/style.css">
-        <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
-        <script src="https://unpkg.com/popper.js@1.16.0/dist/umd/popper.min.js"></script>
-        <meta name="google-signin-client_id" content="203450520052-4olsv1k1uj6ditok97qncbho9n8usk36.apps.googleusercontent.com">
-    </head>
-    <body>
-        <div id="cont">
-            <div class="g-signin2" data-onsuccess="onSignIn"></div>
-            <a href="#" id="logout" onclick="signOut();">Sign out</a>
-            <div id="update"></div>
-            <div id="offcampus"></div>
+<head>
+    <meta charset='utf-8'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <title>VueJS</title>
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+    <link rel="stylesheet" type="text/css" href="/static/css/style.css">
+    <link rel="stylesheet" type="text/css" href="/static/css/boot.css">
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+    <script src="https://unpkg.com/popper.js@1.16.0/dist/umd/popper.min.js"></script>
+    <meta name="google-signin-client_id" content="203450520052-4olsv1k1uj6ditok97qncbho9n8usk36.apps.googleusercontent.com">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.2/css/all.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/mdbootstrap/4.8.11/css/mdb.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/simplebar@latest/dist/simplebar.css"/>
 
-            
-                {% if teacher %}
-                <div class="inputbutton offcampus">
-                        <input type="text" id="studentinput" placeholder="Student">
-                        <div id="studentdrop" style="display: none"></div>
-                        <select id="offcampusinput">
-                            <option value=1>Yes</option>
-                            <option value=0 selected>No</option>
-                        </select>
-                        <button id="studentbutton">Set Offcampus</button>
-                </div><br>
-                {% endif %}
-            
-            
-                {% if admin %}
-                <div class="inputbutton addteacher" v-bind:title="message">
-                    <input type="text" id="teacherinput" placeholder="Teacher">
-                    <div id="teacherdrop" style="display: none"></div>
-                    <select id="teacherselect">
-                        <option value=2>Yes</option>
-                        <option value=1 selected>No</option>
-                    </select>
-                    <button id="teacherbutton">Set Teacher</button>
+    <script src="https://apis.google.com/js/api.js"></script>
+
+</head>
+<body>
+    <div id="app">
+            <div class="row controw">
+                <div class="col-2 col-sm-2">
+                    <div class="sidebar col-sm-12 col-xl-8 z-depth-2">
+                        <div class="row vertical-center">
+                            <button type="button" id="customBtn" class="z-depth-1 btn waves-effect waves-light mx-auto">
+                                <i class="fab fa-google"></i> &nbsp;Login
+                            </button>
+                        </div>
+                    </div>
                 </div>
-                {% endif %}
-            
-
-            
-                <ul class="users">
-                </ul>
-            
-
-        </div>
-    </body>
-    <!-- <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script> Dev vue, update to production version upon release -->
-    <script src="https://apis.google.com/js/platform.js" async defer></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/3.4.5/fuse.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+                <div class="col-3 col-xl-5"></div>
+                <div class="col-4 col-xl-3 totals">
+                    <div class="row">
+                        <div class="col-12 piechart z-depth-1">
+                            <div class="chart"></div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12 percentage z-depth-1">
+                            <div class="balltop">Red in</div>
+                            <div class="ball">66%</div>
+                            <div class="ballbottom">Of classes</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-3 col-xl-2 col-lg-3">
+                    <div data-simplebar data-simplebar-auto-hide="false">
+                        <div>
+                        <div v-for="redclass in classes" v-bind:class="{ greenclass: redclass.status }" class="redclass-item col-10 card">
+                            <div class="title" :class="titleSize(redclass)" v-text="redclass.name"></div>
+                            <span v-text="redclass.status == 0 ? 'Missing' : 'Completed'" class="subtext"></span>
+                        </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+    </div>
+    
+    <script src="https://unpkg.com/vue"></script>
+    <script src="https://unpkg.com/jquery"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 
-    <script>
-        var admin = "{{admin}}"
-        var teacher = "{{teacher}}"
-    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.4/umd/popper.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mdbootstrap/4.8.11/js/mdb.min.js"></script>
 
-    <script src="/static/main.js"></script>
+    <script src="https://unpkg.com/fuse.js"></script>
+    <script src="https://unpkg.com/toastr"></script>
+    <script src="https://unpkg.com/simplebar"></script>
+
+    <script src="/static/scripts/main.js"></script>
+</body>
 </html>
