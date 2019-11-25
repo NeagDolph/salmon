@@ -1,25 +1,37 @@
 # -*- coding: utf-8 -*-
 
-from flask import *
-from jinja2 import TemplateNotFound
-from flask_socketio import SocketIO, emit, join_room, leave_room, send
-from flask_session import Session
 import uuid
 import json
 import sys
 import sqlite3
 import os
-from sqlite3 import Error
+
+from flask import *
+from jinja2 import TemplateNotFound
+from flask_socketio import SocketIO, emit, join_room, leave_room, send
+from flask_session import Session
 from google.oauth2 import id_token
 from google.auth.transport import requests
-from flask import jsonify
+from sassutils.wsgi import SassMiddleware #Scss compiler
 
-app = Flask(__name__)
+class UhohFlask(Flask):
+    jinja_options = Flask.jinja_options.copy()
+    jinja_options.update(dict(
+        variable_start_string='%%',  # Default is '{{', I'm changing this because Vue.js uses '{{' / '}}'
+        variable_end_string='%%',
+    ))
+
+app = UhohFlask(__name__)
 app.config['SECRET_KEY'] = 'schloopy'
 socketio = SocketIO(app)
 
 SESSION_TYPE = 'filesystem'
 app.config.from_object(__name__)
+
+app.wsgi_app = SassMiddleware(app.wsgi_app, {
+    'webserver': ('scss', 'static/css', '/static/css')
+})
+
 Session(app)
 
 users = {}
@@ -31,7 +43,6 @@ conn = sqlite3.connect('sqlite.db', check_same_thread=False)
 
 @app.route("/")
 def slash():
-    # check if teacher in database
     email = session.get("email", False)
     userid = session.get("userid", "")
     teacher = session.get("teacher")
@@ -287,7 +298,8 @@ def updateusers():
 
 def getclasses(userid):
     # cur = conn.cursor()
-    return [{"name": "Calculus AB", "status": 0}, {"name": "Calculus BC", "status": 1}, {"name": "Statistics", "status": 0}, {"name": "Ooga Biga", "status": 1}]
+    return [{"name": "Writing", "status": 0}, {"name": "Writing", "status": 1}, {"name": "Calculus AB", "status": 1}, {"name": "Calculus BC", "status": 1}, {"name": "Statistics", "status": 1}, {"name": "English", "status": 1}, {"name": "Writing", "status": 1}, {"name": "Calculus AB", "status": 1}, {"name": "Calculus BC", "status": 1}, {"name": "Statistics", "status": 1}, {"name": "English", "status": 1}, {"name": "Writing", "status": 1}, {"name": "Calculus AB", "status": 1}, {"name": "Calculus BC", "status": 1}, {"name": "Statistics", "status": 1}, {"name": "English", "status": 1}]
+    # return [{"name": "Writing", "status": 0}, {"name": "Writing", "status": 0}, {"name": "Calculus AB", "status": 0}, {"name": "Calculus BC", "status": 1}, {"name": "Statistics", "status": 0}, {"name": "English", "status": 1}, {"name": "Writing", "status": 1}, {"name": "Calculus AB", "status": 0}, {"name": "Calculus BC", "status": 1}, {"name": "Statistics", "status": 0}, {"name": "English", "status": 1}, {"name": "Writing", "status": 1}, {"name": "Calculus AB", "status": 0}, {"name": "Calculus BC", "status": 1}, {"name": "Statistics", "status": 0}, {"name": "English", "status": 1}]
 
 def getcreds(idtoken):
     try:
