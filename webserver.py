@@ -12,25 +12,13 @@ from flask_socketio import SocketIO, emit, join_room, leave_room, send
 from flask_session import Session
 from google.oauth2 import id_token
 from google.auth.transport import requests
-from sassutils.wsgi import SassMiddleware #Scss compiler
 
-class UhohFlask(Flask):
-    jinja_options = Flask.jinja_options.copy()
-    jinja_options.update(dict(
-        variable_start_string='%%',  # Default is '{{', I'm changing this because Vue.js uses '{{' / '}}'
-        variable_end_string='%%',
-    ))
-
-app = UhohFlask(__name__)
+app = Flask(__name__)
 app.config['SECRET_KEY'] = 'schloopy'
 socketio = SocketIO(app)
 
 SESSION_TYPE = 'filesystem'
 app.config.from_object(__name__)
-
-app.wsgi_app = SassMiddleware(app.wsgi_app, {
-    'webserver': ('scss', 'static/css', '/static/css')
-})
 
 Session(app)
 
@@ -73,8 +61,14 @@ def slash():
 
 @app.route("/glogin", methods=["POST"])
 def login():
-    idtoken = request.form.get('idtoken', False)
+    try:
+        idtoken = request.json.get('idtoken', False)
+    except:
+        idtoken = request.form.get('idtoken', False)
+
+
     userid = session.get("userid", False)
+    print("DS", idtoken, list(request.form))
 
     if not idtoken:
         session.clear()
@@ -144,6 +138,10 @@ def logout():
     return redirect("/")
 
 
+@socketio.on('message')
+def handle_message(message):
+    print('received message: ' + message)
+
 @app.route('/scripts/<path:filename>')
 def custom_script(filename):
     return send_from_directory("/root/salmon/scripts", filename)
@@ -158,6 +156,7 @@ def ajaxgetclasses():
 
     if userid:
         classes = getclasses(userid)
+        print("EMITTING")
         socketio.emit('update', {'classes': classes}, room=userid)
         return "", 200
     else:
@@ -169,6 +168,7 @@ def connect():
     teacher = session.get("teacher")
     userid = session.get("userid", "")
     admin = userid in admins
+    print("CONNM")
 
     if not userid:
         return
@@ -298,7 +298,7 @@ def updateusers():
 
 def getclasses(userid):
     # cur = conn.cursor()
-    return [{"name": "Writing", "status": 0}, {"name": "Writing", "status": 1}, {"name": "Calculus AB", "status": 1}, {"name": "Calculus BC", "status": 1}, {"name": "Statistics", "status": 1}, {"name": "English", "status": 1}, {"name": "Writing", "status": 1}, {"name": "Calculus AB", "status": 1}, {"name": "Calculus BC", "status": 1}, {"name": "Statistics", "status": 1}, {"name": "English", "status": 1}, {"name": "Writing", "status": 1}, {"name": "Calculus AB", "status": 1}, {"name": "Calculus BC", "status": 1}, {"name": "Statistics", "status": 1}, {"name": "English", "status": 1}]
+    return [{"name": "Writing", "status": 1}, {"name": "Calculus AB", "status": 1}, {"name": "Calculus BC", "status": 1}, {"name": "Statistics", "status": 0}, {"name": "English", "status": 1}]
     # return [{"name": "Writing", "status": 0}, {"name": "Writing", "status": 0}, {"name": "Calculus AB", "status": 0}, {"name": "Calculus BC", "status": 1}, {"name": "Statistics", "status": 0}, {"name": "English", "status": 1}, {"name": "Writing", "status": 1}, {"name": "Calculus AB", "status": 0}, {"name": "Calculus BC", "status": 1}, {"name": "Statistics", "status": 0}, {"name": "English", "status": 1}, {"name": "Writing", "status": 1}, {"name": "Calculus AB", "status": 0}, {"name": "Calculus BC", "status": 1}, {"name": "Statistics", "status": 0}, {"name": "English", "status": 1}]
 
 def getcreds(idtoken):
