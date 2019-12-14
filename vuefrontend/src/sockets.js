@@ -1,16 +1,15 @@
-var socket = io()
+import io from "socket.io-client";
+import { sharedData } from './globals.js'
+import { parseData } from "./parse.js";
 
-export let socketData = {}
+let socket = io();
 
-export let beep = () => {
-    console.log("BEEP", socketData, socket, io)
-}
-
-socketData.onupdate = socket.on("update", ({classes}) => {
-    socketData.classes = classes
-    console.log("YEET")
+sharedData.onupdate = socket.on("update", (data) => {
+  parseData(data)
+  sharedData.logged = true
+  console.log("YEET");
 });
 
-socketData.onupdateusers = socket.on("updateusers", ({ users }) => {
-    socketData.users = users
+sharedData.onupdateusers = socket.on("updateusers", ({ users }) => {
+  sharedData.users = users;
 });

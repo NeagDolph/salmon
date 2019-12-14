@@ -1,5 +1,6 @@
 var path = require('path')
 var webpack = require('webpack')
+const glob = require('glob');
 
 module.exports = {
   entry: './src/app.js',
@@ -19,10 +20,19 @@ module.exports = {
       },
       {
         test: /\.scss$/,
-        use: [
-          'vue-style-loader',
+        loaders: [
+          'style-loader',
+          'sass-loader',
           'css-loader',
-          'sass-loader'
+          'resolve-url-loader',
+          'vue-style-loader',
+          {
+            loader: 'sass-loader',
+            options: {
+              sourceMap: true,
+              includePaths: glob.sync('node_modules').map((d) => path.join(__dirname, d)),
+            },
+          },
         ],
       },
       {

@@ -1,21 +1,35 @@
 <template>
-  <div class="sidebar col-sm-12 col-xl-8 z-depth-2">
-    <div class="row vertical-center">
-      <login-button :loggedin="loggedin"/>
-    </div>
+  <div class="sidebar col-3 col-sm-2 z-depth-1-half">
+    <loginButton :loggedin="loggedin" :signFuncs="signFuncs"/>
   </div>
 </template>
 
 <script>
-import loginButton from './login-button.vue'
+import loginButton from "./loginbutton.vue";
 
 export default {
-  props: ['loggedin'],
-  components: {
-    'login-button': loginButton,
-  }
+  props: ["loggedin", "signFuncs"],
+  components: {loginButton},
 };
 </script>
 
-<style>
+<style lang="scss">
+$main1: #364f6b;
+
+
+.sidebar {
+  height: 100%;
+  background: $main1;
+
+    #customBtn {
+      position: relative;
+      left: calc(50% - 39px);
+    }
+
+    .row {
+      height: 160px;
+      margin: 0 !important;
+    }
+}
+
 </style>

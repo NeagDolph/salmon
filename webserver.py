@@ -66,23 +66,34 @@ def login():
     except:
         idtoken = request.form.get('idtoken', False)
 
-
-    userid = session.get("userid", False)
-    print("DS", idtoken, list(request.form))
-
     if not idtoken:
         session.clear()
         return "error", 500
 
+    userid = session.get("userid", False)
+
     if userid:
-        return jsonify({'classes': getclasses(userid)})
+        teacher = session.get("teacher")
+
+        if teacher:
+            return jsonify(getdata(userid))
+        else:
+            cur = conn.cursor()
+            cur.execute('SELECT student FROM users WHERE userid=?', (userid,))
+            try:
+                teacher = 2 == cur.fetchone()[0][0]
+            except:
+                teacher = False
+            session["teacher"] = teacher
+
+            return jsonify(getdata(userid))
     else:
-        cur = conn.cursor()
         credentials = getcreds(idtoken)
         hd = credentials.get("hd", False)
         email = credentials.get("email", False)
         name = credentials.get("name", False)
 
+        cur = conn.cursor()
 
         if hd != "alt.app":
             print("Not ATI google account")
@@ -105,30 +116,26 @@ def login():
 
             print("User doesnt exist")
 
-            cur.execute("INSERT INTO users VALUES (?,?,?,1,0)", (email, name, str(userid),))
+            cur.execute("INSERT INTO users VALUES (?,?,?,1)", (email, name, str(userid),))
 
-            updateusers()
+            updateteachers()
         else:
             print("User exists")
             userid = userdata[2]
-            student = userdata[3]
+            studenttype = userdata[3]
             offcampus = userdata[4]
             session["userid"] = userid
-            if student == 2:
+            session["teacher"] = False
+            if studenttype == 2:
                 session["teacher"] = True
-            else:
-                session["teacher"] = False
             session["offcampus"] = offcampus
             
         session["email"] = email
         session["name"] = name
-        session["usertype"] = 1
         
         conn.commit()
 
-        print("SUCCESS")
-
-        return jsonify({'classes': getclasses(userid)})
+        return jsonify(getdata(userid))
 
 
 
@@ -155,9 +162,7 @@ def ajaxgetclasses():
     userid = session.get("userid", False)
 
     if userid:
-        classes = getclasses(userid)
-        print("EMITTING")
-        socketio.emit('update', {'classes': classes}, room=userid)
+        emitupdate(socketio, session, userid)
         return "", 200
     else:
         return "", 403
@@ -168,20 +173,21 @@ def connect():
     teacher = session.get("teacher")
     userid = session.get("userid", "")
     admin = userid in admins
-    print("CONNM")
 
     if not userid:
         return
+
+    join_room(userid)
 
     if teacher or admin:
         join_room("teachers")
 
     if not session.get("teacher"):
         join_room("students")
-        join_room(userid)
 
-        classes = getclasses(userid)
-        socketio.emit('update', {'classes': classes, 'offcampus': session.get("offcampus", 2)}, room=userid)
+        # userdata = getdata(userid)
+        emitupdate(socketio, session, userid)
+        # socketio.emit('update', {'classes': userdata["classes"], 'offcampus': session.get("offcampus", 2), "teacher": userdata["teacher"], "admin": userid in admins}, room=userid)
 
 
 @app.route('/changestatus', methods=["POST"])
@@ -214,10 +220,10 @@ def changestatus():
                 session["offcampus"] = newstatus
 
                 print("sent changestatus update")
-                socketio.emit('update', {'classes': getclasses(userid), 'offcampus': newstatus}, room=userid)
+                emitupdate(socketio, session, userid)
                 conn.commit()
 
-                updateusers()
+                updateteachers()
 
                 return "offcampus for user " + email + " has been updates"
             else:
@@ -248,9 +254,9 @@ def addteacher():
             result = cur.fetchone()
 
             if result:
-                userid = result[2]
+                teacherid = result[2]
 
-                cur.execute("UPDATE users SET student=? WHERE userid=?", (newstatus, userid,))
+                cur.execute("UPDATE users SET student=? WHERE userid=?", (newstatus, teacherid,))
                 
                 if newstatus == 2:
                     session["teacher"] = True
@@ -259,7 +265,7 @@ def addteacher():
 
                 conn.commit()
 
-                updateusers()
+                emitupdate(socketio, session, teacherid)
 
                 return email + " has been made a teacher"
             else:
@@ -289,17 +295,38 @@ def getusers():
         return "No permission", 403
 
 
-def updateusers():
+def updateteachers():
     cur = conn.cursor()
-    cur.execute('SELECT * FROM users')
+    cur.execute('SELECT * FROM users WHERE student = 1')
     users = cur.fetchall()
-    socketio.emit('updateusers', {"users": users}, room="teachers")
+    socketio.emit('users', {"users": users}, room="teachers")
 
 
-def getclasses(userid):
-    # cur = conn.cursor()
-    return [{"name": "Writing", "status": 1}, {"name": "Calculus AB", "status": 1}, {"name": "Calculus BC", "status": 1}, {"name": "Statistics", "status": 0}, {"name": "English", "status": 1}]
-    # return [{"name": "Writing", "status": 0}, {"name": "Writing", "status": 0}, {"name": "Calculus AB", "status": 0}, {"name": "Calculus BC", "status": 1}, {"name": "Statistics", "status": 0}, {"name": "English", "status": 1}, {"name": "Writing", "status": 1}, {"name": "Calculus AB", "status": 0}, {"name": "Calculus BC", "status": 1}, {"name": "Statistics", "status": 0}, {"name": "English", "status": 1}, {"name": "Writing", "status": 1}, {"name": "Calculus AB", "status": 0}, {"name": "Calculus BC", "status": 1}, {"name": "Statistics", "status": 0}, {"name": "English", "status": 1}]
+def emitupdate(socket, sess, userid):
+    socket.emit('update', getdata(userid), room=userid)
+    print("emitted")
+
+
+def getdata(userid):
+    cur = conn.cursor()
+    cur.execute('SELECT classes, student FROM users WHERE userid=?', (userid, ))
+    data = cur.fetchall()
+    print(data)
+    # return [{"name": "Writing", "status": 1}, {"name": "Calculus AB", "status": 1}, {"name": "Calculus BC", "status": 1}, {"name": "Statistics", "status": 0}, {"name": "English", "status": 1}]
+    if len(data[0]) >= 1:
+        classes = data[0][0]
+        student = data[0][1]
+        users = []
+        if student == 2:
+            cur.execute('SELECT email, name, userid, classes FROM users WHERE student = 1')
+            userlist = cur.fetchall()
+
+            users = [{"email": i[0], "name": i[1], "userid": i[2], "classes": i[3]} for i in userlist]
+            print("USER", users)
+        return {'classes': classes, "teacher": student == 2, "users": users, "admin": userid in admins}
+    else:
+        return "error", 500
+
 
 def getcreds(idtoken):
     try:
