@@ -3,10 +3,10 @@
     <div class="row" :style="loggedin ? '' : 'filter: blur(4px)'">
       <sidebar :loggedin="loggedin" :signFuncs="sharedData.signFuncs"/>
       <div class="col-3 col-xl-5 midpanel">
-        <teacherpanel v-if="sharedData.teacher" :users="sharedData.users"/>
+        <teacherpanel v-if="sharedData.teacher" :users="sharedData.users" :tclasses="sharedData.tclasses"/>
       </div>
-      <displaydata v-if="loggedin" :classes="sharedData"/>
-      <classes v-if="loggedin" :classes="sharedData" />
+      <displaydata v-if="loggedin" :classes="sharedData.classes"/>
+      <classes v-if="loggedin" :classes="sharedData.classes" />
     </div>
     <loginmodal v-if="loggedin === false" :loggedin="loggedin" :signFuncs="sharedData.signFuncs"/>
     <modaledit id="modal-useredit" :userdata="editSelect"/>

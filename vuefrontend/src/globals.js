@@ -6,5 +6,5 @@ export let sharedData = {
     users: []
 }
 export let userauth = {};
-export let classnames = ["Writing", "Socratic", "Statistics", "Geometry", "Problem Solving", "Urban Movement", "Physics"]
-export let shortnames = ["Wr", "Soc", "Stats", "Geo", "PS", "UM", "Phy"]
+export let classnames = ["Socratic", "Writing", "Geometry", "Statistics", "Life Design", "Problem Solving", "Physics", "HRI", "Creative Writing", "Urban Movement", "Makerspace", "Practicum"]
+export let shortnames = ["Soc", "Wr", "Geo", "Stats", "LD", "PS", "Phy", "HRI", "CW", "UM", "Maker", "Pract"]

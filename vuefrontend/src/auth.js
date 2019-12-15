@@ -1,4 +1,4 @@
-let axios = require("axios");
+import axios from 'axios';
 import { sharedData, userauth } from './globals.js';
 import { parseData } from './parse.js';
 
@@ -32,8 +32,9 @@ let signedIn = googleUser => {
         console.log("GLOG", data)
         parseData(data)
         sharedData.logged = true
+      } else {
+        axios.post("/getdata");
       }
-      axios.post("/getclasses");
     })
     .catch(e => {
       console.log("login failed", e);

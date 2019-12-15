@@ -3,14 +3,14 @@
     <div class="row">
       <div class="col-12 chart z-depth-1">
         <div
-          :class="{yescampus: redpercent == 100, nocampus: redpercent !== 0}"
-        >{{redpercent == 0 ? "You have offcampus" : "You don't have offcampus"}}</div>
+          :class="{yescampus: percent == 100, nocampus: percent < 100}"
+        >{{percent == 100 ? "You have offcampus" : "You don't have offcampus"}}</div>
       </div>
     </div>
     <div class="row">
       <div class="col-12 percentage z-depth-1">
-        <div class="balltext balltop">Red in</div>
-        <div class="ball">{{redpercent}}%</div>
+        <div class="balltext balltop">{{percent < 100 ? "Red" : "Green"}} in</div>
+        <div class="ball" :class="{yescampus: percent == 100}">{{percent < 100 ? ((100 - percent).toFixed(1)) : 100}}%</div>
         <div class="balltext">Of classes</div>
       </div>
     </div>
@@ -22,13 +22,11 @@ export default {
   props: ["classes"],
   methods: {},
   computed: {
-    redpercent() {
-      //number of reds upon total x 100
-      console.log("REDPER", this.$props.classes)
+    percent() {
       return (
         (
-          this.$props.classes.classes.reduce((tot, el) => {return tot + !el.status}, 0)
-          / this.$props.classes.classes.length
+          this.classes.reduce((tot, el) => {return tot + el.status}, 0)
+          / this.classes.length
         ) * 100
       ).toFixed(1);
     }
@@ -94,6 +92,10 @@ $main1: #364f6b;
     line-height: 11vw;
     font-size: 3vw;
     font-weight: bold;
+  }
+  
+  .yescampus {
+    color: $green;
   }
 }
 </style>

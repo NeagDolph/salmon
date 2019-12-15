@@ -3,7 +3,7 @@
     <div data-simplebar data-simplebar-auto-hide="false" class="card z-depth-1">
       <div class="col-11 mx-auto">
         <div
-          v-for="classItem in sortedClasses()"
+          v-for="classItem in sorted"
           v-bind:key="classItem.name"
           :class="{greenclass: classItem.status}"
           class="redclass-item mx-auto"
@@ -27,21 +27,12 @@ export default {
     titleSize() {
       return "font-size: 30px;";
     },
-    sortedClasses() {
-      let formatted = {
-        red: this.$props.classes.classes.filter(el => {
-          console.log("RED", !el.status)
-          return !el.status;
-        }),
-        green: this.$props.classes.classes.filter(el => {
-          console.log("GREEN", el.status)
-          return el.status;
-        })
-      };
-      return [...formatted.red, ...formatted.green];
+  },
+  computed: {
+    sorted() {
+      return this.classes.sort((a, b) => {return a.status - b.status})
     }
   },
-  computed: {},
   components: {
     simplebar
   }

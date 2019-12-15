@@ -15,7 +15,7 @@ from google.auth.transport import requests
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'schloopy'
-socketio = SocketIO(app)
+socketio = SocketIO(app, logger=True)
 
 SESSION_TYPE = 'filesystem'
 app.config.from_object(__name__)
@@ -24,7 +24,11 @@ Session(app)
 
 users = {}
 
+userids = []
+
 admins = ["0cd38e5c-d75a-4990-84ce-ceb3b4beb1cb", "d826f81e-3854-4d1b-9c4f-1539d663b865"]
+
+classlist = ["Socratic", "Writing", "Geometry", "Statistics", "Life Design", "Problem Solving", "Physics", "HRI", "Creative Writing", "Urban Movement", "Makerspace", "Practicum"]
 
 conn = sqlite3.connect('sqlite.db', check_same_thread=False)
 
@@ -81,7 +85,7 @@ def login():
             cur = conn.cursor()
             cur.execute('SELECT student FROM users WHERE userid=?', (userid,))
             try:
-                teacher = 2 == cur.fetchone()[0][0]
+                teacher = 2 == cur.fetchone()[0]
             except:
                 teacher = False
             session["teacher"] = teacher
@@ -157,12 +161,12 @@ def custom_script(filename):
 def custom_style(filename):
     return send_from_directory("/root/salmon/styles", filename)
 
-@app.route("/getclasses", methods=["POST"])
+@app.route("/getdata", methods=["POST"])
 def ajaxgetclasses():
     userid = session.get("userid", False)
 
     if userid:
-        emitupdate(socketio, session, userid)
+        emitupdate(userid)
         return "", 200
     else:
         return "", 403
@@ -186,95 +190,130 @@ def connect():
         join_room("students")
 
         # userdata = getdata(userid)
-        emitupdate(socketio, session, userid)
+        emitupdate(userid)
         # socketio.emit('update', {'classes': userdata["classes"], 'offcampus': session.get("offcampus", 2), "teacher": userdata["teacher"], "admin": userid in admins}, room=userid)
 
 
-@app.route('/changestatus', methods=["POST"])
-def changestatus():
+@app.route('/editclasses', methods=["POST"])
+def editclasses():
     # Add teacher auth to this func
     teacher = session.get("teacher")
-    adminid = session.get("userid", "")
+    teacherid = session.get("userid")
+    dataform = request.json or request.form
 
-    if teacher or adminid in admins:
+    if teacher and teacherid:
+        userid = dataform.get("userid")
+        changeclass = dataform.get("class")
+        new = dataform.get("new")
+        cur = conn.cursor()
 
-        email = request.form.get("email")
-        try:
-            newstatus = int(request.form.get("newstatus"))
-        except:
-            return "Invalid status", 500
+        if not isinstance(changeclass, int):
+            return "errora", 500
+        elif changeclass > 12 or changeclass < 0:
+            return "errorb", 500
+        
+        if not isinstance(new, str):
+            return "errorc", 500
+        elif len(new) != 1 or new not in ["0", "1"]:
+            return "errord", 500
 
-        if newstatus in [0,1]:
+        cur.execute('SELECT teacherclasses FROM users WHERE userid=?', (teacherid,))
+        result = cur.fetchone()
 
-            print("status", newstatus)
+        if len(result) < 1:
+            return "error", 500
 
-            cur = conn.cursor()
-            cur.execute('SELECT * FROM users WHERE email=?', (email,))
-            result = cur.fetchone()
+        print("EEK", result)
 
-            if result:
-                userid = result[2]
+        if result[0][changeclass] != '1':
+            return "No permission", 403
 
-                cur.execute("UPDATE users SET offcampus=? WHERE userid=?", (newstatus, userid,))
+        
+        
+        cur.execute('SELECT classes FROM users WHERE userid=?', (userid,))
+        classes = cur.fetchone()
 
-                session["offcampus"] = newstatus
+        if len(classes) < 1:
+            return "error", 500
 
-                print("sent changestatus update")
-                emitupdate(socketio, session, userid)
-                conn.commit()
+        newclasses = list(classes[0])
+        newclasses[changeclass] = str(new)
+        newclasses = "".join(newclasses)
 
-                updateteachers()
+        cur.execute("UPDATE users SET classes=? WHERE userid=?", (newclasses, userid,))
+        conn.commit()
 
-                return "offcampus for user " + email + " has been updates"
-            else:
-                if "@alt.app" not in email:
-                    return "User is not altitude user", 500
-                return "User does not exist", 500
-        else:
-            return "Invalid status", 500
+        updateteachers()
+        emitupdate(userid)
+
+        return "success", 200
     else:
         return "No permission", 403
 
 
-@app.route('/addteacher', methods=["POST"])
+@app.route('/teacher/add', methods=["POST"])
+def removeteacher():
+    adminid = session.get("userid", "")
+    dataform = request.json or request.form
+    if adminid in admins:
+        userid = dataform.get("userid")
+
+        if not userid:
+            return "error", 500
+
+        cur = conn.cursor()
+        cur.execute('SELECT * FROM users WHERE userid=?', (userid,))
+        result = cur.fetchone()
+
+        if len(result) >= 1:
+            cur.execute("UPDATE users SET student=1 WHERE userid=?", (userid))
+            conn.commit()
+            updatereq()
+            emitupdate(userid)
+
+            return "success", 200
+        else:
+            return "User does not exist", 500
+    else: 
+        return "No permission", 403
+        
+
+@app.route('/teacher/del', methods=["POST"])
 def addteacher():
     adminid = session.get("userid", "")
+    dataform = request.json or request.form
 
     if adminid in admins:
-        email = request.form.get("teacher")
-        try:
-            newstatus = int(request.form.get("newstatus"))
-        except:
-            return "Invalid status", 500
+        userid = dataform.get("userid")
+        classes = dataform.get("classes")
 
-        if newstatus in [1,2]:
-
-            cur = conn.cursor()
-            cur.execute('SELECT * FROM users WHERE email=?', (email,))
-            result = cur.fetchone()
-
-            if result:
-                teacherid = result[2]
-
-                cur.execute("UPDATE users SET student=? WHERE userid=?", (newstatus, teacherid,))
-                
-                if newstatus == 2:
-                    session["teacher"] = True
-                else:
-                    session["teacher"] = False
-
-                conn.commit()
-
-                emitupdate(socketio, session, teacherid)
-
-                return email + " has been made a teacher"
-            else:
-                if "@alt.app" not in email:
-                    return "User is not altitude user", 500
-                return "User does not exist", 500
+        if not userid or not classes: 
+            print("ADD teacher error", dataform, classes)
+            return "error", 500
         else:
-            return "Invalid Status", 500
+            if len(classes) != 12 or not isinstance(classes, str):
+                print("ADD teacher error", dataform, classes)
+                return "error", 500
+            else:
+                if not all([i in ["0", "1"] for i in list(classes)]):
+                    print("ADD teacher error", dataform, classes)
+                    return "error", 500
 
+        cur = conn.cursor()
+        cur.execute('SELECT * FROM users WHERE userid=?', (userid,))
+        result = cur.fetchone()
+
+        if len(result) >= 1:
+            cur.execute("UPDATE users SET student=2, teacherclasses=? WHERE userid=?", (classes, userid))
+            conn.commit()
+
+            updatereq()
+
+            emitupdate(userid)
+
+            return "success", 200
+        else:
+            return "User does not exist", 500
     else: 
         return "No permission", 403
 
@@ -283,10 +322,9 @@ def addteacher():
 def getusers():
     teacher = session.get("teacher")
     userid = session.get("userid", "")
-    cur = conn.cursor()
-
 
     if teacher or userid in admins:
+        cur = conn.cursor()
         cur.execute('SELECT * FROM users')
         users = cur.fetchall()
 
@@ -302,20 +340,24 @@ def updateteachers():
     socketio.emit('users', {"users": users}, room="teachers")
 
 
-def emitupdate(socket, sess, userid):
-    socket.emit('update', getdata(userid), room=userid)
-    print("emitted")
+def emitupdate(userid):
+    socketio.emit('update', getdata(userid), room=userid)
+
+
+def updatereq():
+    socketio.emit('updatereq', room="students")
 
 
 def getdata(userid):
     cur = conn.cursor()
-    cur.execute('SELECT classes, student FROM users WHERE userid=?', (userid, ))
-    data = cur.fetchall()
+    cur.execute('SELECT classes, student, teacherclasses FROM users WHERE userid=?', (userid, ))
+    data = cur.fetchone()
     print(data)
     # return [{"name": "Writing", "status": 1}, {"name": "Calculus AB", "status": 1}, {"name": "Calculus BC", "status": 1}, {"name": "Statistics", "status": 0}, {"name": "English", "status": 1}]
-    if len(data[0]) >= 1:
-        classes = data[0][0]
-        student = data[0][1]
+    if len(data) >= 1:
+        classes = data[0]
+        student = data[1]
+        teacherclasses = ""
         users = []
         if student == 2:
             cur.execute('SELECT email, name, userid, classes FROM users WHERE student = 1')
@@ -323,7 +365,8 @@ def getdata(userid):
 
             users = [{"email": i[0], "name": i[1], "userid": i[2], "classes": i[3]} for i in userlist]
             print("USER", users)
-        return {'classes': classes, "teacher": student == 2, "users": users, "admin": userid in admins}
+            teacherclasses = data[2]
+        return {'classes': classes, "teacher": student == 2, "users": users, "admin": userid in admins, "tclasses": teacherclasses}
     else:
         return "error", 500
 
@@ -340,4 +383,10 @@ def getcreds(idtoken):
         return False
 
 if __name__ == "__main__":
+
+    cur = conn.cursor()
+    cur.execute('SELECT userid FROM users')
+    userids = [item for t in cur.fetchall() for item in t]
+    print("USERIDS", userids)
+
     socketio.run(app, debug=True, host="localhost", port=8080)

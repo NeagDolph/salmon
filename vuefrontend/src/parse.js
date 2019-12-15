@@ -1,19 +1,18 @@
 import { sharedData, classnames } from './globals.js'
 
 
-export function parseData(data) {
-    console.log("Parsing Data:", data)
-    sharedData.teacher = data.teacher
-    sharedData.admin = data.admin
+export function parseData({teacher, admin, users, classes, tclasses}) {
+    console.log("Parsing Data")
+    sharedData.teacher = teacher
+    sharedData.admin = admin
 
-    sharedData.users = data.users
+    sharedData.users = users
 
-    console.log("BPOO", data)
+    sharedData.classes = classes.split("")
 
-    sharedData.classes = data.classes.split("")
+    sharedData.tclasses = tclasses
 
     sharedData.classes = sharedData.classes.map((val, idx) => {
-        console.log(classnames[idx], val, "BEE")
         return {"name": classnames[idx], "status": parseInt(val)}
     })
 }
