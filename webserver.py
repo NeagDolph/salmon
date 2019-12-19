@@ -26,7 +26,8 @@ users = {}
 
 userids = []
 
-admins = ["0cd38e5c-d75a-4990-84ce-ceb3b4beb1cb", "d826f81e-3854-4d1b-9c4f-1539d663b865"]
+
+admins = ["0cd38e5c-d75a-4990-84ce-ceb3b4beb1cb", "2dcdaab7-4f08-4f62-9ad1-488c5799cf54"]
 
 classlist = ["Socratic", "Writing", "Geometry", "Statistics", "Life Design", "Problem Solving", "Physics", "HRI", "Creative Writing", "Urban Movement", "Makerspace", "Practicum"]
 
@@ -46,6 +47,10 @@ def slash():
 
         student = cur.fetchone()
 
+        if not student:
+            session.clear()
+            return redirect("/")
+
         if 2 in student:
             session["teacher"] = True
             teacher = True
@@ -54,13 +59,13 @@ def slash():
             teacher = False
 
     if userid in admins:
-        return render_template("home.html", admin=True, teacher=True)
+        return render_template("index.html", admin=True, teacher=True)
 
 
     if teacher:
-        return render_template("home.html", teacher=True)
+        return render_template("index.html", teacher=True)
 
-    return render_template("home.html")
+    return render_template("index.html")
 
 
 @app.route("/glogin", methods=["POST"])
@@ -83,12 +88,11 @@ def login():
             return jsonify(getdata(userid))
         else:
             cur = conn.cursor()
-            cur.execute('SELECT student FROM users WHERE userid=?', (userid,))
-            try:
-                teacher = 2 == cur.fetchone()[0]
-            except:
-                teacher = False
-            session["teacher"] = teacher
+            cur.execute('SELECT (student, name) FROM users WHERE userid=?', (userid,))
+            data = cur.fetchone()
+            session["teacher"] = True if 2 == data[0] else False
+
+            print("User: " + data[1] + ",  Connected as student")
 
             return jsonify(getdata(userid))
     else:
@@ -120,7 +124,7 @@ def login():
 
             print("User doesnt exist")
 
-            cur.execute("INSERT INTO users VALUES (?,?,?,1)", (email, name, str(userid),))
+            cur.execute("INSERT INTO users VALUES (?,?,?,1,'000000000000','111111111111')", (email, name, str(userid),))
 
             updateteachers()
         else:
@@ -353,6 +357,8 @@ def getdata(userid):
     cur.execute('SELECT classes, student, teacherclasses FROM users WHERE userid=?', (userid, ))
     data = cur.fetchone()
     print(data)
+    if not data:
+        return "error"
     # return [{"name": "Writing", "status": 1}, {"name": "Calculus AB", "status": 1}, {"name": "Calculus BC", "status": 1}, {"name": "Statistics", "status": 0}, {"name": "English", "status": 1}]
     if len(data) >= 1:
         classes = data[0]
@@ -360,7 +366,8 @@ def getdata(userid):
         teacherclasses = ""
         users = []
         if student == 2:
-            cur.execute('SELECT email, name, userid, classes FROM users WHERE student = 1')
+            # cur.execute('SELECT email, name, userid, classes FROM users WHERE student = 1')
+            cur.execute('SELECT email, name, userid, classes FROM users')
             userlist = cur.fetchall()
 
             users = [{"email": i[0], "name": i[1], "userid": i[2], "classes": i[3]} for i in userlist]
@@ -368,7 +375,7 @@ def getdata(userid):
             teacherclasses = data[2]
         return {'classes': classes, "teacher": student == 2, "users": users, "admin": userid in admins, "tclasses": teacherclasses}
     else:
-        return "error", 500
+        return "error"
 
 
 def getcreds(idtoken):
