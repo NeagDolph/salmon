@@ -52,7 +52,7 @@ export default {
   src: url("https://atischool.net/static/font.ttf") format('truetype');
 }
 
-//r
+//ipp
 $background: #eeeeee;
 $main1: #364f6b;
 
