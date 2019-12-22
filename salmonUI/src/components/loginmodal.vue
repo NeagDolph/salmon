@@ -24,7 +24,7 @@
 </template>
 
 <script>
-import loginButton from "./loginbutton.vue";
+import loginButton from "./loginbutton";
 
 export default {
   props: ["loggedin", "signFuncs"],

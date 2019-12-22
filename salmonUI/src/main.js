@@ -1,10 +1,10 @@
 import Vue from "vue";
-import Main from "./App.vue";
-import { sharedData, userauth } from "./js/globals.js";
-import './js/auth.js';
-import './js/sockets.js';
+import Main from "./App";
+import { sharedData, userauth } from "./js/globals";
+import './js/auth';
+import './js/sockets';
 import MicroModal from 'micromodal';
-import axios from 'axios';
+import './mixins/mixins'
 
 // import 'bootstrap';
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -16,7 +16,7 @@ export let app = new Vue({
     editSelect: "",
   },
   el: "#app",
-  template: '<Main :sharedData="sharedData" :loggedin="sharedData.logged" editSelect="editSelect"/>',
+  template: '<Main :sharedData="sharedData" :loggedin="sharedData.logged" :editSelect="editSelect"/>',
   components: { Main },
   mounted: function () {
     this.$nextTick(function () {
@@ -24,32 +24,3 @@ export let app = new Vue({
     })
   }
 });
-
-Vue.mixin({
-  methods: {
-    usereditmodal(user) {
-      MicroModal.show('modal-useredit')
-      app.editSelect = user
-    },
-    editUserClasses(user, idx, userindex) {
-      app.sharedData.users[userindex].oldclasses = user.classes
-      let classes = user.classes.split("")
-      classes[idx] = classes[idx] == "0" ? "1" : (classes[idx] == "1" ? "0" : "1")
-      classes = classes.join("")
-      app.sharedData.users[userindex].classes = classes
-
-      console.log("CLASS", idx)
-
-      axios
-        .post("/editclasses", { class: idx, userid: user.userid, new: classes[idx] })
-        .then(({data}) => {
-          axios.post("/getdata");
-        })
-        .catch(error => {
-          console.log(error.response)
-          console.log("b", app.sharedData.users[userindex].oldclasses, user.classes, classes)
-          app.sharedData.users[userindex].classes = app.sharedData.users[userindex].oldclasses
-        });
-    }
-  }
-})

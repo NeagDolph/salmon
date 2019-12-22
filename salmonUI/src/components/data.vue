@@ -86,7 +86,7 @@ $main1: #364f6b;
     width: 11vw;
     height: 11vw;
     border-radius: 50%;
-    font-family: 'Fantabold';
+    font-family: Roboto;
     background: $sub;
     margin: auto;
     display: block;

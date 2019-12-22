@@ -1,15 +1,13 @@
 import axios from 'axios';
 import io from "socket.io-client";
-import { sharedData } from './globals.js'
-import { parseData } from "./parse.js";
+import { sharedData, apiurl } from './globals'
+import { parseData } from "./parse";
 
 let socket = io();
-console.log("UP")
 
 sharedData.onupdate = socket.on("update", (data) => {
   parseData(data)
   sharedData.logged = true
-  console.log("YEET");
 });
 
 sharedData.onupdateusers = socket.on("updateusers", ({ users }) => {
@@ -18,5 +16,5 @@ sharedData.onupdateusers = socket.on("updateusers", ({ users }) => {
 
 sharedData.updatereq = socket.on("updatereq", () => {
   console.log("requesting data")
-  axios.post("/getdata");
+  axios.post(apiurl.data)
 });

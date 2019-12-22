@@ -68,7 +68,7 @@ def slash():
     return render_template("index.html")
 
 
-@app.route("/glogin", methods=["POST"])
+@app.route("/api/glogin", methods=["POST"])
 def login():
     try:
         idtoken = request.json.get('idtoken', False)
@@ -165,7 +165,7 @@ def custom_script(filename):
 def custom_style(filename):
     return send_from_directory("/root/salmon/styles", filename)
 
-@app.route("/getdata", methods=["POST"])
+@app.route("/api/getdata", methods=["POST"])
 def ajaxgetclasses():
     userid = session.get("userid", False)
 
@@ -198,7 +198,7 @@ def connect():
         # socketio.emit('update', {'classes': userdata["classes"], 'offcampus': session.get("offcampus", 2), "teacher": userdata["teacher"], "admin": userid in admins}, room=userid)
 
 
-@app.route('/editclasses', methods=["POST"])
+@app.route('/api/editclasses', methods=["POST"])
 def editclasses():
     # Add teacher auth to this func
     teacher = session.get("teacher")
@@ -255,7 +255,7 @@ def editclasses():
         return "No permission", 403
 
 
-@app.route('/teacher/add', methods=["POST"])
+@app.route('/api/eacher/add', methods=["POST"])
 def removeteacher():
     adminid = session.get("userid", "")
     dataform = request.json or request.form
@@ -282,7 +282,7 @@ def removeteacher():
         return "No permission", 403
         
 
-@app.route('/teacher/del', methods=["POST"])
+@app.route('/api/teacher/del', methods=["POST"])
 def addteacher():
     adminid = session.get("userid", "")
     dataform = request.json or request.form
@@ -322,7 +322,9 @@ def addteacher():
         return "No permission", 403
 
 
-@app.route('/getusers', methods=["GET"])
+@app.route('/api/comment', methods=["POST"])
+
+@app.route('/api/getusers', methods=["GET"])
 def getusers():
     teacher = session.get("teacher")
     userid = session.get("userid", "")
@@ -365,6 +367,10 @@ def getdata(userid):
         student = data[1]
         teacherclasses = ""
         users = []
+
+        cur.execute('SELECT class, comment FROM comments WHERE userid=?', (userid, ))
+        comments = cur.fetchall()
+
         if student == 2:
             # cur.execute('SELECT email, name, userid, classes FROM users WHERE student = 1')
             cur.execute('SELECT email, name, userid, classes FROM users')
@@ -373,7 +379,7 @@ def getdata(userid):
             users = [{"email": i[0], "name": i[1], "userid": i[2], "classes": i[3]} for i in userlist]
             print("USER", users)
             teacherclasses = data[2]
-        return {'classes': classes, "teacher": student == 2, "users": users, "admin": userid in admins, "tclasses": teacherclasses}
+        return {'classes': classes, "teacher": student == 2, "users": users, "admin": userid in admins, "tclasses": teacherclasses, "comments": comments if len(comments) >= 1 else []}
     else:
         return "error"
 

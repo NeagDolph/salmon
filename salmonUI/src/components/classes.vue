@@ -26,11 +26,13 @@ export default {
   methods: {
     titleSize() {
       return "font-size: 30px;";
-    },
+    }
   },
   computed: {
     sorted() {
-      return this.classes.sort((a, b) => {return a.status - b.status})
+      return this.classes.sort((a, b) => {
+        return a.status - b.status;
+      });
     }
   },
   components: {
@@ -69,9 +71,9 @@ $main1: #364f6b;
   margin-right: 20px;
 
   .simplebar-content > div {
-      padding: 0;
-      overflow-x: hidden;
-      padding-right: 10px;
+    padding: 0;
+    overflow-x: hidden;
+    padding-right: 10px;
   }
 }
 
@@ -84,7 +86,6 @@ $main1: #364f6b;
   width: 93%;
   height: 90px;
   background: #f7b1b1;
-  font-family: 'Fanta';
 
   .title {
     font-size: 30px;
@@ -92,6 +93,9 @@ $main1: #364f6b;
     white-space: nowrap;
     width: 80%;
     line-height: 20px;
+    font-family: Roboto, sans-serif;
+    font-weight: 400;
+    font-style: normal;
     margin-top: 14px;
     display: block;
   }
@@ -103,6 +107,9 @@ $main1: #364f6b;
     width: 79px;
     text-indent: 9px;
     background: $red;
+    font-family: Roboto, sans-serif;
+    font-weight: 400;
+    font-style: normal;
     line-height: 25px;
     padding-bottom: 0px;
     border-radius: 12px;

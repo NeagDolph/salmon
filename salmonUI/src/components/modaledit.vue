@@ -1,25 +1,20 @@
 <template>
   <div class="modal micromodal-slide" id="modal-useredit" aria-hidden="true">
-    <div class="modal__overlay" tabindexConfucianism="-1" data-micromodal-close>
+    <div class="modal__overlay" tabindex="-1" data-micromodal-close>
       <div class="modal__container" role="dialog" aria-modal="true" aria-labelledby="modal-1-title">
         <header class="modal__header">
-          <h2 class="modal__title" id="modal-1-title">Micromodal</h2>
+          <h2 class="modal__title" id="modal-1-title">{{userdata.name}}</h2>
           <button class="modal__close" aria-label="Close modal" data-micromodal-close></button>
         </header>
-        <main class="modal__content" id="modal-1-content">
-          <p>
-            Try hitting the
-            <code>tab</code> key and notice how the focus stays within the modal itself. Also,
-            <code>esc</code> to close modal.
-          </p>
+        <main class="modal__content row" id="modal-1-content">
+          <div class="class mx-auto" v-for="(classStatus, index) in classes" :key="shortnames[index]">
+            <div v-if="classStatus !== '2'">
+              <h3 class="title">{{classnames[index]}}</h3>
+              <commentarea class="col-11 mx-auto" :user="userdata" :classidx="index"></commentarea>
+            </div>
+          </div>
         </main>
         <footer class="modal__footer">
-          <button class="modal__btn modal__btn-primary">Continue</button>
-          <button
-            class="modal__btn"
-            data-micromodal-close
-            aria-label="Close this dialog window"
-          >Close</button>
         </footer>
       </div>
     </div>
@@ -27,8 +22,20 @@
 </template>
 
 <script>
+import commentarea from './commentarea'
+import { sharedData, classnames } from './../js/globals'
+
 export default {
-  props: ["userdata"]
+  props: ["userdata", "classes", "users", "tclasses"],
+  components: {
+    commentarea
+  },
+  data() {
+    return {
+      shortnames: sharedData.shortnames,
+      classnames
+    }
+  }
 };
 </script>
 
@@ -41,6 +48,28 @@ $font_family_1: -apple-system, BlinkMacSystemFont, avenir next, avenir,
 $background_color_1: #fff;
 $background_color_2: #e6e6e6;
 $background_color_3: #00449e;
+
+.modal__content {
+  margin-top: 2rem;
+  margin-bottom: 2rem;
+  line-height: 1.5;
+  color: $color_2;
+
+  .class {
+    margin-bottom: 20px;
+
+    .title {
+      margin-top: 0;
+      margin-bottom: 0;
+      font-weight: 600;
+      font-size: 1.25rem;
+      line-height: 1.25;
+      text-align: center;
+      color: $color_1;
+    }
+  }
+
+}
 
 @keyframes "mmfadeIn" {
   from {
@@ -94,6 +123,7 @@ $background_color_3: #00449e;
   max-width: 500px;
   max-height: 100vh;
   border-radius: 4px;
+  width: 350px;
   overflow-y: auto;
   box-sizing: border-box;
 }
@@ -119,12 +149,6 @@ $background_color_3: #00449e;
 .modal__close {
   background: transparent;
   border: 0;
-}
-.modal__content {
-  margin-top: 2rem;
-  margin-bottom: 2rem;
-  line-height: 1.5;
-  color: $color_2;
 }
 .modal__btn {
   font-size: 0.875rem;

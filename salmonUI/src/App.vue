@@ -9,18 +9,18 @@
       <classes v-if="loggedin" :classes="sharedData.classes" />
     </div>
     <loginmodal v-if="loggedin === false" :loggedin="loggedin" :signFuncs="sharedData.signFuncs"/>
-    <modaledit id="modal-useredit" :userdata="editSelect"/>
+    <modaledit id="modal-useredit" :userdata="editSelect" :classes="sharedData.classes" :users="sharedData.users" :tclasses="sharedData.tclasses"/>
   </div>
   <!-- <div id="ruler"></div> -->
 </template>
 
 <script>
-import sidebar from "./components/sidebar.vue";
-import displaydata from "./components/data.vue";
-import classes from "./components/classes.vue";
-import loginmodal from "./components/loginmodal.vue";
-import teacherpanel from "./components/teacherpanel.vue";
-import modaledit from "./components/modaledit.vue";
+import sidebar from "./components/sidebar";
+import displaydata from "./components/data";
+import classes from "./components/classes";
+import loginmodal from "./components/loginmodal";
+import teacherpanel from "./components/teacherpanel";
+import modaledit from "./components/modaledit";
 import './css/box-shadow.min.css';
 
 export default {
@@ -51,6 +51,8 @@ export default {
   font-family: "Fanta";
   src: url("https://atischool.net/static/font.ttf") format('truetype');
 }
+@import url('https://fonts.googleapis.com/css?family=Roboto&display=swap');
+@import url("https://use.typekit.net/qwh8nvj.css");
 
 //ipp
 $background: #eeeeee;

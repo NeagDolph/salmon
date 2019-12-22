@@ -8,3 +8,4 @@ export let sharedData = {
 }
 export let userauth = {};
 export let classnames = ["Socratic", "Writing", "Geometry", "Statistics", "Life Design", "Problem", "Physics", "HRI", "Creative", "Urban", "Makerspace", "Practicum"]
+export let apiurl = {data: "/api/getdata", login: "/api/glogin", classes: "/api/editclasses"}

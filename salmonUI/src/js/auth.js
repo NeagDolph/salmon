@@ -1,6 +1,6 @@
 import axios from 'axios';
-import { sharedData, userauth } from './globals.js';
-import { parseData } from './parse.js';
+import { sharedData, userauth, apiurl } from './globals';
+import { parseData } from './parse';
 
 gapi.load("auth2", function() {
   gapi.auth2
@@ -26,14 +26,13 @@ let signedIn = googleUser => {
   userauth.profile = googleUser.getBasicProfile();
 
   axios
-    .post("/glogin", { idtoken: userauth.authResponse.id_token })
+    .post(apiurl.login, { idtoken: userauth.authResponse.id_token })
     .then(({data}) => {
       if (data) {
-        console.log("GLOG", data)
         parseData(data)
         sharedData.logged = true
       } else {
-        axios.post("/getdata");
+        axios.post(apiurl.data);
       }
     })
     .catch(e => {
