@@ -3,35 +3,40 @@
     <div class="row" :style="loggedin ? '' : 'filter: blur(4px)'">
       <sidebar :loggedin="loggedin" :signFuncs="sharedData.signFuncs"/>
       <div class="col-3 col-xl-5 midpanel">
-        <teacherpanel v-if="sharedData.teacher" :users="sharedData.users" :tclasses="sharedData.tclasses" :shortnames="sharedData.shortnames"/>
+        <teacherpanel v-if="sharedData.teacher" :sharedData="sharedData"/>
       </div>
       <displaydata v-if="loggedin" :classes="sharedData.classes"/>
       <classes v-if="loggedin" :classes="sharedData.classes" />
     </div>
     <loginmodal v-if="loggedin === false" :loggedin="loggedin" :signFuncs="sharedData.signFuncs"/>
-    <modaledit id="modal-useredit" :userdata="editSelect" :classes="sharedData.classes" :users="sharedData.users" :tclasses="sharedData.tclasses"/>
+    <modaledit :userdata="editSelect" :tclasses="sharedData.tclasses" :editmodalopen="editState"/>
   </div>
   <!-- <div id="ruler"></div> -->
 </template>
 
 <script>
-import sidebar from "./components/sidebar";
-import displaydata from "./components/data";
-import classes from "./components/classes";
-import loginmodal from "./components/loginmodal";
-import teacherpanel from "./components/teacherpanel";
-import modaledit from "./components/modaledit";
+import sidebar from "./components/sidebar.vue";
+import displaydata from "./components/data.vue";
+import classes from "./components/classes.vue";
+import loginmodal from "./components/loginmodal.vue";
+import teacherpanel from "./components/teacherpanel.vue";
+import modaledit from "./components/modaledit.vue";
 import './css/box-shadow.min.css';
+import '@fortawesome/fontawesome-free/js/all.min.js';
+
 
 export default {
   name: "app",
-  props: ["loggedin", "sharedData", "editSelect"],
+  props: ["loggedin", "sharedData", "editSelect", "editState"],
   data() {
     return {
       // loggedin: true
     };
   },
   methods: {
+  },
+  mounted() {
+    console.log("APP MOUNTED")
   },
   components: {
     sidebar,
@@ -112,5 +117,24 @@ html {
 .vertical-center {
   display: flex;
   align-items: center;
+}
+
+.tooltip {
+  opacity: 1 !important;
+  transition: opacity 0.5s;
+
+  &:after {
+    border: solid transparent;
+    content: " ";
+    width: 0px;
+    border-color: transparent;
+    height: 0px;
+    border-top-color: black;
+    border-width: 6px;
+    margin-left: -6px;
+    top: 100%;
+    left: 50%;
+    position: absolute;
+  }
 }
 </style>

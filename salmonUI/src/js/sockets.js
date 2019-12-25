@@ -1,7 +1,7 @@
 import axios from 'axios';
 import io from "socket.io-client";
 import { sharedData, apiurl } from './globals'
-import { parseData } from "./parse";
+import { parseData, parseUsers } from "./parse";
 
 let socket = io();
 
@@ -10,8 +10,8 @@ sharedData.onupdate = socket.on("update", (data) => {
   sharedData.logged = true
 });
 
-sharedData.onupdateusers = socket.on("updateusers", ({ users }) => {
-  sharedData.users = users;
+sharedData.onupdateusers = socket.on("users", ({ users, comments }) => {
+  parseUsers(users, comments)
 });
 
 sharedData.updatereq = socket.on("updatereq", () => {

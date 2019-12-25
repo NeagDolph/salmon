@@ -5,6 +5,7 @@ import json
 import sys
 import sqlite3
 import os
+import hashlib
 
 from flask import *
 from jinja2 import TemplateNotFound
@@ -15,7 +16,7 @@ from google.auth.transport import requests
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'schloopy'
-socketio = SocketIO(app, logger=True)
+socketio = SocketIO(app, logger=True, async_mode='eventlet', engineio_logger=True, ping_timeout=60)
 
 SESSION_TYPE = 'filesystem'
 app.config.from_object(__name__)
@@ -85,7 +86,7 @@ def login():
         teacher = session.get("teacher")
 
         if teacher:
-            return jsonify(getdata(userid))
+            return jsonify(getdata(userid, True))
         else:
             cur = conn.cursor()
             cur.execute('SELECT (student, name) FROM users WHERE userid=?', (userid,))
@@ -94,7 +95,7 @@ def login():
 
             print("User: " + data[1] + ",  Connected as student")
 
-            return jsonify(getdata(userid))
+            return jsonify(getdata(userid, True))
     else:
         credentials = getcreds(idtoken)
         hd = credentials.get("hd", False)
@@ -143,7 +144,7 @@ def login():
         
         conn.commit()
 
-        return jsonify(getdata(userid))
+        return jsonify(getdata(userid, True))
 
 
 
@@ -200,7 +201,6 @@ def connect():
 
 @app.route('/api/editclasses', methods=["POST"])
 def editclasses():
-    # Add teacher auth to this func
     teacher = session.get("teacher")
     teacherid = session.get("userid")
     dataform = request.json or request.form
@@ -255,7 +255,7 @@ def editclasses():
         return "No permission", 403
 
 
-@app.route('/api/eacher/add', methods=["POST"])
+@app.route('/api/teacher/add', methods=["POST"])
 def removeteacher():
     adminid = session.get("userid", "")
     dataform = request.json or request.form
@@ -322,7 +322,68 @@ def addteacher():
         return "No permission", 403
 
 
-@app.route('/api/comment', methods=["POST"])
+@app.route('/api/comment/create', methods=["POST"])
+def comment():
+    teacher = session.get("teacher")
+    teacherid = session.get("userid")
+    dataform = request.json or request.form
+
+    if teacher and teacherid:
+        userid = dataform.get("userid")
+        classidx = dataform.get("class")
+        comment = dataform.get("comment")
+
+        cur = conn.cursor()
+
+        #Check if input datatypes are correct
+        if not isinstance(classidx, int):
+            return "bad request a", 400
+        elif classidx > 12 or classidx < 0:
+            return "bad request b", 400
+        
+        if not isinstance(comment, str):
+            print("COMM", comment, classidx, userid, dataform, dataform.get("comment"), comment)
+            return "bad request c", 400
+
+
+        #check if teacher has auth for class
+        cur.execute('SELECT teacherclasses FROM users WHERE userid=?', (teacherid,))
+        result = cur.fetchone()
+
+        if len(result) < 1:
+            return "error", 500
+
+        if result[0][classidx] != '1':
+            return "No permission", 403
+
+        
+        #Add comment
+        commentsha = hashlib.md5((userid + str(classidx)).encode()).hexdigest() #calculate sha of userid and class
+
+        cur.execute(
+            'INSERT OR IGNORE INTO comments (userid, comment, class, commentsha) VALUES (?, ?, ?, ?)'
+        ,(userid, comment, classidx, commentsha)) #Insert comment
+        
+        cur.execute(
+            'UPDATE comments SET comment=? WHERE commentsha=?' #Update comment in case insert threw PK error
+        ,(comment, commentsha))
+
+        conn.commit()
+
+        updateteachers(True)
+        emitupdate(userid)
+
+        return "success", 200
+    else:
+        return "No permission", 403
+
+@app.route('/api/comment/delete', methods=["POST"])
+def delcomment():
+    pass
+
+@app.route('/api/comment/get', methods=["POST"])
+def getcomment():
+    pass
 
 @app.route('/api/getusers', methods=["GET"])
 def getusers():
@@ -339,11 +400,18 @@ def getusers():
         return "No permission", 403
 
 
-def updateteachers():
+def updateteachers(getcomments=False):
     cur = conn.cursor()
-    cur.execute('SELECT * FROM users WHERE student = 1')
-    users = cur.fetchall()
-    socketio.emit('users', {"users": users}, room="teachers")
+
+    cur.execute('SELECT email, name, userid, classes FROM users')
+    userlist = cur.fetchall()
+    commentlist = []
+
+    if getcomments:
+        cur.execute('SELECT userid, class, comment FROM comments')
+        commentlist = cur.fetchall()
+
+    socketio.emit('users', {"users": userlist, "comments": commentlist}, room="teachers")
 
 
 def emitupdate(userid):
@@ -354,19 +422,20 @@ def updatereq():
     socketio.emit('updatereq', room="students")
 
 
-def getdata(userid):
+def getdata(userid, extradata=False):
     cur = conn.cursor()
     cur.execute('SELECT classes, student, teacherclasses FROM users WHERE userid=?', (userid, ))
     data = cur.fetchone()
     print(data)
     if not data:
         return "error"
-    # return [{"name": "Writing", "status": 1}, {"name": "Calculus AB", "status": 1}, {"name": "Calculus BC", "status": 1}, {"name": "Statistics", "status": 0}, {"name": "English", "status": 1}]
+    
     if len(data) >= 1:
         classes = data[0]
         student = data[1]
         teacherclasses = ""
-        users = []
+        userlist = []
+        commentlist = []
 
         cur.execute('SELECT class, comment FROM comments WHERE userid=?', (userid, ))
         comments = cur.fetchall()
@@ -376,10 +445,15 @@ def getdata(userid):
             cur.execute('SELECT email, name, userid, classes FROM users')
             userlist = cur.fetchall()
 
-            users = [{"email": i[0], "name": i[1], "userid": i[2], "classes": i[3]} for i in userlist]
-            print("USER", users)
+            # users = [{"email": i[0], "name": i[1], "userid": i[2], "classes": i[3]} for i in userlist]
+            
             teacherclasses = data[2]
-        return {'classes': classes, "teacher": student == 2, "users": users, "admin": userid in admins, "tclasses": teacherclasses, "comments": comments if len(comments) >= 1 else []}
+
+            if extradata:
+                cur.execute('SELECT userid, class, comment FROM comments')
+                commentlist = cur.fetchall()
+
+        return {'classes': classes, "teacher": student == 2, "users": userlist, "admin": userid in admins, "tclasses": teacherclasses, "comments": comments if len(comments) >= 1 else [], "tcomments": commentlist if extradata else []}
     else:
         return "error"
 

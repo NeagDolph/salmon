@@ -1,25 +1,27 @@
 <template>
-  <textarea placeholder="Comment" @submit="addcomment()" v-model="comment"></textarea>
+  <input class="commentArea" placeholder="Comment" @keyup.enter="submitcomment()" v-model="comment"></input>
 </template>
 
 <script>
 export default {
-  props: ["userdata", "classindex"],
+  props: ["userdata", "classidx", "precomment"],
   data() {
     return {
-      comment: ""
+      comment: this.precomment
     }
   },
   methods: {
-    addcomment() {
-      this.addComment(userdata, classindex, comment)
+    submitcomment() {
+      console.log("COMMENTAREA submitted")
+      this.addComment(this.userdata, this.classidx, this.comment)
+
     }
   }
 };
 </script>
 
 <style lang="scss" scoped>
-textarea {
+.commentArea {
   width: 100%;
   padding: 6px 6px;
   height: 60px;

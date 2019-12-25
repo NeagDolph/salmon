@@ -1,14 +1,13 @@
 import axios from 'axios';
 import Vue from "vue";
 import { apiurl } from "../js/globals";
-import { app } from '../main'
-import MicroModal from 'micromodal';
+import { app } from '../main';
 
 Vue.mixin({
     methods: {
-      usereditmodal(user) {
-        MicroModal.show('modal-useredit')
-        app.editSelect = user
+      usereditmodal(state, user=false) {
+        app.editState = state;
+        if (user) app.editSelect = user
       },
       editUserClasses(user, idx, userindex) {
         app.sharedData.users[userindex].oldclasses = user.classes
@@ -28,8 +27,27 @@ Vue.mixin({
             app.sharedData.users[userindex].classes = app.sharedData.users[userindex].oldclasses
           });
       },
-      addComment(user, idx, userindex) {
-          
+      addComment(user, idx, usercomment) {
+        axios
+        .post(apiurl.comment, { class: idx, userid: user.userid, "comment": usercomment})
+        .then((data) => {
+          return "PEE"
+        })
+        .catch(() => {
+          console.log("EE")
+          return "PEE"
+        })
+      },
+      requestComment(user, idx) {
+        axios
+          .post(apiurl.getcomment, { class: idx, userid: user.userid })
+          .then((data) => {
+            return "PEE"
+            // return data
+          })
+          .catch((e) => {
+            console.log("Error requesting comment", e)
+          })
       }
     }
 })

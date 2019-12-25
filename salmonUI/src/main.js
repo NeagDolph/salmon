@@ -3,7 +3,6 @@ import Main from "./App";
 import { sharedData, userauth } from "./js/globals";
 import './js/auth';
 import './js/sockets';
-import MicroModal from 'micromodal';
 import './mixins/mixins'
 
 // import 'bootstrap';
@@ -14,13 +13,9 @@ export let app = new Vue({
     sharedData: sharedData,
     userauth: userauth,
     editSelect: "",
+    editState: false
   },
   el: "#app",
-  template: '<Main :sharedData="sharedData" :loggedin="sharedData.logged" :editSelect="editSelect"/>',
+  template: '<Main :sharedData="sharedData" :loggedin="sharedData.logged" :editSelect="editSelect" :editState="editState"/>',
   components: { Main },
-  mounted: function () {
-    this.$nextTick(function () {
-      MicroModal.init();
-    })
-  }
 });
