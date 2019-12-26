@@ -228,21 +228,4 @@ $background_color_3: #00449e;
     will-change: transform;
   }
 }
-
-.micromodal-slide[aria-hidden="false"] {
-  .modal__overlay {
-    animation: mmfadeIn 0.3s cubic-bezier(0, 0, 0.2, 1);
-  }
-  .modal__container {
-    animation: mmslideIn 0.3s cubic-bezier(0, 0, 0.2, 1);
-  }
-}
-.micromodal-slide[aria-hidden="true"] {
-  .modal__overlay {
-    animation: mmfadeOut 0.3s cubic-bezier(0, 0, 0.2, 1);
-  }
-  .modal__container {
-    animation: mmslideOut 0.3s cubic-bezier(0, 0, 0.2, 1);
-  }
-}
 </style>

@@ -71,38 +71,28 @@ $background_color_3: #00449e;
 
 }
 
-@keyframes "mmfadeIn" {
+@keyframes mmfadeIn {
   from {
     opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-@keyframes "mmfadeOut" {
-  from {
-    opacity: 1;
-  }
-  to {
-    opacity: 0;
-  }
-}
-@keyframes "mmslideIn" {
-  from {
     transform: translateY(15%);
   }
   to {
+    opacity: 1;
     transform: translateY(0);
   }
 }
-@keyframes "mmslideOut" {
+
+@keyframes mmfadeOut {
   from {
+    opacity: 1;
     transform: translateY(0);
   }
   to {
+    opacity: 0;
     transform: translateY(-10%);
   }
 }
+
 .modal {
   font-family: 'Fanta';
 }
@@ -196,25 +186,6 @@ $background_color_3: #00449e;
   }
   .modal__overlay {
     will-change: transform;
-  }
-}
-.micromodal-slide.is-open {
-  display: block;
-}
-.micromodal-slide[aria-hidden="false"] {
-  .modal__overlay {
-    animation: mmfadeIn 0.3s cubic-bezier(0, 0, 0.2, 1);
-  }
-  .modal__container {
-    animation: mmslideIn 0.3s cubic-bezier(0, 0, 0.2, 1);
-  }
-}
-.micromodal-slide[aria-hidden="true"] {
-  .modal__overlay {
-    animation: mmfadeOut 0.3s cubic-bezier(0, 0, 0.2, 1);
-  }
-  .modal__container {
-    animation: mmslideOut 0.3s cubic-bezier(0, 0, 0.2, 1);
   }
 }
 </style>
