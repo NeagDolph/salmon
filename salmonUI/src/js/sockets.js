@@ -6,6 +6,7 @@ import { parseData, parseUsers } from "./parse";
 let socket = io();
 
 sharedData.onupdate = socket.on("update", (data) => {
+  console.log("got data")
   parseData(data)
   sharedData.logged = true
 });

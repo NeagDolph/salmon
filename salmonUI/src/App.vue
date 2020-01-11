@@ -22,7 +22,6 @@ import loginmodal from "./components/loginmodal.vue";
 import teacherpanel from "./components/teacherpanel.vue";
 import modaledit from "./components/modaledit.vue";
 import './css/box-shadow.min.css';
-// import '@fortawesome/fontawesome-free/js/all.min.js';
 
 
 export default {

@@ -91,7 +91,7 @@ export default {
       return this.sharedData.users.map(user => {
         return !user.classes.includes(0);
       });
-    }
+    },
   }
 };
 </script>

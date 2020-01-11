@@ -1,14 +1,14 @@
-import { sharedData, classnames } from './globals'
+import { classnames } from './globals';
+import { app } from '../main';
 
 
 export function parseData({teacher, admin, users, classes, tclasses, comments, tcomments}) {
     console.log("Parsing Data")
-    sharedData.teacher = teacher
-    sharedData.admin = admin
-    sharedData.classes = classes.split("")
-    sharedData.tclasses = tclasses
-    sharedData.comments = comments
-    sharedData.classes = sharedData.classes.map((val, idx) => {
+    app.sharedData.teacher = teacher
+    app.sharedData.admin = admin
+    app.sharedData.tclasses = tclasses
+    app.sharedData.comments = comments
+    app.sharedData.classes = classes.split("").map((val, idx) => {
         return {"name": classnames[idx], "status": parseInt(val)}
     })
 
@@ -16,13 +16,13 @@ export function parseData({teacher, admin, users, classes, tclasses, comments, t
 }
 
 export function parseUsers(users, tcomments) {
-    sharedData.users = users.map(el => {
+    app.sharedData.users = users.map(el => {
         return {email: el[0], name: el[1], userid: el[2], classes: el[3], comments: ["", "", "", "", "", "", "", "", "", ""]}
     });
 
-    sharedData.tcomments = tcomments.map((el, idx) => {
+    app.sharedData.tcomments = tcomments.map((el, idx) => {
         let comment = {userid: el[0], class: el[1], comment: el[2]}
-        sharedData.users.find(x => x.userid == comment.userid).comments[parseInt(comment.class)] = comment.comment
+        app.sharedData.users.find(x => x.userid == comment.userid).comments[parseInt(comment.class)] = comment.comment
         return comment
     })
 }

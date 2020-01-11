@@ -13,7 +13,8 @@ export let app = new Vue({
     sharedData: sharedData,
     userauth: userauth,
     editSelect: "",
-    editState: false
+    editState: false,
+    classes: []
   },
   el: "#app",
   template: '<Main :sharedData="sharedData" :loggedin="sharedData.logged" :editSelect="editSelect" :editState="editState"/>',

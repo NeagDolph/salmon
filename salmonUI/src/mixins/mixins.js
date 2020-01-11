@@ -6,7 +6,7 @@ import { app } from '../main';
 Vue.mixin({
     methods: {
       usereditmodal(state, user=false) {
-        app.editState = state;
+        // app.editState = state;
         if (user) app.editSelect = user
       },
       editUserClasses(user, idx, userindex) {
