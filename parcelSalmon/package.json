@@ -1,0 +1,33 @@
+{
+  "name": "parcelSalmon",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "parcel index.html -p 8081 --no-hmr"
+  },
+  "alias": {
+    "vue": "./node_modules/vue/dist/vue.common.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^0.19.2",
+    "bootstrap": "^4.4.1",
+    "jquery": "^3.4.1",
+    "popper.js": "^1.16.1",
+    "simplebar-vue": "^1.4.0",
+    "socket.io-client": "^2.3.0",
+    "v-tooltip": "^2.0.3",
+    "vue": "^2.6.11",
+    "vue-hot-reload-api": "^2.3.4",
+    "vue-popperjs": "^2.3.0"
+  },
+  "devDependencies": {
+    "@vue/component-compiler-utils": "^3.1.1",
+    "sass": "^1.25.1-test.1",
+    "vue-template-compiler": "^2.6.11"
+  }
+}

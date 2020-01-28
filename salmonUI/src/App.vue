@@ -1,9 +1,31 @@
 <template>
   <div id="app">
+<<<<<<< HEAD
     <div class="row" :style="loggedin ? '' : 'filter: blur(4px)'">
       <sidebar :loggedin="loggedin" :signFuncs="sharedData.signFuncs"/>
       <div class="col-3 col-xl-5 midpanel">
         <teacherpanel v-if="sharedData.teacher" :sharedData="sharedData"/>
+=======
+
+    <!-- Header -->
+    <Header :loggedin="loggedin" :signFuncs="sharedData.signFuncs" v-if="loggedin"/>
+
+    <!-- Teacher panel -->
+    <div id="teacher" v-if="sharedData.teacher && loggedin" :style="loggedin ? '' : 'filter: blur(4px)'">
+      <div class="row">
+        <div class="col-3 col-xl-5 midpanel">
+          <teacherpanel :sharedData="sharedData"/>
+        </div>
+      </div>
+    </div>
+
+    <!-- Student panel -->
+    <div id="student" v-if="!sharedData.teacher && loggedin" :style="loggedin ? '' : 'filter: blur(4px)'">
+      <div class="row mainRow">
+        <displaydata :classes="sharedData.classes"/>
+        <secondrydata :classes="sharedData.classes"/>
+        <classes :classes="sharedData.classes" />
+>>>>>>> 1a29e0a... poop
       </div>
       <displaydata v-if="loggedin" :classes="sharedData.classes"/>
       <classes v-if="loggedin" :classes="sharedData.classes" />
@@ -58,9 +80,24 @@ export default {
 @import url('https://fonts.googleapis.com/css?family=Roboto&display=swap');
 @import url("https://use.typekit.net/qwh8nvj.css");
 
+<<<<<<< HEAD
 //ipp
 $background: #eeeeee;
 $main1: #364f6b;
+=======
+.trackerTitle {
+  font-family: mr-eaves-modern, sans-serif;
+  font-weight: 300;
+  font-style: normal;
+  font-size: 60px;
+}
+
+#student {
+  &>.row {
+    padding: 2em 7em;
+  }
+}
+>>>>>>> 1a29e0a... poop
 
 $sub: #d8f4f7;
 

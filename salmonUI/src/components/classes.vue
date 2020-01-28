@@ -1,4 +1,5 @@
 <template>
+<<<<<<< HEAD
   <div class="col-3 col-lg-3 col-xl-2">
     <div data-simplebar data-simplebar-auto-hide="false" class="card z-depth-1">
       <div class="col-11 mx-auto">
@@ -11,6 +12,18 @@
           <div class="title" :style="titleSize(classItem.name)">{{classItem.name}}</div>
           <span class="subtext">{{classItem.status ? "Completed" : "Missing"}}</span>
         </div>
+=======
+  <div class="col-3 col-lg-3 col-xl-3 classescontcont">
+    <div class="classescont">
+      <div
+        v-for="classItem in sorted"
+        v-bind:key="classItem.name"
+        :class="{greenclass: classItem.status}"
+        class="redclass-item mx-auto z-depth-half"
+      >
+        <div class="title" :style="titleSize(classItem.name)">{{classItem.name}}</div>
+        <span class="subtext">{{classItem.status ? "Completed" : "Missing"}}</span>
+>>>>>>> 1a29e0a... poop
       </div>
     </div>
   </div>
@@ -18,14 +31,11 @@
 
 
 <script>
-import simplebar from "simplebar-vue";
-import "simplebar/dist/simplebar.min.css";
-
 export default {
   props: ["classes"],
   methods: {
     titleSize() {
-      return "font-size: 30px;";
+      return "font-size: 50px;";
     }
   },
   computed: {
@@ -80,6 +90,7 @@ $main1: #364f6b;
 .redclass-item {
   background: $sub;
   border-radius: 10px;
+<<<<<<< HEAD
   margin-bottom: 27px;
   padding-left: 10px;
   border: 3px #f58e88 dashed;
@@ -97,23 +108,43 @@ $main1: #364f6b;
     font-weight: 400;
     font-style: normal;
     margin-top: 14px;
+=======
+  height: 100px;
+  padding: 10px;
+  position: relative;
+  background: $main1;
+  margin-bottom: 30px;
+
+  .title {
+    font-size: 70px;
+    color: $red;
+    white-space: nowrap;
+    width: 80%;
+    line-height: 40px;
+>>>>>>> 1a29e0a... poop
     display: block;
+    
+    font-family: mr-eaves-modern, sans-serif;
+    font-weight: 200;
+    font-style: normal;
+
+
   }
 
   .subtext {
-    text-align: left;
+    text-align: center;
     font-size: 18px;
     color: white;
-    width: 79px;
-    text-indent: 9px;
+    width: 85px;
+    position: absolute;
+    bottom: 10px;
     background: $red;
     font-family: Roboto, sans-serif;
     font-weight: 400;
     font-style: normal;
-    line-height: 25px;
+    line-height: 29px;
     padding-bottom: 0px;
     border-radius: 12px;
-    margin: 16px 0 9px;
     display: block;
   }
 

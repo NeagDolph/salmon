@@ -1,7 +1,6 @@
 'use strict';
 const { VueLoaderPlugin } = require('vue-loader');
 const path = require('path');
-
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const OptimizeCSSPlugin = require('optimize-css-assets-webpack-plugin')
 const ExtractTextPlugin = require('extract-text-webpack-plugin')
@@ -14,18 +13,20 @@ const utils = require('./utils')
 
 const env = process.env.NODE_ENV;
 
+console.log("OOP", env)
+
 const wpconfig = {
-  devtool: "source-map",
   entry: path.join(__dirname, '..', 'src', 'main.js'),
   mode: env,
-  resolve: {
-    extensions: ['*', '.js', '.vue', '.json'],
-    alias: {
-      'vue$': 'vue/dist/vue.esm.js'
-    }
-  },
+  // resolve: {
+  //   extensions: ['*', '.js', '.vue', '.json'],
+  //   alias: {
+  //     'vue$': 'vue/dist/vue.min.js'
+  //   }
+  // },
   output: {
-    publicPath: '/serve',
+    publicPath: process.env.NODE_ENV == 'production' ? '/' : '/dist',
+    filename: 'build.js',
   },
   optimization: {
     runtimeChunk: false,
