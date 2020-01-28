@@ -98,6 +98,12 @@ export default {
     padding: 2em 7em;
   }
 }
+
+#student {
+  &>.row {
+    padding: 2em 7em;
+  }
+}
 >>>>>>> 1a29e0a... poop
 
 $sub: #d8f4f7;

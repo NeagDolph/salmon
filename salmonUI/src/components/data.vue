@@ -142,6 +142,21 @@ $main1: #364f6b;
   }
 }
 
+@media screen and (max-width: 1100px) {
+  #pieCont {
+    width: calc(20em - 6vw) !important;
+    height: calc(20em - 6vw) !important;
+  }
+}
+
+@media screen and (min-width: 1200px) {
+  .statusMarker {
+    width: calc(2em + 1.5vw) !important;
+    height: calc(2em + 1.5vw) !important;
+    margin-top: calc(2.5vw - 20px) !important;
+  }
+}
+
 .percentRow {
   width: 100%;
   height: fit-content;
@@ -184,6 +199,20 @@ $main1: #364f6b;
     color: white;
   }
 =======
+
+  &#pie2 {
+    display: flex;
+    align-content: center;
+    justify-content: center;
+
+    .smile {
+      display: block;
+      position: relative;
+      width: 200px;
+      transform: rotateY(18deg);
+      fill: $main;
+    }
+  }
 
   &#pie2 {
     display: flex;
