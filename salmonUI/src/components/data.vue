@@ -78,14 +78,6 @@ export default {
   methods: {},
   computed: {
     percent() {
-<<<<<<< HEAD
-      return (
-        (
-          this.classes.reduce((tot, el) => {return tot + el.status}, 0)
-          / this.classes.length
-        ) * 100
-      ).toFixed(1);
-=======
       return parseInt(
         (
           (this.classes.reduce((tot, el) => {
@@ -95,7 +87,6 @@ export default {
           100
         ).toFixed(1)
       );
->>>>>>> 1a29e0a... poop
     }
   }
 };
@@ -121,6 +112,21 @@ $main1: #364f6b;
     margin-top: 100px;
   }
 =======
+@media screen and (max-width: 1100px) {
+  #pieCont {
+    width: calc(20em - 6vw) !important;
+    height: calc(20em - 6vw) !important;
+  }
+}
+
+@media screen and (min-width: 1200px) {
+  .statusMarker {
+    width: calc(2em + 1.5vw) !important;
+    height: calc(2em + 1.5vw) !important;
+    margin-top: calc(2.5vw - 20px) !important;
+  }
+}
+
 @media screen and (max-width: 1100px) {
   #pieCont {
     width: calc(20em - 6vw) !important;
@@ -170,26 +176,6 @@ $main1: #364f6b;
   transition: backgroundImage 400ms;
   border-radius: 9999px;
   filter: drop-shadow(0px 0px 5px rgba(0, 0, 0, 0.3));
->>>>>>> 1a29e0a... poop
-
-  .yescampus {
-    color: $green;
-  }
-<<<<<<< HEAD
-
-  .nocampus {
-    color: $red;
-  }
-}
-
-.percentage {
-  height: 48vh;
-  background: $main1;
-  bottom: 0;
-  position: absolute !important;
-  border-top-left-radius: 2000px;
-  border-top-right-radius: 2000px;
-  font-family: 'Fanta';
 
   .balltext {
     text-align: center;
@@ -198,6 +184,20 @@ $main1: #364f6b;
     color: white;
   }
 =======
+
+  &#pie2 {
+    display: flex;
+    align-content: center;
+    justify-content: center;
+
+    .smile {
+      display: block;
+      position: relative;
+      width: 200px;
+      transform: rotateY(18deg);
+      fill: $main;
+    }
+  }
 
   &#pie2 {
     display: flex;

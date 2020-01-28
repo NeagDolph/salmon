@@ -1,18 +1,4 @@
 <template>
-<<<<<<< HEAD
-  <div class="col-3 col-lg-3 col-xl-2">
-    <div data-simplebar data-simplebar-auto-hide="false" class="card z-depth-1">
-      <div class="col-11 mx-auto">
-        <div
-          v-for="classItem in sorted"
-          v-bind:key="classItem.name"
-          :class="{greenclass: classItem.status}"
-          class="redclass-item mx-auto"
-        >
-          <div class="title" :style="titleSize(classItem.name)">{{classItem.name}}</div>
-          <span class="subtext">{{classItem.status ? "Completed" : "Missing"}}</span>
-        </div>
-=======
   <div class="col-3 col-lg-3 col-xl-3 classescontcont">
     <div class="classescont">
       <div
@@ -23,7 +9,6 @@
       >
         <div class="title" :style="titleSize(classItem.name)">{{classItem.name}}</div>
         <span class="subtext">{{classItem.status ? "Completed" : "Missing"}}</span>
->>>>>>> 1a29e0a... poop
       </div>
     </div>
   </div>
@@ -90,25 +75,6 @@ $main1: #364f6b;
 .redclass-item {
   background: $sub;
   border-radius: 10px;
-<<<<<<< HEAD
-  margin-bottom: 27px;
-  padding-left: 10px;
-  border: 3px #f58e88 dashed;
-  width: 93%;
-  height: 90px;
-  background: #f7b1b1;
-
-  .title {
-    font-size: 30px;
-    color: $main1;
-    white-space: nowrap;
-    width: 80%;
-    line-height: 20px;
-    font-family: Roboto, sans-serif;
-    font-weight: 400;
-    font-style: normal;
-    margin-top: 14px;
-=======
   height: 100px;
   padding: 10px;
   position: relative;
@@ -121,7 +87,6 @@ $main1: #364f6b;
     white-space: nowrap;
     width: 80%;
     line-height: 40px;
->>>>>>> 1a29e0a... poop
     display: block;
     
     font-family: mr-eaves-modern, sans-serif;

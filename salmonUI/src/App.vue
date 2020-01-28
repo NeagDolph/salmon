@@ -80,16 +80,17 @@ export default {
 @import url('https://fonts.googleapis.com/css?family=Roboto&display=swap');
 @import url("https://use.typekit.net/qwh8nvj.css");
 
-<<<<<<< HEAD
-//ipp
-$background: #eeeeee;
-$main1: #364f6b;
-=======
 .trackerTitle {
   font-family: mr-eaves-modern, sans-serif;
   font-weight: 300;
   font-style: normal;
   font-size: 60px;
+}
+
+#student {
+  &>.row {
+    padding: 2em 7em;
+  }
 }
 
 #student {
