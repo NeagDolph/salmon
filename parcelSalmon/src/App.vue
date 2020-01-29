@@ -3,7 +3,7 @@
 
     <!-- Header -->
     <Header :loggedin="loggedin" :signFuncs="sharedData.signFuncs"/>
-    <Displaydata :classes="sharedData.classes" v-if="loggedin"/>
+    <Displaydata :classes="sharedData.classes"/>
 
     <!-- Teacher panel -->
     <div id="teacher" v-if="sharedData.teacher && loggedin" :style="loggedin ? '' : 'filter: blur(4px)'">
@@ -30,7 +30,6 @@
 </template>
 
 <script>
-import sidebar from "./components/sidebar.vue";
 import Header from "./components/header.vue";
 import Displaydata from "./components/data.vue";
 import secondrydata from "./components/secondrydata.vue";
@@ -56,7 +55,6 @@ export default {
     console.log("APP MOUNTED")
   },
   components: {
-    sidebar,
     Displaydata,
     classes,
     loginmodal,

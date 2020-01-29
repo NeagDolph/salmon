@@ -5,7 +5,7 @@
   "main": "main.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "parcel index.html -p 8081 --no-hmr"
+    "dev": "parcel src/index.html -p 8081 --no-hmr"
   },
   "alias": {
     "vue": "./node_modules/vue/dist/vue.common.js"
@@ -27,6 +27,7 @@
   },
   "devDependencies": {
     "@vue/component-compiler-utils": "^3.1.1",
+    "cssnano": "^4.1.10",
     "sass": "^1.25.1-test.1",
     "vue-template-compiler": "^2.6.11"
   }
