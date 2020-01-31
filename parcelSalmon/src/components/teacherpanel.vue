@@ -108,7 +108,7 @@ $green: #5cce89;
 $zees: main, popper1, popper2;
 
 #teacher {
-  height: auto !important;
+  height: 100% !important;
   margin: 15px 0;
   overflow-x: auto;
 }

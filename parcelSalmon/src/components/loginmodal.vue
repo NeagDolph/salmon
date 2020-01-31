@@ -13,7 +13,7 @@
           <!--Body-->
           <div class="modal-body text-center mb-1">
             <div class="text-center mt-4">
-              <loginButton :loggedin="loggedin" :signFuncs="signFuncs" />
+              <loginButton :loggedin="loggedin"/>
             </div>
           </div>
         </div>
@@ -27,7 +27,7 @@
 import loginButton from "./loginbutton.vue";
 
 export default {
-  props: ["loggedin", "signFuncs"],
+  props: ["loggedin"],
   components: { loginButton },
   computed: {
     animateClasses() {

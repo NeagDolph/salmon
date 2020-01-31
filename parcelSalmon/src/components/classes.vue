@@ -76,14 +76,14 @@ export default {
 
   .subtext {
     text-align: center;
-    font-size: 18px;
+    font-size: 21px;
     color: white;
     width: 85px;
     position: absolute;
     bottom: 10px;
     background: $red;
-    font-family: Roboto, sans-serif;
-    font-weight: 400;
+    font-family: futura-pt, sans-serif; 
+    font-weight: 400; 
     font-style: normal;
     line-height: 29px;
     padding-bottom: 0px;
@@ -100,9 +100,6 @@ export default {
   }
 
   &.greenclass {
-    .title {
-      padding-top: 15px;
-    }
 
     .subtext {
       width: 104px;

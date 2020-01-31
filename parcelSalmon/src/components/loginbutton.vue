@@ -5,12 +5,15 @@
 </template>
 
 <script>
+import { signFuncs } from '../js/auth.js';
+
+
 export default {
-  props: ["loggedin", "signFuncs"],
+  props: ["loggedin"],
   methods: {
     toggleSign() {
-      if (!this.$props.loggedin) this.$props.signFuncs.signIn();
-      else this.$props.signFuncs.signOut();
+      if (!this.loggedin) signFuncs.auth2.signIn().then(() => signFuncs.signedIn(signFuncs.auth2.currentUser.get(), true));
+      else signFuncs.signOut();
     }
   }
 };

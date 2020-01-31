@@ -34,7 +34,7 @@
 
 <script>
 import commentarea from "./commentarea.vue";
-import { sharedData, classnames } from "./../js/globals.js";
+import { shortnames, classnames } from "./../js/globals.js";
 
 export default {
   props: ["userdata", "editmodalopen", "tclasses"],
@@ -43,7 +43,7 @@ export default {
   },
   data() {
     return {
-      shortnames: sharedData.shortnames,
+      shortnames: shortnames,
       classnames: classnames
     };
   },

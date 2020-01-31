@@ -1,9 +1,10 @@
 import Vue from "vue";
 import Main from "./App.vue";
-import { userauth } from "./js/globals";
-import './js/auth';
-import './js/sockets';
+import axios from 'axios';
+import { classnames, userauth, apiurl } from "./js/globals";
 import './mixins/mixins'
+import socket from './js/sockets.js'
+import {authFunc} from './js/auth.js'
 
 // import 'bootstrap';
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -11,22 +12,63 @@ import "bootstrap/dist/css/bootstrap.min.css";
 export var app = new Vue({
   data() {
     return {
-      sharedData: {
-        logged: undefined,
-        signFuncs: {},
-        teacher: false,
-        admin: false,
-        users: [],
-        shortnames: ["Soc", "Wr", "Geo", "Stats", "LD", "PS", "Phy", "HRI", "CW", "UM", "Maker", "Pract"]
-      },
       userauth: userauth,
       editSelect: "",
       editState: false,
-      mainClasses: []
+      rawData: {},
+      rawUsers: {},
+      loggedin: {
+        loggedin: false,
+      },
+      preData: {
+        teacher: false,
+        admin: false,
+        users: [],
+        classes: [],
+        shortnames: ["Soc", "Wr", "Geo", "Stats", "LD", "PS", "Phy", "HRI", "CW", "UM", "Maker", "Pract"]
+      }
     }
   },
-  // template: '<Main :sharedData="sharedData" :loggedin="sharedData.logged" :editSelect="editSelect" :editState="editState" :mainClasses="mainClasses"/>',
-  // components: {Main}
-  render: h => h(Main, {props: {sharedData: this.sharedData, loggedin: this.sharedData.logged, editSelect: this.editSelect, editState: this.editState, mainClasses: this.mainClasses}})
+  methods: {
+  },
+  computed: {
+    sharedData() {
+      let obj = {...this.preData, ...this.rawData}
 
-}).$mount("#app");
+      if (this.rawData.classes) {
+        obj.classes = obj.classes.split("").map((val, idx) => {
+          return {"name": classnames[idx], "status": parseInt(val)}
+        });
+        this.loggedin.loggedin = true;
+      }
+
+      if (this.rawUsers.users) {
+        obj.users = this.rawUsers.users.map(el => {
+          return {email: el[0], name: el[1], userid: el[2], classes: el[3], comments: ["", "", "", "", "", "", "", "", "", ""]}
+        });
+
+        obj.tcomments = this.rawUsers.comments.map(el => {
+          let comment = {userid: el[0], class: el[1], comment: el[2]}
+          sharedData.users.find(x => x.userid == comment.userid).comments[parseInt(comment.class)] = comment.comment
+          return comment
+        });
+      }
+
+      this.preData = obj
+      return obj
+    }
+  },
+  template: '<Main :userAuth="userauth" :sharedData="sharedData" :loggedin="loggedin.loggedin" :editSelect="editSelect" :editState="editState"/>',
+  components: {Main},
+  el: "#app",
+  created() {
+    socket.on("update", data => {
+      this.rawData = data
+    });
+    socket.on("users", data => this.rawUsers = data);
+    socket.on("updatereq", () => axios.post(apiurl.data))
+    socket.on('connect', () => {
+      authFunc(this)
+    })
+  }
+})

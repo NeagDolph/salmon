@@ -1,19 +1,4 @@
 <template>
-<<<<<<< HEAD
-  <div class="col-4 col-xl-3">
-    <div class="row">
-      <div class="col-12 chart z-depth-1">
-        <div
-          :class="{yescampus: percent == 100, nocampus: percent < 100}"
-        >{{percent == 100 ? "You have offcampus" : "You don't have offcampus"}}</div>
-      </div>
-    </div>
-    <div class="row">
-      <div class="col-12 percentage z-depth-1">
-        <div class="balltext balltop">{{percent < 100 ? "Red" : "Green"}} in</div>
-        <div class="ball" :class="{yescampus: percent == 100}">{{percent < 100 ? ((100 - percent).toFixed(1)) : 100}}%</div>
-        <div class="balltext">Of classes</div>
-=======
   <div class="col-6 col-xl-6 col-lg-6">
     <div class="percent z-depth-half">
       <div class="row" style="width: 100%; margin: 0;">
@@ -53,12 +38,11 @@
               <br />
               <span class="subPercent" v-if="perc > 0 && perc < 100">
                 {{100 - perc}}%
-                <span class="offTarget">off target</span>
+                <span class="offTarget italicEaves">off target</span>
               </span>
             </div>
           </div>
         </div>
->>>>>>> 1a29e0a... poop
       </div>
     </div>
   </div>
@@ -66,14 +50,11 @@
 
 <script>
 export default {
-<<<<<<< HEAD
-=======
   data() {
     return {
       perc: 60
     };
   },
->>>>>>> 1a29e0a... poop
   props: ["classes"],
   methods: {},
   computed: {
@@ -98,20 +79,6 @@ $green: #5cce89;
 $sub: #d8f4f7;
 $main1: #364f6b;
 
-<<<<<<< HEAD
-.chart {
-  height: 42vh;
-  background: $main1;
-  border-bottom-left-radius: 2000px;
-  border-bottom-right-radius: 2000px;
-  font-family: 'Fanta';
-
-  div {
-    text-align: center;
-    font-size: 36px;
-    margin-top: 100px;
-  }
-=======
 @media screen and (max-width: 1100px) {
   #pieCont {
     width: calc(20em - 6vw) !important;
@@ -198,7 +165,6 @@ $main1: #364f6b;
     font-size: 36px;
     color: white;
   }
-=======
 
   &#pie2 {
     display: flex;
@@ -256,22 +222,14 @@ $main1: #364f6b;
     margin: 0 auto;
     height: 60px;
     font-size: 50px;
-    font-weight: 100;
-    bottom: -10px;
-    color: $accent2;
-    float: right;
-    display: block;
-    font-family: poynter-gothic-text, sans-serif;
-    font-style: normal;
-    font-weight: 300;
-    position: relative;
+
 
     .subPercent {
-      color: rgb(104, 104, 104);
-      font-family: poynter-gothic-text, serif;
-      font-style: normal;
-      font-weight: 300;
-      font-size: 20px;
+      // color: rgb(104, 104, 104);
+      // font-family: poynter-gothic-text, serif;
+      // font-style: normal;
+      // font-weight: 300;
+      // font-size: 20px;
 
       .offTarget {
         font-style: italic;
@@ -298,28 +256,17 @@ $main1: #364f6b;
   justify-content: center;
   padding-top: 15px;
   margin: 0 auto;
->>>>>>> 1a29e0a... poop
 
   .balltop {
     margin: 60px 0 10px;
   }
 
-<<<<<<< HEAD
-  .ball {
-    width: 11vw;
-    height: 11vw;
-    border-radius: 50%;
-    font-family: Roboto;
-    background: $sub;
-    margin: auto;
-=======
   &::after {
     content: "";
     z-index: 0;
     width: 12px;
     height: 28px;
     background: $accent2;
->>>>>>> 1a29e0a... poop
     display: block;
     color: $red;
     text-align: center;

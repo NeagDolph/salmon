@@ -16,7 +16,7 @@ from google.auth.transport import requests
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'schloopy'
-socketio = SocketIO(app, logger=True, async_mode='eventlet', engineio_logger=True, ping_timeout=60)
+socketio = SocketIO(app, logger=False, async_mode='eventlet', engineio_logger=False, ping_timeout=60, cors_allowed_origins="*")
 
 SESSION_TYPE = 'filesystem'
 app.config.from_object(__name__)
@@ -27,6 +27,8 @@ users = {}
 
 userids = []
 
+allowedThirdParty = ["neilagrawal1990@gmail.com"]
+
 
 admins = ["0cd38e5c-d75a-4990-84ce-ceb3b4beb1cb", "2dcdaab7-4f08-4f62-9ad1-488c5799cf54"]
 
@@ -35,44 +37,11 @@ classlist = ["Socratic", "Writing", "Geometry", "Statistics", "Life Design", "Pr
 conn = sqlite3.connect('sqlite.db', check_same_thread=False)
 
 
-@app.route("/")
-def slash():
-    email = session.get("email", False)
-    userid = session.get("userid", "")
-    teacher = session.get("teacher")
-
-
-    if userid:
-        cur = conn.cursor()
-        cur.execute('SELECT student FROM users WHERE userid=?', (userid,))
-
-        student = cur.fetchone()
-
-        if not student:
-            session.clear()
-            return redirect("/")
-
-        if 2 in student:
-            session["teacher"] = True
-            teacher = True
-        else:
-            session["teacher"] = False
-            teacher = False
-
-    if userid in admins:
-        return render_template("index.html", admin=True, teacher=True)
-
-
-    if teacher:
-        return render_template("index.html", teacher=True)
-
-    return render_template("index.html")
-
-
 @app.route("/api/glogin", methods=["POST"])
 def login():
     try:
         idtoken = request.json.get('idtoken', False)
+        email = request.json.get('email', False)
     except:
         idtoken = request.form.get('idtoken', False)
 
@@ -82,14 +51,19 @@ def login():
 
     userid = session.get("userid", False)
 
+    print("USER ID", userid)
+
     if userid:
         teacher = session.get("teacher")
 
         if teacher:
-            return jsonify(getdata(userid, True))
+            data = getdata(userid, True)
+            print("User: " + data.get("email", "") + ",  Connected as teacher")
+
+            return jsonify(data)
         else:
             cur = conn.cursor()
-            cur.execute('SELECT (student, name) FROM users WHERE userid=?', (userid,))
+            cur.execute('SELECT student, name FROM users WHERE userid=?', (userid,))
             data = cur.fetchone()
             session["teacher"] = True if 2 == data[0] else False
 
@@ -104,7 +78,7 @@ def login():
 
         cur = conn.cursor()
 
-        if hd != "alt.app":
+        if hd != "alt.app" and email not in allowedThirdParty:
             print("Not ATI google account")
             session.clear()
             return "notati", 403
@@ -148,10 +122,15 @@ def login():
 
 
 
-@app.route("/logout")
+@app.route("/api/logout")
 def logout():
-    session.clear()
-    return redirect("/")
+    try:
+        session['userid'] = False
+        session.clear()
+        print("LOGGING OUT")
+        return "success"
+    except:
+        return "error", 500
 
 
 @socketio.on('message')
@@ -169,6 +148,7 @@ def custom_style(filename):
 @app.route("/api/getdata", methods=["POST"])
 def ajaxgetclasses():
     userid = session.get("userid", False)
+    print("User requested data")
 
     if userid:
         emitupdate(userid)
@@ -248,6 +228,7 @@ def editclasses():
         conn.commit()
 
         updateteachers()
+        print("emitting update to userid")
         emitupdate(userid)
 
         return "success", 200
@@ -415,6 +396,7 @@ def updateteachers(getcomments=False):
 
 
 def emitupdate(userid):
+    print("emitting")
     socketio.emit('update', getdata(userid), room=userid)
 
 
@@ -424,7 +406,7 @@ def updatereq():
 
 def getdata(userid, extradata=False):
     cur = conn.cursor()
-    cur.execute('SELECT classes, student, teacherclasses FROM users WHERE userid=?', (userid, ))
+    cur.execute('SELECT classes, student, teacherclasses, email FROM users WHERE userid=?', (userid, ))
     data = cur.fetchone()
     print(data)
     if not data:
@@ -453,7 +435,7 @@ def getdata(userid, extradata=False):
                 cur.execute('SELECT userid, class, comment FROM comments')
                 commentlist = cur.fetchall()
 
-        return {'classes': classes, "teacher": student == 2, "users": userlist, "admin": userid in admins, "tclasses": teacherclasses, "comments": comments if len(comments) >= 1 else [], "tcomments": commentlist if extradata else []}
+        return {'classes': classes, "teacher": student == 2, "users": userlist, "admin": userid in admins, "tclasses": teacherclasses, "comments": comments if len(comments) >= 1 else [], "tcomments": commentlist if extradata else [], "email": data[3]}
     else:
         return "error"
 

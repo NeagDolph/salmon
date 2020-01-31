@@ -1,7 +1,10 @@
 import axios from 'axios';
-import { sharedData, userauth, apiurl } from './globals';
-import { parseData } from './parse';
+import { userauth, apiurl } from './globals';
 
+export var signFuncs = {};
+
+
+export var authFunc = app => {
 gapi.load("auth2", function() {
   gapi.auth2
     .init({
@@ -14,26 +17,29 @@ gapi.load("auth2", function() {
       ]
     })
     .then(auth2 => {
-      sharedData.signFuncs.signIn = () =>
-        auth2.signIn().then(() => signedIn(auth2.currentUser.get()));
+      signFuncs.auth2 = auth2;
+      signFuncs.signedIn = signedIn;
       if (auth2.isSignedIn.get()) signedIn(auth2.currentUser.get());
-      else sharedData.logged = false
+      else app.$set(app.loggedin, 'loggedin', false)
     });
 });
 
-let signedIn = googleUser => {
+let signedIn = (googleUser, first=false) => {
   userauth.authResponse = googleUser.getAuthResponse();
   userauth.profile = googleUser.getBasicProfile();
 
+  console.log("FIRST", first)
   axios
     .post(apiurl.login, { idtoken: userauth.authResponse.id_token })
-    .then(({data}) => {
-      if (data) {
-        console.log("AUTH", data)
-        parseData(data)
-        sharedData.logged = true
-      } else {
+    .then(data => {
+      if (data == "success") {
+        
+        app.$set(app.loggedin, 'loggedin', true)
         axios.post(apiurl.data);
+      } else {
+        app.rawData = data.data
+        axios.post(apiurl.data);
+        if (first) window.location.reload()
       }
     })
     .catch(e => {
@@ -41,9 +47,12 @@ let signedIn = googleUser => {
     });
 };
 
-sharedData.signFuncs.signOut = () => {
+signFuncs.signOut = () => {
   userauth.authInstance = gapi.auth2.getAuthInstance();
   userauth.authInstance.signOut().then(() => {
-    window.location.href = "/logout";
+    axios.get(apiurl.logout).then(() => {
+      window.location.reload()
+    })
   });
 };
+}

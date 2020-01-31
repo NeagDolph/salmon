@@ -95,7 +95,7 @@
   fill: #e3ebff;
 }
 .pieDataCont[data-v-dbd24a] {
-  width: 38%;
+  width: calc(100px + 12%);
   display: flex;
   height: auto;
   float: right;
@@ -107,26 +107,29 @@
   line-height: 20px;
   margin: 0 auto;
   height: 60px;
-  font-size: 50px;
+  font-size: 60px;
   font-weight: 100;
   bottom: -10px;
   color: #32326b;
   float: right;
   display: block;
-  font-family: poynter-gothic-text, sans-serif;
-  font-style: normal;
+  font-family: futura-pt, sans-serif;
   font-weight: 300;
+  font-style: normal;
   position: relative;
 }
-.pieDataCont .pieData .subPercent[data-v-dbd24a] {
+.pieDataCont .pieData .subpercent[data-v-dbd24a] {
   color: #686868;
-  font-family: poynter-gothic-text, serif;
+  font-family: futura-pt, sans-serif;
+  font-weight: 400;
   font-style: normal;
-  font-weight: 300;
-  font-size: 20px;
+  font-size: 24px;
 }
-.pieDataCont .pieData .subPercent .offTarget[data-v-dbd24a] {
+.pieDataCont .pieData .subpercent .offTarget[data-v-dbd24a] {
+  font-family: mr-eaves-modern, sans-serif;
+  font-weight: 300;
   font-style: italic;
+  font-size: 27px;
 }
 @media screen and (max-width: 1120px) {
 #pieCont[data-v-dbd24a]::after {
@@ -231,13 +234,13 @@
 }
 .redclass-item .subtext {
   text-align: center;
-  font-size: 18px;
+  font-size: 21px;
   color: white;
   width: 85px;
   position: absolute;
   bottom: 10px;
   background: #ff6961;
-  font-family: Roboto, sans-serif;
+  font-family: futura-pt, sans-serif;
   font-weight: 400;
   font-style: normal;
   line-height: 29px;
@@ -251,9 +254,6 @@
 .redclass-item.greenclass {
   background: #c2ffd7;
   border: 0;
-}
-.redclass-item.greenclass .title {
-  padding-top: 15px;
 }
 .redclass-item.greenclass .subtext {
   width: 104px;
@@ -507,7 +507,7 @@ to {
 }
 @charset "UTF-8";@-webkit-keyframes bounceOut{20%{-webkit-transform:scale3d(.9,.9,.9);transform:scale3d(.9,.9,.9)}50%,55%{opacity:1;-webkit-transform:scale3d(1.1,1.1,1.1);transform:scale3d(1.1,1.1,1.1)}to{opacity:0;-webkit-transform:scale3d(.3,.3,.3);transform:scale3d(.3,.3,.3)}}@keyframes bounceOut{20%{-webkit-transform:scale3d(.9,.9,.9);transform:scale3d(.9,.9,.9)}50%,55%{opacity:1;-webkit-transform:scale3d(1.1,1.1,1.1);transform:scale3d(1.1,1.1,1.1)}to{opacity:0;-webkit-transform:scale3d(.3,.3,.3);transform:scale3d(.3,.3,.3)}}.bounceOut{-webkit-animation-duration:.75s;animation-duration:.75s;-webkit-animation-name:bounceOut;animation-name:bounceOut}@keyframes bounceIn{0%,20%,40%,60%,80%,to{-webkit-animation-timing-function:cubic-bezier(.215,.61,.355,1);animation-timing-function:cubic-bezier(.215,.61,.355,1)}0%{opacity:0;-webkit-transform:scale3d(.3,.3,.3);transform:scale3d(.3,.3,.3)}20%{-webkit-transform:scale3d(1.1,1.1,1.1);transform:scale3d(1.1,1.1,1.1)}40%{-webkit-transform:scale3d(.9,.9,.9);transform:scale3d(.9,.9,.9)}60%{opacity:1;-webkit-transform:scale3d(1.03,1.03,1.03);transform:scale3d(1.03,1.03,1.03)}80%{-webkit-transform:scale3d(.97,.97,.97);transform:scale3d(.97,.97,.97)}to{opacity:1;-webkit-transform:scaleX(1);transform:scaleX(1)}}.bounceIn{-webkit-animation-duration:.75s;animation-duration:.75s;-webkit-animation-name:bounceIn;animation-name:bounceIn}
 #teacher {
-  height: auto !important;
+  height: 100% !important;
   margin: 15px 0;
   overflow-x: auto;
 }

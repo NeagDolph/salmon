@@ -2,8 +2,7 @@
   <div id="main">
 
     <!-- Header -->
-    <Header :loggedin="loggedin" :signFuncs="sharedData.signFuncs"/>
-    <Displaydata :classes="sharedData.classes"/>
+    <Header :loggedin="loggedin" :signFuncs="{signIn: signIn, signOut: signOut}" v-if="loggedin" :userAuth="userAuth"/>
 
     <!-- Teacher panel -->
     <div id="teacher" v-if="sharedData.teacher && loggedin" :style="loggedin ? '' : 'filter: blur(4px)'">
@@ -24,7 +23,7 @@
     </div>
 
 
-    <loginmodal v-if="loggedin === false" :loggedin="loggedin" :signFuncs="sharedData.signFuncs"/>
+    <loginmodal v-if="loggedin === false" :loggedin="loggedin" :signFuncs="{signIn: signIn, signOut: signOut}"/>
     <modaledit :userdata="editSelect" :tclasses="sharedData.tclasses" :editmodalopen="editState"/>
   </div>
 </template>
@@ -42,7 +41,7 @@ import './css/box-shadow.min.css';
 
 export default {
   name: "app",
-  props: ["loggedin", "sharedData", "editSelect", "editState", "mainClasses"],
+  props: ["loggedin", "sharedData", "editSelect", "editState", "userAuth", "signIn", "signOut"],
   data() {
     return {
       // loggedin: true

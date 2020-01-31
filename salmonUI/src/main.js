@@ -12,7 +12,7 @@ export let app = new Vue({
   data: {
     sharedData: sharedData,
     userauth: userauth,
-    editSelect: "",
+    editSelect: " ",
     editState: false,
     classes: []
   },

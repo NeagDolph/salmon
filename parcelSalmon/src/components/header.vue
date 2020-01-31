@@ -3,7 +3,7 @@
     <div class="row">
       <div class="col-12">
         <div id="header" class="z-depth-1">
-          <loginButton :loggedin="loggedin" :signFuncs="signFuncs" class="loginButton"/>
+          <loginButton :loggedin="loggedin" class="loginButton"/>
           <div class="nightMode"></div>
         </div>
       </div>
@@ -15,7 +15,7 @@
 import loginButton from "./loginbutton.vue";
 
 export default {
-  props: ["loggedin", "signFuncs"],
+  props: ["loggedin"],
   components: {
     loginButton
   }

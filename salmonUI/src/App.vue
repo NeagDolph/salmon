@@ -1,11 +1,5 @@
 <template>
   <div id="app">
-<<<<<<< HEAD
-    <div class="row" :style="loggedin ? '' : 'filter: blur(4px)'">
-      <sidebar :loggedin="loggedin" :signFuncs="sharedData.signFuncs"/>
-      <div class="col-3 col-xl-5 midpanel">
-        <teacherpanel v-if="sharedData.teacher" :sharedData="sharedData"/>
-=======
 
     <!-- Header -->
     <Header :loggedin="loggedin" :signFuncs="sharedData.signFuncs" v-if="loggedin"/>
@@ -25,7 +19,6 @@
         <displaydata :classes="sharedData.classes"/>
         <secondrydata :classes="sharedData.classes"/>
         <classes :classes="sharedData.classes" />
->>>>>>> 1a29e0a... poop
       </div>
       <displaydata v-if="loggedin" :classes="sharedData.classes"/>
       <classes v-if="loggedin" :classes="sharedData.classes" />
@@ -57,7 +50,8 @@ export default {
   methods: {
   },
   mounted() {
-    console.log("APP MOUNTED")
+    console.log("APP MOU")
+    console.log("PEEPU")
   },
   components: {
     sidebar,
@@ -71,14 +65,13 @@ export default {
 </script>
 
 <style lang="scss">
-@import url("https://fonts.googleapis.com/css?family=Roboto:300,400,500");
-@import url("https://fonts.googleapis.com/icon?family=Material+Icons");
-@font-face {
-  font-family: "Fanta";
-  src: url("https://atischool.net/static/font.ttf") format('truetype');
+
+
+.italicEaves {
+  font-family: mr-eaves-modern, sans-serif;
+  font-weight: 300;
+  font-style: italic;
 }
-@import url('https://fonts.googleapis.com/css?family=Roboto&display=swap');
-@import url("https://use.typekit.net/qwh8nvj.css");
 
 .trackerTitle {
   font-family: mr-eaves-modern, sans-serif;
@@ -104,7 +97,6 @@ export default {
     padding: 2em 7em;
   }
 }
->>>>>>> 1a29e0a... poop
 
 $sub: #d8f4f7;
 
