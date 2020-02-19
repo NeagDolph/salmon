@@ -5,8 +5,6 @@ import { classnames, userauth, apiurl } from "./js/globals";
 import './mixins/mixins'
 import socket from './js/sockets.js'
 import {authFunc} from './js/auth.js'
-
-// import 'bootstrap';
 import "bootstrap/dist/css/bootstrap.min.css";
 
 export var app = new Vue({
@@ -42,17 +40,17 @@ export var app = new Vue({
         this.loggedin.loggedin = true;
       }
 
-      if (this.rawUsers.users) {
-        obj.users = this.rawUsers.users.map(el => {
+      if (this.rawData.users) obj.users = this.rawData.users.map(el => {
           return {email: el[0], name: el[1], userid: el[2], classes: el[3], comments: ["", "", "", "", "", "", "", "", "", ""]}
         });
 
-        obj.tcomments = this.rawUsers.comments.map(el => {
-          let comment = {userid: el[0], class: el[1], comment: el[2]}
-          sharedData.users.find(x => x.userid == comment.userid).comments[parseInt(comment.class)] = comment.comment
-          return comment
-        });
-      }
+      console.log("RAWDATCOMM", this.rawData)
+
+      if ((this.rawData.tcomments | []).length >= 1) obj.tcomments = this.rawData.tcomments.map(el => {
+        let comment = {userid: el[0], class: el[1], comment: el[2]}
+        this.rawData.users.find(x => x.userid == comment.userid).comments[parseInt(comment.class)] = comment.comment
+        return comment
+      });
 
       this.preData = obj
       return obj
@@ -65,7 +63,9 @@ export var app = new Vue({
     socket.on("update", data => {
       this.rawData = data
     });
-    socket.on("users", data => this.rawUsers = data);
+    socket.on("users", data => {
+      this.rawUsers = data
+    });
     socket.on("updatereq", () => axios.post(apiurl.data))
     socket.on('connect', () => {
       authFunc(this)

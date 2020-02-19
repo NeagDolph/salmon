@@ -1,5 +1,5 @@
 <template>
-  <div class="loginmodal row">
+  <div class="loginmodal">
     <div class="col-3 col-sm-3 mx-auto d-block" :class="animateClasses" tabindex="-1" aria-hidden="true">
       <div class="modal-dialog cascading-modal modal-avatar modal-sm">
         <!--Content-->

@@ -30,7 +30,7 @@ userids = []
 allowedThirdParty = ["neilagrawal1990@gmail.com"]
 
 
-admins = ["0cd38e5c-d75a-4990-84ce-ceb3b4beb1cb", "2dcdaab7-4f08-4f62-9ad1-488c5799cf54"]
+admins = ["0cd38e5c-d75a-4990-84ce-ceb3b4beb1cb", "2dcdaab7-4f08-4f62-9ad1-488c5799cf54", "8e579d65-04a3-479c-9268-4ab928237ee5"]
 
 classlist = ["Socratic", "Writing", "Geometry", "Statistics", "Life Design", "Problem Solving", "Physics", "HRI", "Creative Writing", "Urban Movement", "Makerspace", "Practicum"]
 
@@ -136,14 +136,7 @@ def logout():
 @socketio.on('message')
 def handle_message(message):
     print('received message: ' + message)
-
-@app.route('/scripts/<path:filename>')
-def custom_script(filename):
-    return send_from_directory("/root/salmon/scripts", filename)
-
-@app.route('/styles/<path:filename>')
-def custom_style(filename):
-    return send_from_directory("/root/salmon/styles", filename)
+    
 
 @app.route("/api/getdata", methods=["POST"])
 def ajaxgetclasses():

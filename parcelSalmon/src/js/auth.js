@@ -28,7 +28,6 @@ let signedIn = (googleUser, first=false) => {
   userauth.authResponse = googleUser.getAuthResponse();
   userauth.profile = googleUser.getBasicProfile();
 
-  console.log("FIRST", first)
   axios
     .post(apiurl.login, { idtoken: userauth.authResponse.id_token })
     .then(data => {

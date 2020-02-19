@@ -2,35 +2,38 @@
   <div id="main">
 
     <!-- Header -->
-    <Header :loggedin="loggedin" :signFuncs="{signIn: signIn, signOut: signOut}" v-if="loggedin" :userAuth="userAuth"/>
+    <Header :loggedin="loggedin" :style="loggedin ? '' : 'filter: blur(6px)'" :userAuth="userAuth"/>
 
-    <!-- Teacher panel -->
-    <div id="teacher" v-if="sharedData.teacher && loggedin" :style="loggedin ? '' : 'filter: blur(4px)'">
-      <div class="row">
-        <div class="col-3 col-xl-5 midpanel">
-          <teacherpanel :sharedData="sharedData"/>
+    <!-- Main panel -->
+    <div id="student" class="pageContainer">
+
+      <!-- Student -->
+      <div class="row mainRow" v-if="!sharedData.teacher" :style="loggedin ? '' : 'filter: blur(8px)'">
+        <div class="col-6 col-xl-6 col-lg-6">
+          <displayData :classes="sharedData.classes" />
+          <adminPanel v-if="sharedData.admin"/>
         </div>
-      </div>
-    </div>
-
-    <!-- Student panel -->
-    <div id="student" v-if="!sharedData.teacher && loggedin" :style="loggedin ? '' : 'filter: blur(4px)'">
-      <div class="row mainRow">
-        <Displaydata :classes="sharedData.classes"/>
         <secondrydata :classes="sharedData.classes"/>
-        <classes :classes="sharedData.classes" />
+        <classes :classes="sharedData.classes" :comments="sharedData.comments" :loggedin="loggedin"/>
       </div>
+
+      <!-- Teacher -->
+      <div class="row mainRow" v-if="sharedData.teacher && loggedin">
+        <teacherpanel :sharedData="sharedData"/>
+      </div>
+
     </div>
 
 
-    <loginmodal v-if="loggedin === false" :loggedin="loggedin" :signFuncs="{signIn: signIn, signOut: signOut}"/>
+    <loginmodal v-if="loggedin === false" :loggedin="loggedin"/>
     <modaledit :userdata="editSelect" :tclasses="sharedData.tclasses" :editmodalopen="editState"/>
   </div>
 </template>
 
 <script>
 import Header from "./components/header.vue";
-import Displaydata from "./components/data.vue";
+import displayData from "./components/data.vue";
+import adminPanel from "./components/adminPanel.vue";
 import secondrydata from "./components/secondrydata.vue";
 import classes from "./components/classes.vue";
 import loginmodal from "./components/loginmodal.vue";
@@ -45,16 +48,12 @@ export default {
   data() {
     return {
       // loggedin: true
-      classes: []
+      classes: [],
     };
   },
-  methods: {
-  },
-  mounted() {
-    console.log("APP MOUNTED")
-  },
   components: {
-    Displaydata,
+    displayData,
+    adminPanel,
     classes,
     loginmodal,
     teacherpanel,
@@ -83,7 +82,7 @@ export default {
   font-size: 60px;
 }
 
-#student {
+.pageContainer {
   &>.row {
     padding: 2em 7em;
   }
@@ -94,7 +93,7 @@ export default {
 }
 
 @media screen and (min-width: 1400px) {
-  #student > .row {
+  .pageContainer > .row {
     padding: 2em 12em;
   }
 

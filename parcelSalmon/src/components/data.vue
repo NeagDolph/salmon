@@ -1,9 +1,8 @@
 <template>
-  <div class="col-6 col-xl-6 col-lg-6">
-    <div class="percent z-depth-half">
+    <div class="percent z-depth-half" ref="mainPercent">
       <div class="row" style="width: 100%; margin: 0;">
         <div class="col-12 px-0 mx-0">
-          <div class="statusCont" @click="sup()">
+          <div class="statusCont">
             <img class="statusMarker" src="https://atischool.net/static/x.svg" v-if="percent < 100"/>
             <img class="statusMarker" src="https://atischool.net/static/check.svg" v-if="percent >= 100"/>
           </div>
@@ -35,22 +34,11 @@
         </div>
       </div>
     </div>
-  </div>
 </template>
 
 <script>
 export default {
-  data() {
-    return {
-      perc: 60
-    };
-  },
   props: ["classes"],
-  methods: {
-    sup() {
-      console.log("oh", this.percent)
-    }
-  },
   computed: {
     percent() {
       return parseInt(
@@ -94,6 +82,7 @@ export default {
 
 .statusCont {
   width: 29%;
+  user-select: none;
   .statusMarker {
     width: 3em;
     height: 3em;
@@ -152,6 +141,7 @@ export default {
     width: fit-content;
     line-height: 20px;
     margin: 0 auto;
+    user-select: none;
     height: 60px;
     font-size: 60px;
     font-weight: 100;

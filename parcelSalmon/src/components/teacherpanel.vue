@@ -1,7 +1,6 @@
 <template>
-<div data-simplebar data-simplebar-auto-hide="false" style="overflow-x: visible;">
-  <div id="teacher" class="row">
-    <div v-for="(user, index) in sharedData.users" :key="user.userid" class="col-12 useritemcol">
+  <div id="teacher" class="col-4">
+    <div v-for="(user, index) in sharedData.users" :key="user.userid" class="useritemcol">
       <Popper
         :trigger="'hover'"
         :enter-active-class="'bounceIn'"
@@ -13,7 +12,7 @@
         :options="{
           placement: 'right-start'
         }" 
-        class="useritemspan mb-4 col-10 col-xl-5 mx-auto z-depth-1"
+        class="useritemspan mb-4 z-depth-1"
       >
         <div class="popper z-depth-2">
           <div
@@ -44,7 +43,6 @@
       </Popper>
     </div>
   </div>
-</div>
 </template>
 
 <script>

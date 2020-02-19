@@ -13905,7 +13905,6 @@ var authFunc = function authFunc(app) {
     var first = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
     _globals.userauth.authResponse = googleUser.getAuthResponse();
     _globals.userauth.profile = googleUser.getBasicProfile();
-    console.log("FIRST", first);
 
     _axios.default.post(_globals.apiurl.login, {
       idtoken: _globals.userauth.authResponse.id_token
@@ -14123,20 +14122,8 @@ exports.default = void 0;
 //
 //
 //
-//
-//
 var _default = {
-  data: function data() {
-    return {
-      perc: 60
-    };
-  },
   props: ["classes"],
-  methods: {
-    sup: function sup() {
-      console.log("oh", this.percent);
-    }
-  },
   computed: {
     percent: function percent() {
       return parseInt((this.classes.reduce(function (tot, el) {
@@ -14158,39 +14145,30 @@ exports.default = _default;
   var _vm = this
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
-  return _c("div", { staticClass: "col-6 col-xl-6 col-lg-6" }, [
-    _c("div", { staticClass: "percent z-depth-half" }, [
+  return _c(
+    "div",
+    { ref: "mainPercent", staticClass: "percent z-depth-half" },
+    [
       _c(
         "div",
         { staticClass: "row", staticStyle: { width: "100%", margin: "0" } },
         [
           _c("div", { staticClass: "col-12 px-0 mx-0" }, [
-            _c(
-              "div",
-              {
-                staticClass: "statusCont",
-                on: {
-                  click: function($event) {
-                    return _vm.sup()
-                  }
-                }
-              },
-              [
-                _vm.percent < 100
-                  ? _c("img", {
-                      staticClass: "statusMarker",
-                      attrs: { src: "https://atischool.net/static/x.svg" }
-                    })
-                  : _vm._e(),
-                _vm._v(" "),
-                _vm.percent >= 100
-                  ? _c("img", {
-                      staticClass: "statusMarker",
-                      attrs: { src: "https://atischool.net/static/check.svg" }
-                    })
-                  : _vm._e()
-              ]
-            )
+            _c("div", { staticClass: "statusCont" }, [
+              _vm.percent < 100
+                ? _c("img", {
+                    staticClass: "statusMarker",
+                    attrs: { src: "https://atischool.net/static/x.svg" }
+                  })
+                : _vm._e(),
+              _vm._v(" "),
+              _vm.percent >= 100
+                ? _c("img", {
+                    staticClass: "statusMarker",
+                    attrs: { src: "https://atischool.net/static/check.svg" }
+                  })
+                : _vm._e()
+            ])
           ]),
           _vm._v(" "),
           _c("div", { staticClass: "col-12" }, [
@@ -14236,17 +14214,15 @@ exports.default = _default;
           _c("div", { staticClass: "col-12 px-0 mx-0" }, [
             _c("div", { staticClass: "pieDataCont" }, [
               _c("div", { staticClass: "pieData" }, [
-                _vm._v(
-                  "\n            " + _vm._s(_vm.percent) + "%\n            "
-                ),
+                _vm._v("\n          " + _vm._s(_vm.percent) + "%\n          "),
                 _c("br"),
                 _vm._v(" "),
                 _vm.percent < 100
                   ? _c("span", { staticClass: "subpercent" }, [
                       _vm._v(
-                        "\n              " +
+                        "\n            " +
                           _vm._s(100 - _vm.percent) +
-                          "%\n              "
+                          "%\n            "
                       ),
                       _c("span", { staticClass: "offTarget" }, [
                         _vm._v("off target")
@@ -14258,8 +14234,8 @@ exports.default = _default;
           ])
         ]
       )
-    ])
-  ])
+    ]
+  )
 }
 var staticRenderFns = []
 render._withStripped = true
@@ -14269,6 +14245,87 @@ render._withStripped = true
             staticRenderFns: staticRenderFns,
             _compiled: true,
             _scopeId: "data-v-dbd24a",
+            functional: undefined
+          };
+        })());
+      
+},{}],"components/adminPanel.vue":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+var _default = {
+  data: function data() {
+    return {
+      buttonHeight: 0
+    };
+  },
+  props: ["classes"],
+  methods: {},
+  computed: {}
+};
+exports.default = _default;
+        var $2085c5 = exports.default || module.exports;
+      
+      if (typeof $2085c5 === 'function') {
+        $2085c5 = $2085c5.options;
+      }
+    
+        /* template */
+        Object.assign($2085c5, (function () {
+          var render = function() {
+  var _vm = this
+  var _h = _vm.$createElement
+  var _c = _vm._self._c || _h
+  return _c(
+    "div",
+    { ref: "bottomPercent", staticClass: "percent z-depth-half" },
+    [_vm._m(0)]
+  )
+}
+var staticRenderFns = [
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c(
+      "div",
+      { staticClass: "row", staticStyle: { width: "100%", margin: "0" } },
+      [
+        _c("div", { staticClass: "col-12 px-0 mx-0" }),
+        _vm._v(" "),
+        _c("div", { staticClass: "col-12" }),
+        _vm._v(" "),
+        _c("div", { staticClass: "col-12 px-0 mx-0" })
+      ]
+    )
+  }
+]
+render._withStripped = true
+
+          return {
+            render: render,
+            staticRenderFns: staticRenderFns,
+            _compiled: true,
+            _scopeId: "data-v-2085c5",
             functional: undefined
           };
         })());
@@ -14290,10 +14347,30 @@ exports.default = void 0;
 //
 //
 //
+//
+//
 var _default = {
   props: ["classes"],
   methods: {},
-  computed: {}
+  computed: {
+    redclassArray: function redclassArray() {
+      return this.classes.map(function (e) {
+        if (!e.status) return e.name;else return 7;
+      }).filter(function (e) {
+        if (e == 7) return false;else return true;
+      });
+    },
+    redclasses: function redclasses() {
+      return this.classes.reduce(function (tot, el) {
+        return tot + (!el.status ? 1 : 0);
+      }, 0);
+    },
+    percent: function percent() {
+      return parseInt((this.classes.reduce(function (tot, el) {
+        return tot + el.status;
+      }, 0) / this.classes.length * 100).toFixed(1));
+    }
+  }
 };
 exports.default = _default;
         var $57fcb2 = exports.default || module.exports;
@@ -14308,22 +14385,29 @@ exports.default = _default;
   var _vm = this
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
-  return _vm._m(0)
-}
-var staticRenderFns = [
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c("div", { staticClass: "col-3 col-xl-3 col-lg-3" }, [
-      _c("div", { staticClass: "percentage z-depth-half" }, [
-        _vm._v("\n    guess what\n    "),
-        _c("br"),
-        _vm._v("\n    you're a failiure\n  ")
-      ])
+  return _c("div", { staticClass: "col-3 col-xl-3 col-lg-3" }, [
+    _c("div", { staticClass: "percentage z-depth-half" }, [
+      _c("div", { staticClass: "targetHeader" }, [
+        _c(
+          "p",
+          { class: { green: _vm.redclasses <= 0, red: _vm.redclasses >= 1 } },
+          [_vm._v(_vm._s(_vm.redclasses))]
+        ),
+        _vm._v(" off target courses")
+      ]),
+      _vm._v(" "),
+      _c(
+        "div",
+        { staticClass: "targetBody" },
+        _vm._l(_vm.redclassArray, function(className) {
+          return _c("p", { key: className }, [_vm._v(_vm._s(className))])
+        }),
+        0
+      )
     ])
-  }
-]
+  ])
+}
+var staticRenderFns = []
 render._withStripped = true
 
           return {
@@ -14359,11 +14443,32 @@ exports.default = void 0;
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 var _default = {
-  props: ["classes"],
+  props: ["classes", "comments", "loggedin"],
   methods: {
-    titleSize: function titleSize() {
-      return "font-size: 50px;";
+    getComment: function getComment(idx) {
+      var returnComment = this.comments.find(function (e) {
+        return e[0] == idx;
+      });
+      if (returnComment) return returnComment[1];else return false;
     }
   },
   computed: {
@@ -14389,32 +14494,106 @@ exports.default = _default;
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
   return _c("div", { staticClass: "col-3 col-lg-3 col-xl-3 classescontcont" }, [
-    _c(
-      "div",
-      { staticClass: "classescont" },
-      _vm._l(_vm.sorted, function(classItem) {
-        return _c(
+    !_vm.loggedin
+      ? _c(
           "div",
-          {
-            key: classItem.name,
-            staticClass: "redclass-item mx-auto z-depth-half",
-            class: { greenclass: classItem.status }
-          },
-          [
-            _c(
+          { staticClass: "classescont" },
+          _vm._l([1, 2, 3, 4, 5, 6], function(i) {
+            return _c(
               "div",
-              { staticClass: "title", style: _vm.titleSize(classItem.name) },
-              [_vm._v(_vm._s(classItem.name))]
-            ),
-            _vm._v(" "),
-            _c("span", { staticClass: "subtext" }, [
-              _vm._v(_vm._s(classItem.status ? "Completed" : "Missing"))
-            ])
-          ]
+              {
+                key: i,
+                staticClass: "redclass-item mx-auto z-depth-half",
+                class: { greenclass: i % 2 == 1 }
+              },
+              [
+                _c(
+                  "div",
+                  {
+                    staticClass: "title",
+                    staticStyle: { "font-size": "50px" }
+                  },
+                  [_vm._v("Lorem Ipsum")]
+                ),
+                _vm._v(" "),
+                _c("span", { staticClass: "subtext" }, [
+                  _vm._v(_vm._s(i % 2 == 1 ? "Completed" : "Missing"))
+                ])
+              ]
+            )
+          }),
+          0
         )
-      }),
-      0
-    )
+      : _vm._e(),
+    _vm._v(" "),
+    _vm.loggedin
+      ? _c(
+          "div",
+          { staticClass: "classescont" },
+          _vm._l(_vm.sorted, function(classItem, idx) {
+            return _c(
+              "div",
+              {
+                key: classItem.name,
+                staticClass: "redclass-item mx-auto z-depth-half",
+                class: { greenclass: classItem.status }
+              },
+              [
+                _vm.getComment(idx)
+                  ? _c("div", { staticClass: "commentPopper" }, [
+                      _c("div", { staticClass: "commentBody z-depth-half" }, [
+                        _vm._v(_vm._s(_vm.getComment(idx)))
+                      ])
+                    ])
+                  : _vm._e(),
+                _vm._v(" "),
+                _c(
+                  "div",
+                  {
+                    staticClass: "title",
+                    staticStyle: { "font-size": "50px" }
+                  },
+                  [_vm._v(_vm._s(classItem.name))]
+                ),
+                _vm._v(" "),
+                _c("span", { staticClass: "subtext" }, [
+                  _vm._v(_vm._s(classItem.status ? "Completed" : "Missing"))
+                ]),
+                _vm._v(" "),
+                _vm.getComment(idx)
+                  ? _c("div", { staticClass: "commentIcon" }, [
+                      _c(
+                        "svg",
+                        {
+                          staticClass: "svg-inline--fa fa-comment fa-w-16",
+                          attrs: {
+                            "aria-hidden": "true",
+                            focusable: "false",
+                            "data-prefix": "fas",
+                            "data-icon": "comment",
+                            role: "img",
+                            xmlns: "http://www.w3.org/2000/svg",
+                            viewBox: "0 0 512 512"
+                          }
+                        },
+                        [
+                          _c("path", {
+                            attrs: {
+                              fill: "currentColor",
+                              d:
+                                "M256 32C114.6 32 0 125.1 0 240c0 49.6 21.4 95 57 130.7C44.5 421.1 2.7 466 2.2 466.5c-2.2 2.3-2.8 5.7-1.5 8.7S4.8 480 8 480c66.3 0 116-31.8 140.6-51.4 32.7 12.3 69 19.4 107.4 19.4 141.4 0 256-93.1 256-208S397.4 32 256 32z"
+                            }
+                          })
+                        ]
+                      )
+                    ])
+                  : _vm._e()
+              ]
+            )
+          }),
+          0
+        )
+      : _vm._e()
   ])
 }
 var staticRenderFns = []
@@ -14490,7 +14669,7 @@ exports.default = _default;
   var _vm = this
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
-  return _c("div", { staticClass: "loginmodal row" }, [
+  return _c("div", { staticClass: "loginmodal" }, [
     _c(
       "div",
       {
@@ -31596,8 +31775,6 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 //
 //
 //
-//
-//
 _vue.default.use(_vTooltip.default);
 
 var _default = {
@@ -31658,183 +31835,168 @@ exports.default = _default;
   var _c = _vm._self._c || _h
   return _c(
     "div",
-    {
-      staticStyle: { "overflow-x": "visible" },
-      attrs: { "data-simplebar": "", "data-simplebar-auto-hide": "false" }
-    },
-    [
-      _c(
+    { staticClass: "col-4", attrs: { id: "teacher" } },
+    _vm._l(_vm.sharedData.users, function(user, index) {
+      return _c(
         "div",
-        { staticClass: "row", attrs: { id: "teacher" } },
-        _vm._l(_vm.sharedData.users, function(user, index) {
-          return _c(
-            "div",
-            { key: user.userid, staticClass: "col-12 useritemcol" },
+        { key: user.userid, staticClass: "useritemcol" },
+        [
+          _c(
+            "Popper",
+            {
+              staticClass: "useritemspan mb-4 z-depth-1",
+              attrs: {
+                trigger: "hover",
+                "enter-active-class": "bounceIn",
+                "leave-active-class": "bounceOut",
+                "append-to-body": true,
+                "delay-on-mouse-out": 100,
+                "visible-arrow": false,
+                "x-placement": "right-start",
+                options: {
+                  placement: "right-start"
+                }
+              }
+            },
             [
               _c(
-                "Popper",
-                {
-                  staticClass:
-                    "useritemspan mb-4 col-10 col-xl-5 mx-auto z-depth-1",
-                  attrs: {
-                    trigger: "hover",
-                    "enter-active-class": "bounceIn",
-                    "leave-active-class": "bounceOut",
-                    "append-to-body": true,
-                    "delay-on-mouse-out": 100,
-                    "visible-arrow": false,
-                    "x-placement": "right-start",
-                    options: {
-                      placement: "right-start"
-                    }
-                  }
-                },
-                [
-                  _c(
-                    "div",
-                    { staticClass: "popper z-depth-2" },
-                    _vm._l(_vm.filteredClasses[index], function(status, idx) {
-                      return _c(
-                        "div",
-                        {
-                          key: idx,
-                          staticClass: "popperBlock",
-                          class: {
-                            red: status === "0",
-                            green: status === "1",
-                            cannot: status === "2"
-                          },
-                          on: {
-                            click: function($event) {
-                              $event.stopPropagation()
-                              return _vm.change(user, idx, index)
-                            }
-                          }
-                        },
-                        [
-                          _vm._v(
-                            "\n            " +
-                              _vm._s(_vm.sharedData.shortnames[idx]) +
-                              "\n            "
-                          ),
-                          _c(
-                            "div",
-                            {
-                              directives: [
-                                {
-                                  name: "tooltip",
-                                  rawName: "v-tooltip",
-                                  value: {
-                                    content:
-                                      _vm.getComment(user, idx) +
-                                      "<span class='editmsg'>Edit (click)</span>",
-                                    loadingContent:
-                                      "Loading...<br/><span class='editmsg'>Edit (click)</span>",
-                                    offset: "13px"
-                                  },
-                                  expression:
-                                    "{content: getComment(user, idx) + '<span class=\\'editmsg\\'>Edit (click)</span>', loadingContent: 'Loading...<br/><span class=\\'editmsg\\'>Edit (click)</span>', offset: '13px'}"
-                                }
-                              ],
-                              staticClass: "commentIcon",
-                              on: {
-                                click: function($event) {
-                                  $event.stopPropagation()
-                                  $event.preventDefault()
-                                  return _vm.openModal(user)
-                                }
-                              }
-                            },
-                            [
-                              _c(
-                                "svg",
-                                {
-                                  staticClass:
-                                    "svg-inline--fa fa-comment fa-w-16",
-                                  attrs: {
-                                    "aria-hidden": "true",
-                                    focusable: "false",
-                                    "data-prefix": "fas",
-                                    "data-icon": "comment",
-                                    role: "img",
-                                    xmlns: "http://www.w3.org/2000/svg",
-                                    viewBox: "0 0 512 512"
-                                  }
-                                },
-                                [
-                                  _c("path", {
-                                    attrs: {
-                                      fill: "currentColor",
-                                      d:
-                                        "M256 32C114.6 32 0 125.1 0 240c0 49.6 21.4 95 57 130.7C44.5 421.1 2.7 466 2.2 466.5c-2.2 2.3-2.8 5.7-1.5 8.7S4.8 480 8 480c66.3 0 116-31.8 140.6-51.4 32.7 12.3 69 19.4 107.4 19.4 141.4 0 256-93.1 256-208S397.4 32 256 32z"
-                                    }
-                                  })
-                                ]
-                              )
-                            ]
-                          )
-                        ]
-                      )
-                    }),
-                    0
-                  ),
-                  _vm._v(" "),
-                  _c(
+                "div",
+                { staticClass: "popper z-depth-2" },
+                _vm._l(_vm.filteredClasses[index], function(status, idx) {
+                  return _c(
                     "div",
                     {
-                      staticClass: "reference",
-                      attrs: { slot: "reference" },
-                      slot: "reference"
+                      key: idx,
+                      staticClass: "popperBlock",
+                      class: {
+                        red: status === "0",
+                        green: status === "1",
+                        cannot: status === "2"
+                      },
+                      on: {
+                        click: function($event) {
+                          $event.stopPropagation()
+                          return _vm.change(user, idx, index)
+                        }
+                      }
                     },
                     [
+                      _vm._v(
+                        "\n          " +
+                          _vm._s(_vm.sharedData.shortnames[idx]) +
+                          "\n          "
+                      ),
                       _c(
                         "div",
                         {
-                          staticClass: "useritem",
+                          directives: [
+                            {
+                              name: "tooltip",
+                              rawName: "v-tooltip",
+                              value: {
+                                content:
+                                  _vm.getComment(user, idx) +
+                                  "<span class='editmsg'>Edit (click)</span>",
+                                loadingContent:
+                                  "Loading...<br/><span class='editmsg'>Edit (click)</span>",
+                                offset: "13px"
+                              },
+                              expression:
+                                "{content: getComment(user, idx) + '<span class=\\'editmsg\\'>Edit (click)</span>', loadingContent: 'Loading...<br/><span class=\\'editmsg\\'>Edit (click)</span>', offset: '13px'}"
+                            }
+                          ],
+                          staticClass: "commentIcon",
                           on: {
                             click: function($event) {
+                              $event.stopPropagation()
+                              $event.preventDefault()
                               return _vm.openModal(user)
                             }
                           }
                         },
                         [
-                          _c("div", { staticClass: "name" }, [
-                            _vm._v(_vm._s(user.name))
-                          ]),
-                          _vm._v(" "),
                           _c(
-                            "div",
+                            "svg",
                             {
-                              staticClass: "btn",
-                              class: {
-                                red: !_vm.isgreen[index],
-                                green: _vm.isgreen[index]
-                              },
-                              on: {
-                                click: function($event) {
-                                  return _vm.openModal(user)
-                                }
+                              staticClass: "svg-inline--fa fa-comment fa-w-16",
+                              attrs: {
+                                "aria-hidden": "true",
+                                focusable: "false",
+                                "data-prefix": "fas",
+                                "data-icon": "comment",
+                                role: "img",
+                                xmlns: "http://www.w3.org/2000/svg",
+                                viewBox: "0 0 512 512"
                               }
                             },
                             [
-                              _vm._v(
-                                _vm._s(_vm.isgreen[index] ? "Green" : "Red")
-                              )
+                              _c("path", {
+                                attrs: {
+                                  fill: "currentColor",
+                                  d:
+                                    "M256 32C114.6 32 0 125.1 0 240c0 49.6 21.4 95 57 130.7C44.5 421.1 2.7 466 2.2 466.5c-2.2 2.3-2.8 5.7-1.5 8.7S4.8 480 8 480c66.3 0 116-31.8 140.6-51.4 32.7 12.3 69 19.4 107.4 19.4 141.4 0 256-93.1 256-208S397.4 32 256 32z"
+                                }
+                              })
                             ]
                           )
                         ]
                       )
                     ]
                   )
+                }),
+                0
+              ),
+              _vm._v(" "),
+              _c(
+                "div",
+                {
+                  staticClass: "reference",
+                  attrs: { slot: "reference" },
+                  slot: "reference"
+                },
+                [
+                  _c(
+                    "div",
+                    {
+                      staticClass: "useritem",
+                      on: {
+                        click: function($event) {
+                          return _vm.openModal(user)
+                        }
+                      }
+                    },
+                    [
+                      _c("div", { staticClass: "name" }, [
+                        _vm._v(_vm._s(user.name))
+                      ]),
+                      _vm._v(" "),
+                      _c(
+                        "div",
+                        {
+                          staticClass: "btn",
+                          class: {
+                            red: !_vm.isgreen[index],
+                            green: _vm.isgreen[index]
+                          },
+                          on: {
+                            click: function($event) {
+                              return _vm.openModal(user)
+                            }
+                          }
+                        },
+                        [_vm._v(_vm._s(_vm.isgreen[index] ? "Green" : "Red"))]
+                      )
+                    ]
+                  )
                 ]
               )
-            ],
-            1
+            ]
           )
-        }),
-        0
+        ],
+        1
       )
-    ]
+    }),
+    0
   )
 }
 var staticRenderFns = []
@@ -32055,6 +32217,8 @@ var _header = _interopRequireDefault(require("./components/header.vue"));
 
 var _data = _interopRequireDefault(require("./components/data.vue"));
 
+var _adminPanel = _interopRequireDefault(require("./components/adminPanel.vue"));
+
 var _secondrydata = _interopRequireDefault(require("./components/secondrydata.vue"));
 
 var _classes = _interopRequireDefault(require("./components/classes.vue"));
@@ -32099,6 +32263,8 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 //
 //
 //
+//
+//
 var _default = {
   name: "app",
   props: ["loggedin", "sharedData", "editSelect", "editState", "userAuth", "signIn", "signOut"],
@@ -32108,12 +32274,9 @@ var _default = {
       classes: []
     };
   },
-  methods: {},
-  mounted: function mounted() {
-    console.log("APP MOUNTED");
-  },
   components: {
-    Displaydata: _data.default,
+    displayData: _data.default,
+    adminPanel: _adminPanel.default,
     classes: _classes.default,
     loginmodal: _loginmodal.default,
     teacherpanel: _teacherpanel.default,
@@ -32139,75 +32302,61 @@ exports.default = _default;
     "div",
     { attrs: { id: "main" } },
     [
-      _vm.loggedin
-        ? _c("Header", {
-            attrs: {
-              loggedin: _vm.loggedin,
-              signFuncs: { signIn: _vm.signIn, signOut: _vm.signOut },
-              userAuth: _vm.userAuth
-            }
-          })
-        : _vm._e(),
+      _c("Header", {
+        style: _vm.loggedin ? "" : "filter: blur(6px)",
+        attrs: { loggedin: _vm.loggedin, userAuth: _vm.userAuth }
+      }),
       _vm._v(" "),
-      _vm.sharedData.teacher && _vm.loggedin
-        ? _c(
-            "div",
-            {
-              style: _vm.loggedin ? "" : "filter: blur(4px)",
-              attrs: { id: "teacher" }
-            },
-            [
-              _c("div", { staticClass: "row" }, [
+      _c("div", { staticClass: "pageContainer", attrs: { id: "student" } }, [
+        !_vm.sharedData.teacher
+          ? _c(
+              "div",
+              {
+                staticClass: "row mainRow",
+                style: _vm.loggedin ? "" : "filter: blur(8px)"
+              },
+              [
                 _c(
                   "div",
-                  { staticClass: "col-3 col-xl-5 midpanel" },
+                  { staticClass: "col-6 col-xl-6 col-lg-6" },
                   [
-                    _c("teacherpanel", {
-                      attrs: { sharedData: _vm.sharedData }
-                    })
+                    _c("displayData", {
+                      attrs: { classes: _vm.sharedData.classes }
+                    }),
+                    _vm._v(" "),
+                    _vm.sharedData.admin ? _c("adminPanel") : _vm._e()
                   ],
                   1
-                )
-              ])
-            ]
-          )
-        : _vm._e(),
-      _vm._v(" "),
-      !_vm.sharedData.teacher && _vm.loggedin
-        ? _c(
-            "div",
-            {
-              style: _vm.loggedin ? "" : "filter: blur(4px)",
-              attrs: { id: "student" }
-            },
-            [
-              _c(
-                "div",
-                { staticClass: "row mainRow" },
-                [
-                  _c("Displaydata", {
-                    attrs: { classes: _vm.sharedData.classes }
-                  }),
-                  _vm._v(" "),
-                  _c("secondrydata", {
-                    attrs: { classes: _vm.sharedData.classes }
-                  }),
-                  _vm._v(" "),
-                  _c("classes", { attrs: { classes: _vm.sharedData.classes } })
-                ],
-                1
-              )
-            ]
-          )
-        : _vm._e(),
+                ),
+                _vm._v(" "),
+                _c("secondrydata", {
+                  attrs: { classes: _vm.sharedData.classes }
+                }),
+                _vm._v(" "),
+                _c("classes", {
+                  attrs: {
+                    classes: _vm.sharedData.classes,
+                    comments: _vm.sharedData.comments,
+                    loggedin: _vm.loggedin
+                  }
+                })
+              ],
+              1
+            )
+          : _vm._e(),
+        _vm._v(" "),
+        _vm.sharedData.teacher && _vm.loggedin
+          ? _c(
+              "div",
+              { staticClass: "row mainRow" },
+              [_c("teacherpanel", { attrs: { sharedData: _vm.sharedData } })],
+              1
+            )
+          : _vm._e()
+      ]),
       _vm._v(" "),
       _vm.loggedin === false
-        ? _c("loginmodal", {
-            attrs: {
-              loggedin: _vm.loggedin,
-              signFuncs: { signIn: _vm.signIn, signOut: _vm.signOut }
-            }
-          })
+        ? _c("loginmodal", { attrs: { loggedin: _vm.loggedin } })
         : _vm._e(),
       _vm._v(" "),
       _c("modaledit", {
@@ -32233,7 +32382,7 @@ render._withStripped = true
           };
         })());
       
-},{"./components/header.vue":"components/header.vue","./components/data.vue":"components/data.vue","./components/secondrydata.vue":"components/secondrydata.vue","./components/classes.vue":"components/classes.vue","./components/loginmodal.vue":"components/loginmodal.vue","./components/teacherpanel.vue":"components/teacherpanel.vue","./components/modaledit.vue":"components/modaledit.vue","./css/box-shadow.min.css":"../node_modules/vue-popperjs/dist/vue-popper.css"}],"mixins/mixins.js":[function(require,module,exports) {
+},{"./components/header.vue":"components/header.vue","./components/data.vue":"components/data.vue","./components/adminPanel.vue":"components/adminPanel.vue","./components/secondrydata.vue":"components/secondrydata.vue","./components/classes.vue":"components/classes.vue","./components/loginmodal.vue":"components/loginmodal.vue","./components/teacherpanel.vue":"components/teacherpanel.vue","./components/modaledit.vue":"components/modaledit.vue","./css/box-shadow.min.css":"../node_modules/vue-popperjs/dist/vue-popper.css"}],"mixins/mixins.js":[function(require,module,exports) {
 "use strict";
 
 var _axios = _interopRequireDefault(require("axios"));
@@ -39611,17 +39760,9 @@ var app = new _vue.default({
   },
   methods: {},
   computed: {
-    sharedData: function (_sharedData) {
-      function sharedData() {
-        return _sharedData.apply(this, arguments);
-      }
+    sharedData: function sharedData() {
+      var _this = this;
 
-      sharedData.toString = function () {
-        return _sharedData.toString();
-      };
-
-      return sharedData;
-    }(function () {
       var obj = _objectSpread({}, this.preData, {}, this.rawData);
 
       if (this.rawData.classes) {
@@ -39634,32 +39775,30 @@ var app = new _vue.default({
         this.loggedin.loggedin = true;
       }
 
-      if (this.rawUsers.users) {
-        obj.users = this.rawUsers.users.map(function (el) {
-          return {
-            email: el[0],
-            name: el[1],
-            userid: el[2],
-            classes: el[3],
-            comments: ["", "", "", "", "", "", "", "", "", ""]
-          };
-        });
-        obj.tcomments = this.rawUsers.comments.map(function (el) {
-          var comment = {
-            userid: el[0],
-            class: el[1],
-            comment: el[2]
-          };
-          sharedData.users.find(function (x) {
-            return x.userid == comment.userid;
-          }).comments[parseInt(comment.class)] = comment.comment;
-          return comment;
-        });
-      }
-
+      if (this.rawData.users) obj.users = this.rawData.users.map(function (el) {
+        return {
+          email: el[0],
+          name: el[1],
+          userid: el[2],
+          classes: el[3],
+          comments: ["", "", "", "", "", "", "", "", "", ""]
+        };
+      });
+      console.log("RAWDATCOMM", this.rawData);
+      if ((this.rawData.tcomments | []).length >= 1) obj.tcomments = this.rawData.tcomments.map(function (el) {
+        var comment = {
+          userid: el[0],
+          class: el[1],
+          comment: el[2]
+        };
+        _this.rawData.users.find(function (x) {
+          return x.userid == comment.userid;
+        }).comments[parseInt(comment.class)] = comment.comment;
+        return comment;
+      });
       this.preData = obj;
       return obj;
-    })
+    }
   },
   template: '<Main :userAuth="userauth" :sharedData="sharedData" :loggedin="loggedin.loggedin" :editSelect="editSelect" :editState="editState"/>',
   components: {
@@ -39667,14 +39806,14 @@ var app = new _vue.default({
   },
   el: "#app",
   created: function created() {
-    var _this = this;
+    var _this2 = this;
 
     _sockets.default.on("update", function (data) {
-      _this.rawData = data;
+      _this2.rawData = data;
     });
 
     _sockets.default.on("users", function (data) {
-      return _this.rawUsers = data;
+      _this2.rawUsers = data;
     });
 
     _sockets.default.on("updatereq", function () {
@@ -39682,10 +39821,10 @@ var app = new _vue.default({
     });
 
     _sockets.default.on('connect', function () {
-      (0, _auth.authFunc)(_this);
+      (0, _auth.authFunc)(_this2);
     });
   }
 });
 exports.app = app;
 },{"vue":"../node_modules/vue/dist/vue.common.js","./App.vue":"App.vue","axios":"../node_modules/axios/index.js","./js/globals":"js/globals.js","./mixins/mixins":"mixins/mixins.js","./js/sockets.js":"js/sockets.js","./js/auth.js":"js/auth.js","bootstrap/dist/css/bootstrap.min.css":"../node_modules/vue-popperjs/dist/vue-popper.css"}]},{},["main.js"], null)
-//# sourceMappingURL=/main.1f19ae8e.js.map
+//# sourceMappingURL=/dist/main.1f19ae8e.js.map

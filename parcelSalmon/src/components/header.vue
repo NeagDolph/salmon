@@ -17,6 +17,7 @@ import loginButton from "./loginbutton.vue";
 export default {
   props: ["loggedin"],
   components: {
+    
     loginButton
   }
 };
