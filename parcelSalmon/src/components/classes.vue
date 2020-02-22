@@ -78,8 +78,7 @@ export default {
 
 .classescont {
   width: 100%;
-  min-height: 100%;
-  height: calc(100vh - 2em);
+  height: calc(100vh - 165px);
   overflow-y: auto;
   padding-right: 15px;
   padding-left: 15px;

@@ -24,6 +24,10 @@ export var app = new Vue({
         users: [],
         classes: [],
         shortnames: ["Soc", "Wr", "Geo", "Stats", "LD", "PS", "Phy", "HRI", "CW", "UM", "Maker", "Pract"]
+      },
+      global: {
+        adminOpen: false,
+        dataTop: 0
       }
     }
   },
@@ -56,7 +60,7 @@ export var app = new Vue({
       return obj
     }
   },
-  template: '<Main :userAuth="userauth" :sharedData="sharedData" :loggedin="loggedin.loggedin" :editSelect="editSelect" :editState="editState"/>',
+  template: '<Main :userAuth="userauth" :sharedData="sharedData" :loggedin="loggedin.loggedin" :editSelect="editSelect" :editState="editState" :globalData="global"/>',
   components: {Main},
   el: "#app",
   created() {

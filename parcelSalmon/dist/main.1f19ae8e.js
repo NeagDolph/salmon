@@ -14123,13 +14123,21 @@ exports.default = void 0;
 //
 //
 var _default = {
-  props: ["classes"],
+  props: ["classes", "globalData"],
   computed: {
+    glob: function glob() {
+      return this.globalData.adminOpen;
+    },
     percent: function percent() {
       return parseInt((this.classes.reduce(function (tot, el) {
         return tot + el.status;
       }, 0) / this.classes.length * 100).toFixed(1));
     }
+  },
+  mounted: function mounted() {
+    this.$nextTick(function () {
+      this.setGlobal("dataTop", this.$refs.mainPercent.getBoundingClientRect().top);
+    });
   }
 };
 exports.default = _default;
@@ -14147,7 +14155,11 @@ exports.default = _default;
   var _c = _vm._self._c || _h
   return _c(
     "div",
-    { ref: "mainPercent", staticClass: "percent z-depth-half" },
+    {
+      ref: "mainPercent",
+      staticClass: "percent z-depth-half",
+      class: { adminOpen: _vm.glob }
+    },
     [
       _c(
         "div",
@@ -14264,23 +14276,33 @@ exports.default = void 0;
 //
 //
 //
-//
-//
-//
-//
-//
-//
-//
-//
 var _default = {
   data: function data() {
     return {
-      buttonHeight: 0
+      buttonHeight: 0,
+      open: false,
+      setMid: "0px",
+      adminTop: 0
     };
   },
-  props: ["classes"],
-  methods: {},
-  computed: {}
+  methods: {
+    openMenu: function openMenu() {
+      this.open = !this.open;
+      this.setGlobal("adminOpen", this.open);
+    }
+  },
+  props: ["classes", "globalData"],
+  mounted: function mounted() {
+    this.$nextTick(function () {
+      if (this.$refs.percent) {
+        this.adminTop = this.$refs.percent.getBoundingClientRect().top;
+        this.setMid = (window.innerHeight - this.$refs.percent.getBoundingClientRect().top) / 2 - 13 / 2
+        /* bar height */
+        + "px";
+        this.buttonHeight = this.$refs.percent.offsetHeight;
+      }
+    });
+  }
 };
 exports.default = _default;
         var $2085c5 = exports.default || module.exports;
@@ -14297,28 +14319,45 @@ exports.default = _default;
   var _c = _vm._self._c || _h
   return _c(
     "div",
-    { ref: "bottomPercent", staticClass: "percent z-depth-half" },
-    [_vm._m(0)]
+    {
+      ref: "percent",
+      staticClass: "percent z-depth-half",
+      style: {
+        height: _vm.open
+          ? "800px"
+          : _vm.setMid == "0px"
+          ? false
+          : parseInt(_vm.setMid) * 2 + 15 + "px",
+        transform:
+          _vm.open == true
+            ? "translateY(" +
+              (-(_vm.adminTop - _vm.globalData.dataTop) + "px") +
+              ")"
+            : "translateY(0px)"
+      },
+      on: {
+        click: function($event) {
+          return _vm.openMenu()
+        }
+      }
+    },
+    [
+      _c(
+        "div",
+        { staticClass: "row", staticStyle: { width: "100%", margin: "0" } },
+        [
+          !_vm.open
+            ? _c("div", {
+                staticClass: "buttonBar",
+                style: { top: _vm.setMid }
+              })
+            : _vm._e()
+        ]
+      )
+    ]
   )
 }
-var staticRenderFns = [
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c(
-      "div",
-      { staticClass: "row", staticStyle: { width: "100%", margin: "0" } },
-      [
-        _c("div", { staticClass: "col-12 px-0 mx-0" }),
-        _vm._v(" "),
-        _c("div", { staticClass: "col-12" }),
-        _vm._v(" "),
-        _c("div", { staticClass: "col-12 px-0 mx-0" })
-      ]
-    )
-  }
-]
+var staticRenderFns = []
 render._withStripped = true
 
           return {
@@ -32267,7 +32306,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 //
 var _default = {
   name: "app",
-  props: ["loggedin", "sharedData", "editSelect", "editState", "userAuth", "signIn", "signOut"],
+  props: ["loggedin", "sharedData", "editSelect", "editState", "userAuth", "signIn", "signOut", "globalData"],
   data: function data() {
     return {
       // loggedin: true
@@ -32321,10 +32360,17 @@ exports.default = _default;
                   { staticClass: "col-6 col-xl-6 col-lg-6" },
                   [
                     _c("displayData", {
-                      attrs: { classes: _vm.sharedData.classes }
+                      attrs: {
+                        classes: _vm.sharedData.classes,
+                        globalData: _vm.globalData
+                      }
                     }),
                     _vm._v(" "),
-                    _vm.sharedData.admin ? _c("adminPanel") : _vm._e()
+                    _vm.sharedData.admin
+                      ? _c("adminPanel", {
+                          attrs: { globalData: _vm.globalData }
+                        })
+                      : _vm._e()
                   ],
                   1
                 ),
@@ -32442,6 +32488,9 @@ _vue.default.mixin({
       }).catch(function (e) {
         console.log("Error requesting comment", e);
       });
+    },
+    setGlobal: function setGlobal(area, val) {
+      _main.app.global[area] = val;
     }
   }
 });
@@ -39755,6 +39804,10 @@ var app = new _vue.default({
         users: [],
         classes: [],
         shortnames: ["Soc", "Wr", "Geo", "Stats", "LD", "PS", "Phy", "HRI", "CW", "UM", "Maker", "Pract"]
+      },
+      global: {
+        adminOpen: false,
+        dataTop: 0
       }
     };
   },
@@ -39800,7 +39853,7 @@ var app = new _vue.default({
       return obj;
     }
   },
-  template: '<Main :userAuth="userauth" :sharedData="sharedData" :loggedin="loggedin.loggedin" :editSelect="editSelect" :editState="editState"/>',
+  template: '<Main :userAuth="userauth" :sharedData="sharedData" :loggedin="loggedin.loggedin" :editSelect="editSelect" :editState="editState" :globalData="global"/>',
   components: {
     Main: _App.default
   },

@@ -1,5 +1,5 @@
 <template>
-    <div class="percent z-depth-half" ref="mainPercent">
+    <div class="percent z-depth-half" ref="mainPercent" :class="{adminOpen: glob}">
       <div class="row" style="width: 100%; margin: 0;">
         <div class="col-12 px-0 mx-0">
           <div class="statusCont">
@@ -38,8 +38,11 @@
 
 <script>
 export default {
-  props: ["classes"],
+  props: ["classes", "globalData"],
   computed: {
+    glob() {
+      return this.globalData.adminOpen
+    },
     percent() {
       return parseInt(
         (
@@ -51,6 +54,11 @@ export default {
         ).toFixed(1)
       );
     }
+  },
+  mounted() {
+    this.$nextTick(function() {
+      this.setGlobal("dataTop", this.$refs.mainPercent.getBoundingClientRect().top)
+    })
   }
 };
 </script>
@@ -71,6 +79,10 @@ export default {
     height: calc(2em + 1.5vw) !important;
     margin-top: calc(2.5vw - 20px) !important;
   }
+}
+
+.adminOpen {
+  opacity: 0;
 }
 
 .percentRow {
@@ -218,6 +230,7 @@ export default {
 .percent {
   width: 100%;
   height: auto;
+  transition: 0.5s;
   padding-bottom: 15px;
   background: $main1;
   border-radius: 6px;

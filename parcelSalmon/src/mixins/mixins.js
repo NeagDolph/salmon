@@ -48,6 +48,9 @@ Vue.mixin({
           .catch((e) => {
             console.log("Error requesting comment", e)
           })
+      },
+      setGlobal(area, val) {
+        app.global[area] = val
       }
     }
 })

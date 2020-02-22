@@ -1,15 +1,7 @@
 <template>
-    <div class="percent z-depth-half" ref="bottomPercent" >
+    <div class="percent z-depth-half" ref="percent" v-bind:style="{ height: open ? '800px' : (setMid == '0px' ? false : (parseInt(setMid) * 2 + 15 + 'px')), transform: open == true ? `translateY(${-(adminTop - globalData.dataTop) + 'px'})` : 'translateY(0px)'}" @click="openMenu()">
       <div class="row" style="width: 100%; margin: 0;">
-        <div class="col-12 px-0 mx-0">
-
-        </div>
-        <div class="col-12">
-          
-        </div>
-        <div class="col-12 px-0 mx-0">
-          
-        </div>
+        <div class="buttonBar" v-bind:style="{ top: setMid }" v-if="!open"></div>
       </div>
     </div>
 </template>
@@ -19,12 +11,26 @@ export default {
   data() {
     return {
       buttonHeight: 0,
+      open: false,
+      setMid: "0px",
+      adminTop: 0
     };
   },
-  props: ["classes"],
   methods: {
+    openMenu() {
+      this.open = !this.open;
+      this.setGlobal("adminOpen", this.open)
+    }
   },
-  computed: {
+  props: ["classes", "globalData"],
+  mounted() {
+    this.$nextTick(function() {
+      if (this.$refs.percent) {
+        this.adminTop = this.$refs.percent.getBoundingClientRect().top
+        this.setMid = ((window.innerHeight - this.$refs.percent.getBoundingClientRect().top) / 2 - (13 / 2 /* bar height */)) + "px"
+        this.buttonHeight = this.$refs.percent.offsetHeight
+      }
+    })
   }
 };
 </script>
@@ -60,16 +66,37 @@ export default {
   }
 }
 
+.buttonBar {
+  width: 80%;
+  position: relative;
+  display: block;
+  height: 13px;
+  border-radius: 20px;
+  background: $background;
+}
+
 .percent {
   width: 100%;
   height: 158px;
   padding-bottom: 15px;
   bottom: 0;
-  top: calc(60% - 380px);
+  top: calc(57.8vh - 380px);
+  transition: 0.5s ease;
+
+  &.adminOpen {
+    top: -50%;
+  }
+
+  .row {
+    justify-content: center;
+    display: flex;
+  }
+
 
   background: $main1;
-  border-radius: 6px;
-  display: flex;
+  border-top-left-radius: 6px;
+  border-top-right-radius: 6px;
   position: relative;
 }
+
 </style>

@@ -10,8 +10,8 @@
       <!-- Student -->
       <div class="row mainRow" v-if="!sharedData.teacher" :style="loggedin ? '' : 'filter: blur(8px)'">
         <div class="col-6 col-xl-6 col-lg-6">
-          <displayData :classes="sharedData.classes" />
-          <adminPanel v-if="sharedData.admin"/>
+          <displayData :classes="sharedData.classes" :globalData="globalData"/>
+          <adminPanel v-if="sharedData.admin" :globalData="globalData"/>
         </div>
         <secondrydata :classes="sharedData.classes"/>
         <classes :classes="sharedData.classes" :comments="sharedData.comments" :loggedin="loggedin"/>
@@ -44,7 +44,7 @@ import './css/box-shadow.min.css';
 
 export default {
   name: "app",
-  props: ["loggedin", "sharedData", "editSelect", "editState", "userAuth", "signIn", "signOut"],
+  props: ["loggedin", "sharedData", "editSelect", "editState", "userAuth", "signIn", "signOut", "globalData"],
   data() {
     return {
       // loggedin: true
