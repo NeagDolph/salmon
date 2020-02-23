@@ -229,25 +229,25 @@ def editclasses():
         return "No permission", 403
 
 
-@app.route('/api/teacher/add', methods=["POST"])
+@app.route('/api/teacher/del', methods=["POST"])
 def removeteacher():
     adminid = session.get("userid", "")
     dataform = request.json or request.form
     if adminid in admins:
-        userid = dataform.get("userid")
+        email = dataform.get("email")
 
-        if not userid:
+        if not email:
             return "error", 500
 
         cur = conn.cursor()
-        cur.execute('SELECT * FROM users WHERE userid=?', (userid,))
+        cur.execute('SELECT userid FROM users WHERE email=?', (email,))
         result = cur.fetchone()
 
-        if len(result) >= 1:
-            cur.execute("UPDATE users SET student=1 WHERE userid=?", (userid))
+        if result:
+            cur.execute("UPDATE users SET student=1 WHERE userid=?", (result[0], ))
             conn.commit()
             updatereq()
-            emitupdate(userid)
+            emitupdate(result[0])
 
             return "success", 200
         else:
@@ -256,20 +256,21 @@ def removeteacher():
         return "No permission", 403
         
 
-@app.route('/api/teacher/del', methods=["POST"])
+@app.route('/api/teacher/add', methods=["POST"])
 def addteacher():
     adminid = session.get("userid", "")
     dataform = request.json or request.form
 
     if adminid in admins:
-        userid = dataform.get("userid")
+        email = dataform.get("email")
         classes = dataform.get("classes")
+        update = dataform.get("update")
 
-        if not userid or not classes: 
+        if not email or not classes: 
             print("ADD teacher error", dataform, classes)
             return "error", 500
         else:
-            if len(classes) != 12 or not isinstance(classes, str):
+            if not isinstance(classes, str):
                 print("ADD teacher error", dataform, classes)
                 return "error", 500
             else:
@@ -278,20 +279,24 @@ def addteacher():
                     return "error", 500
 
         cur = conn.cursor()
-        cur.execute('SELECT * FROM users WHERE userid=?', (userid,))
+        cur.execute('SELECT userid FROM users WHERE email=?', (email,))
         result = cur.fetchone()
+        print("ERM", result)
 
-        if len(result) >= 1:
-            cur.execute("UPDATE users SET student=2, teacherclasses=? WHERE userid=?", (classes, userid))
+        if result:
+            cur.execute("UPDATE users SET student=2, teacherclasses=? WHERE email=?", (classes, email))
             conn.commit()
 
             updatereq()
 
-            emitupdate(userid)
+            emitupdate(result[0])
 
             return "success", 200
         else:
-            return "User does not exist", 500
+            cur.execute("INSERT INTO teacherqueue VALUES (?, ?)", (email, adminid))
+            conn.commit()
+
+            return "queue", 200
     else: 
         return "No permission", 403
 
@@ -399,7 +404,7 @@ def updatereq():
 
 def getdata(userid, extradata=False):
     cur = conn.cursor()
-    cur.execute('SELECT classes, student, teacherclasses, email FROM users WHERE userid=?', (userid, ))
+    cur.execute('SELECT classes, student, teacherclasses, email, studentclasses FROM users WHERE userid=?', (userid, ))
     data = cur.fetchone()
     print(data)
     if not data:
@@ -410,6 +415,7 @@ def getdata(userid, extradata=False):
         student = data[1]
         teacherclasses = ""
         userlist = []
+        teacherlist = []
         commentlist = []
 
         cur.execute('SELECT class, comment FROM comments WHERE userid=?', (userid, ))
@@ -423,12 +429,18 @@ def getdata(userid, extradata=False):
             # users = [{"email": i[0], "name": i[1], "userid": i[2], "classes": i[3]} for i in userlist]
             
             teacherclasses = data[2]
+            
 
             if extradata:
                 cur.execute('SELECT userid, class, comment FROM comments')
                 commentlist = cur.fetchall()
 
-        return {'classes': classes, "teacher": student == 2, "users": userlist, "admin": userid in admins, "tclasses": teacherclasses, "comments": comments if len(comments) >= 1 else [], "tcomments": commentlist if extradata else [], "email": data[3]}
+        if userid in admins:
+            cur.execute('SELECT email, name, userid, teacherclasses FROM users WHERE student=2')
+            teacherlist = cur.fetchall()
+    
+
+        return {'classes': classes, "teacher": student == 2, "users": userlist, "admin": userid in admins, "tclasses": teacherclasses, "teacherlist": teacherlist, "comments": comments if len(comments) >= 1 else [], "tcomments": commentlist if extradata else [], "email": data[3]}
     else:
         return "error"
 

@@ -101,8 +101,7 @@ export default {
 </script>
 
 <style lang="scss">
-$red: #ff6961;
-$green: #5cce89;
+@import "../css/settings.scss";
 $zees: main, popper1, popper2;
 
 #teacher {
@@ -127,7 +126,7 @@ $zees: main, popper1, popper2;
 
 .useritemspan {
   padding: 0px;
-  border-radius: 10px;
+  border-radius: $curve;
   background: white;
   display: block;
   font-family: Roboto;
@@ -254,7 +253,7 @@ span > .popper {
   .popperBlock {
     width: 45px;
     height: 45px;
-    border-radius: 6px;
+    border-radius: $curve;
     user-select: none;
     margin: 4px;
     cursor: pointer;

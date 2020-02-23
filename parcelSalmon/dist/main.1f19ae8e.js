@@ -13857,9 +13857,9 @@ Object.defineProperty(exports, "__esModule", {
 exports.apiurl = exports.shortnames = exports.classnames = exports.userauth = void 0;
 var userauth = {};
 exports.userauth = userauth;
-var classnames = ["Socratic", "Writing", "Geometry", "Statistics", "Life Design", "Problem", "Physics", "HRI", "Creative", "Urban", "Makerspace", "Practicum"];
+var classnames = ["Socratic 1", "Socratic 2", "Writing 1", "Writing 2", "Geometry", "Statistics", "Life Design", "Problem", "Physics", "HRI", "Creative", "Urban Mvmt", "Makerspace", "Practicum", "Cap vs Soc"];
 exports.classnames = classnames;
-var shortnames = ["Soc", "Wr", "Geo", "Stats", "LD", "PS", "Phy", "HRI", "CW", "UM", "Maker", "Pract"];
+var shortnames = ["Soc", "Soc2", "Wr", "Wr2", "Geo", "Stats", "LD", "PS", "Phy", "HRI", "CW", "UM", "Maker", "Pract"];
 exports.shortnames = shortnames;
 var apiurl = {
   data: "/api/getdata",
@@ -13868,7 +13868,9 @@ var apiurl = {
   getcomment: "/api/comment/get",
   comment: "/api/comment/create",
   delcomment: "/api/comment/delete",
-  logout: "/api/logout"
+  logout: "/api/logout",
+  addTeacher: "/api/teacher/add",
+  delTeacher: "/api/teacher/del"
 };
 exports.apiurl = apiurl;
 },{}],"js/auth.js":[function(require,module,exports) {
@@ -14268,6 +14270,51 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.default = void 0;
+
+var _axios = _interopRequireDefault(require("axios"));
+
+var _globals = require("../js/globals");
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 //
 //
 //
@@ -14282,16 +14329,75 @@ var _default = {
       buttonHeight: 0,
       open: false,
       setMid: "0px",
-      adminTop: 0
+      selectBlink: 0,
+      adminTop: 0,
+      classToggle: "000000000000000",
+      selectedTeacher: false,
+      subsection: 0,
+      openHeight: 800,
+      subsections: ["Teachers", "Students", "Admins", "General"],
+      addOpen: false,
+      teacherEmail: ""
     };
   },
   methods: {
-    openMenu: function openMenu() {
-      this.open = !this.open;
-      this.setGlobal("adminOpen", this.open);
+    setSection: function setSection(section) {
+      this.subsection = section;
+    },
+    toggleAdd: function toggleAdd() {
+      if (!this.addOpen) {
+        this.addOpen = true;
+      } else {
+        if (this.teacherEmail.length >= 1) {
+          this.addTeacher(this.teacherEmail, "000000000000000");
+        } else {
+          this.addOpen = false;
+        }
+      }
+    },
+    selectTeacher: function selectTeacher(idx, classes) {
+      this.selectBlink = 1;
+      setTimeout(function (e) {
+        e.selectBlink = 0;
+        console.log("AU", e);
+      }, 500, this);
+      this.selectedTeacher = idx;
+      this.classToggle = classes;
+    },
+    toggleClass: function toggleClass(idx) {
+      var classCopy = this.classToggle.split("");
+      classCopy[idx] = classCopy[idx] == "1" ? "0" : "1";
+      this.classToggle = classCopy.join("");
+      this.sharedData.teacherlist[this.selectedTeacher][3] = this.classToggle;
+      console.log("classtog", this.classToggle, this.sharedData.teacherlist[this.selectedTeacher][2]);
+      this.addTeacher(this.sharedData.teacherlist[this.selectedTeacher][0], this.classToggle, true);
+    },
+    setMenu: function setMenu(isOpen) {
+      this.open = isOpen;
+      this.setGlobal("adminOpen", isOpen);
+    },
+    addTeacher: function addTeacher(email, classes, update) {
+      var _this = this;
+
+      _axios.default.post(_globals.apiurl.addTeacher, {
+        email: email,
+        classes: classes,
+        update: update
+      }).then(function (res) {
+        _this.teacherEmail = "";
+      });
+    },
+    delTeacher: function delTeacher(email) {
+      var confirmed = confirm("Are you sure you want to revoke this user's teacher privileges?");
+
+      if (confirmed) {
+        _axios.default.post(_globals.apiurl.delTeacher, {
+          email: email
+        });
+      }
     }
   },
-  props: ["classes", "globalData"],
+  props: ["classes", "globalData", "sharedData"],
   mounted: function mounted() {
     this.$nextTick(function () {
       if (this.$refs.percent) {
@@ -14300,6 +14406,7 @@ var _default = {
         /* bar height */
         + "px";
         this.buttonHeight = this.$refs.percent.offsetHeight;
+        this.openHeight = window.innerHeight - this.globalData.dataTop;
       }
     });
   }
@@ -14322,38 +14429,254 @@ exports.default = _default;
     {
       ref: "percent",
       staticClass: "percent z-depth-half",
+      class: { adminOpen: _vm.open, adminClose: !_vm.open },
       style: {
         height: _vm.open
-          ? "800px"
+          ? _vm.openHeight + "px"
           : _vm.setMid == "0px"
           ? false
-          : parseInt(_vm.setMid) * 2 + 15 + "px",
+          : parseInt(_vm.setMid) * 2 + 30 + "px",
         transform:
           _vm.open == true
             ? "translateY(" +
               (-(_vm.adminTop - _vm.globalData.dataTop) + "px") +
               ")"
-            : "translateY(0px)"
+            : ""
       },
       on: {
         click: function($event) {
-          return _vm.openMenu()
+          $event.stopPropagation()
+          _vm.open ? false : _vm.setMenu(true)
         }
       }
     },
     [
-      _c(
-        "div",
-        { staticClass: "row", staticStyle: { width: "100%", margin: "0" } },
-        [
-          !_vm.open
-            ? _c("div", {
-                staticClass: "buttonBar",
-                style: { top: _vm.setMid }
-              })
-            : _vm._e()
-        ]
-      )
+      !_vm.open
+        ? _c("div", { staticClass: "row" }, [
+            _c("div", { staticClass: "buttonBar", style: { top: _vm.setMid } })
+          ])
+        : _vm._e(),
+      _vm._v(" "),
+      _vm.open
+        ? _c("div", { staticClass: "row" }, [
+            _c("h2", [
+              _vm._v("Admin Panel"),
+              _c("span", { staticStyle: { "font-size": "23px" } }, [
+                _vm._v(" > " + _vm._s(_vm.subsections[_vm.subsection]))
+              ])
+            ]),
+            _vm._v(" "),
+            _c(
+              "div",
+              {
+                staticClass: "adminCloseButton",
+                on: {
+                  click: function($event) {
+                    $event.stopPropagation()
+                    return _vm.setMenu(false)
+                  }
+                }
+              },
+              [
+                _c("svg", { attrs: { viewBox: "0 0 24 24" } }, [
+                  _c("path", {
+                    attrs: {
+                      d:
+                        "M19 6.41l-1.41-1.41-5.59 5.59-5.59-5.59-1.41 1.41 5.59 5.59-5.59 5.59 1.41 1.41 5.59-5.59 5.59 5.59 1.41-1.41-5.59-5.59z"
+                    }
+                  }),
+                  _vm._v(" "),
+                  _c("path", { attrs: { d: "M0 0h24v24h-24z", fill: "none" } })
+                ])
+              ]
+            ),
+            _vm._v(" "),
+            _vm.subsection == 0
+              ? _c("div", { staticClass: "col-12 body teacher" }, [
+                  _c("div", { staticClass: "addTeacher" }, [
+                    _c(
+                      "div",
+                      {
+                        staticClass: "add",
+                        on: {
+                          click: function($event) {
+                            return _vm.toggleAdd()
+                          }
+                        }
+                      },
+                      [_vm._v("+ Add")]
+                    ),
+                    _vm._v(" "),
+                    _vm.addOpen
+                      ? _c("input", {
+                          directives: [
+                            {
+                              name: "model",
+                              rawName: "v-model",
+                              value: _vm.teacherEmail,
+                              expression: "teacherEmail"
+                            }
+                          ],
+                          staticClass: "emailInput",
+                          domProps: { value: _vm.teacherEmail },
+                          on: {
+                            keyup: function($event) {
+                              if (
+                                !$event.type.indexOf("key") &&
+                                _vm._k(
+                                  $event.keyCode,
+                                  "enter",
+                                  13,
+                                  $event.key,
+                                  "Enter"
+                                )
+                              ) {
+                                return null
+                              }
+                              return _vm.toggleAdd()
+                            },
+                            input: function($event) {
+                              if ($event.target.composing) {
+                                return
+                              }
+                              _vm.teacherEmail = $event.target.value
+                            }
+                          }
+                        })
+                      : _vm._e()
+                  ]),
+                  _vm._v(" "),
+                  _c("br"),
+                  _vm._v(" "),
+                  _c(
+                    "div",
+                    {
+                      staticClass: "classSelect z-depth-1",
+                      class: { invis: _vm.selectBlink }
+                    },
+                    [
+                      _c("div", { staticClass: "selectTitle" }, [
+                        _vm._v(
+                          "\n          " +
+                            _vm._s(
+                              _vm.selectedTeacher === false
+                                ? "Teachable classes"
+                                : _vm.sharedData.teacherlist[
+                                    _vm.selectedTeacher
+                                  ][1]
+                            ) +
+                            " \n          "
+                        ),
+                        _vm.selectedTeacher !== false
+                          ? _c(
+                              "svg",
+                              {
+                                attrs: {
+                                  title: "Revoke Teacher",
+                                  width: "20",
+                                  height: "20"
+                                },
+                                on: {
+                                  click: function($event) {
+                                    return _vm.delTeacher(
+                                      _vm.sharedData.teacherlist[
+                                        _vm.selectedTeacher
+                                      ][0]
+                                    )
+                                  }
+                                }
+                              },
+                              [
+                                _c("image", {
+                                  attrs: {
+                                    "xlink:href":
+                                      "https://atischool.net/static/delete.svg",
+                                    width: "20",
+                                    height: "20"
+                                  }
+                                })
+                              ]
+                            )
+                          : _vm._e()
+                      ]),
+                      _vm._v(" "),
+                      _vm.selectedTeacher !== false
+                        ? _c(
+                            "div",
+                            _vm._l(_vm.classToggle, function(status, idx) {
+                              return _c(
+                                "div",
+                                {
+                                  key: "classBlock" + idx,
+                                  staticClass: "classBlock",
+                                  class: {
+                                    selected: parseInt(_vm.classToggle[idx])
+                                  },
+                                  style: { content: _vm.classToggle[idx] },
+                                  on: {
+                                    click: function($event) {
+                                      _vm.toggleClass(parseInt(idx))
+                                    }
+                                  }
+                                },
+                                [
+                                  _vm._v(
+                                    "\n          " +
+                                      _vm._s(_vm.sharedData.shortnames[idx]) +
+                                      "\n        "
+                                  )
+                                ]
+                              )
+                            }),
+                            0
+                          )
+                        : _vm._e()
+                    ]
+                  ),
+                  _vm._v(" "),
+                  _c(
+                    "div",
+                    { staticClass: "teacherList" },
+                    _vm._l(_vm.sharedData.teacherlist, function(teacher, idx) {
+                      return _c(
+                        "div",
+                        {
+                          key: teacher[0],
+                          staticClass: "teacherItem col-4 z-depth-half",
+                          on: {
+                            click: function($event) {
+                              return _vm.selectTeacher(idx, teacher[3])
+                            }
+                          }
+                        },
+                        [_vm._v(_vm._s(teacher[1]))]
+                      )
+                    }),
+                    0
+                  )
+                ])
+              : _vm._e(),
+            _vm._v(" "),
+            _c(
+              "div",
+              { staticClass: "menuSelect" },
+              _vm._l([1, 2, 3, 4], function(section, idx) {
+                return _c("div", {
+                  key: "section" + idx,
+                  staticClass: "menuButton",
+                  class: { currentMenu: _vm.subsection == idx },
+                  attrs: { id: "b" + section },
+                  on: {
+                    click: function($event) {
+                      return _vm.setSection(idx)
+                    }
+                  }
+                })
+              }),
+              0
+            )
+          ])
+        : _vm._e()
     ]
   )
 }
@@ -14369,7 +14692,7 @@ render._withStripped = true
           };
         })());
       
-},{}],"components/secondrydata.vue":[function(require,module,exports) {
+},{"axios":"../node_modules/axios/index.js","../js/globals":"js/globals.js"}],"components/secondrydata.vue":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -32313,6 +32636,11 @@ var _default = {
       classes: []
     };
   },
+  methods: {
+    peep: function peep() {
+      console.log("PEEP");
+    }
+  },
   components: {
     displayData: _data.default,
     adminPanel: _adminPanel.default,
@@ -32339,7 +32667,14 @@ exports.default = _default;
   var _c = _vm._self._c || _h
   return _c(
     "div",
-    { attrs: { id: "main" } },
+    {
+      attrs: { id: "main" },
+      on: {
+        click: function($event) {
+          return _vm.peep()
+        }
+      }
+    },
     [
       _c("Header", {
         style: _vm.loggedin ? "" : "filter: blur(6px)",
@@ -32368,7 +32703,10 @@ exports.default = _default;
                     _vm._v(" "),
                     _vm.sharedData.admin
                       ? _c("adminPanel", {
-                          attrs: { globalData: _vm.globalData }
+                          attrs: {
+                            globalData: _vm.globalData,
+                            sharedData: _vm.sharedData
+                          }
                         })
                       : _vm._e()
                   ],
@@ -39795,6 +40133,7 @@ var app = new _vue.default({
       editState: false,
       rawData: {},
       rawUsers: {},
+      rawTeachers: {},
       loggedin: {
         loggedin: false
       },
@@ -39803,7 +40142,7 @@ var app = new _vue.default({
         admin: false,
         users: [],
         classes: [],
-        shortnames: ["Soc", "Wr", "Geo", "Stats", "LD", "PS", "Phy", "HRI", "CW", "UM", "Maker", "Pract"]
+        shortnames: ["Soc", "Soc2", "Wr", "Wr2", "Geo", "Stats", "LD", "PS", "Phy", "HRI", "CW", "UM", "Maker", "Pract", "CvS"]
       },
       global: {
         adminOpen: false,
@@ -39849,6 +40188,11 @@ var app = new _vue.default({
         }).comments[parseInt(comment.class)] = comment.comment;
         return comment;
       });
+
+      if (this.rawData.admin) {
+        obj.teacherlist = this.rawData.teacherlist;
+      }
+
       this.preData = obj;
       return obj;
     }

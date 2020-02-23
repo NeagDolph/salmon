@@ -1,5 +1,5 @@
 <template>
-  <div id="main">
+  <div id="main" @click="peep()">
 
     <!-- Header -->
     <Header :loggedin="loggedin" :style="loggedin ? '' : 'filter: blur(6px)'" :userAuth="userAuth"/>
@@ -11,7 +11,7 @@
       <div class="row mainRow" v-if="!sharedData.teacher" :style="loggedin ? '' : 'filter: blur(8px)'">
         <div class="col-6 col-xl-6 col-lg-6">
           <displayData :classes="sharedData.classes" :globalData="globalData"/>
-          <adminPanel v-if="sharedData.admin" :globalData="globalData"/>
+          <adminPanel v-if="sharedData.admin" :globalData="globalData" :sharedData="sharedData"/>
         </div>
         <secondrydata :classes="sharedData.classes"/>
         <classes :classes="sharedData.classes" :comments="sharedData.comments" :loggedin="loggedin"/>
@@ -50,6 +50,11 @@ export default {
       // loggedin: true
       classes: [],
     };
+  },
+  methods: {
+    peep() {
+      console.log("PEEP")
+    }
   },
   components: {
     displayData,

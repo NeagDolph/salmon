@@ -85,7 +85,7 @@ export default {
 }
 
 .redclass-item {
-  border-radius: 10px;
+  border-radius: $curve;
   height: 100px;
   padding: 10px;
   display: block;

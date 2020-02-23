@@ -15,6 +15,7 @@ export var app = new Vue({
       editState: false,
       rawData: {},
       rawUsers: {},
+      rawTeachers: {},
       loggedin: {
         loggedin: false,
       },
@@ -23,7 +24,7 @@ export var app = new Vue({
         admin: false,
         users: [],
         classes: [],
-        shortnames: ["Soc", "Wr", "Geo", "Stats", "LD", "PS", "Phy", "HRI", "CW", "UM", "Maker", "Pract"]
+        shortnames: ["Soc", "Soc2", "Wr", "Wr2", "Geo", "Stats", "LD", "PS", "Phy", "HRI", "CW", "UM", "Maker", "Pract", "CvS"]
       },
       global: {
         adminOpen: false,
@@ -55,6 +56,10 @@ export var app = new Vue({
         this.rawData.users.find(x => x.userid == comment.userid).comments[parseInt(comment.class)] = comment.comment
         return comment
       });
+
+      if (this.rawData.admin) {
+        obj.teacherlist = this.rawData.teacherlist
+      }
 
       this.preData = obj
       return obj

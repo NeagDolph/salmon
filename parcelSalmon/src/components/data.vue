@@ -233,7 +233,7 @@ export default {
   transition: 0.5s;
   padding-bottom: 15px;
   background: $main1;
-  border-radius: 6px;
+  border-radius: $curve;
   display: flex;
   position: relative;
 }

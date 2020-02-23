@@ -44,7 +44,7 @@ export default {
 .percentage {
   background: $main1;
   position: relative;
-  border-radius: 8px;
+  border-radius: $curve;
   width: 100%;
   padding: 10px;
   font-size: 26px;
