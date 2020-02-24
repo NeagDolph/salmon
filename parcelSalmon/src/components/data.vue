@@ -27,7 +27,7 @@
               <br />
               <span class="subpercent" v-if="percent < 100">
                 {{100 - percent}}%
-                <span class="offTarget">off target</span>
+                <div class="offTarget">off target</div>
               </span>
             </div>
           </div>
@@ -78,6 +78,16 @@ export default {
     width: calc(2em + 1.5vw) !important;
     height: calc(2em + 1.5vw) !important;
     margin-top: calc(2.5vw - 20px) !important;
+  }
+}
+
+@media screen and (max-width: 1000px) {
+  .subpercent {
+    display: none;
+  }
+
+  .pieData {
+    font-size: 80px;
   }
 }
 
@@ -178,6 +188,14 @@ export default {
         font-weight: 300;
         font-style: italic;
         font-size: 27px;
+
+        text-overflow: ellipsis;
+        overflow: hidden;
+        white-space: nowrap; 
+
+        height: 0.7em;
+
+        display: inline-block;
       }
     }
   }

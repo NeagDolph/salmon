@@ -16,15 +16,22 @@
         <div class="col-12 body teacher" v-if="subsection == 0">
           <div class="addTeacher">
             <div class="add" @click="toggleAdd()">+ Add</div>
-            <input class="emailInput" v-if="addOpen" v-model="teacherEmail" @keyup.enter="toggleAdd()"/>
+            <input class="emailInput" v-if="addOpen" ref="teacherEmail" v-model="teacherEmail" @keyup.enter="toggleAdd()" @keyup="searchCompute()"/>
+            <div class="emailSearch z-depth-1-half">
+              <div class="searchResult" v-for="result in searchResults" :key="result.email" @click="setTeacherEmail(result.email)">
+                {{result.name}}
+              </div>
+            </div>
           </div>
           <br>
           <div class="classSelect z-depth-1" :class="{invis: selectBlink}">
             <div class="selectTitle">
               {{selectedTeacher === false ? "Teachable classes" : sharedData.teacherlist[selectedTeacher][1]}} 
-              <svg title="Revoke Teacher" width="20" height="20" v-if="selectedTeacher !== false" @click="delTeacher(sharedData.teacherlist[selectedTeacher][0])">       
-                <image xlink:href="https://atischool.net/static/delete.svg" width="20" height="20"/>    
-              </svg>
+              <a @click="delTeacher(sharedData.teacherlist[selectedTeacher][0], true)" style="text-decoration: none; color: black;">
+                <svg title="Revoke Teacher" width="20" height="20" v-if="selectedTeacher !== false">       
+                  <image href="https://atischool.net/static/delete.svg" width="20" height="20"/>    
+                </svg>
+              </a>
             </div>
             <div v-if="selectedTeacher !== false">
             <div class="classBlock" @click="toggleClass(parseInt(idx))" v-for="(status, idx) in classToggle" :key="'classBlock' + idx" :class="{selected: parseInt(classToggle[idx])}" :style="{content: classToggle[idx] }">
@@ -33,7 +40,7 @@
             </div>
           </div>
           <div class="teacherList">
-            <div class="teacherItem col-4 z-depth-half" v-for="(teacher, idx) in sharedData.teacherlist" :key="teacher[0]" @click="selectTeacher(idx, teacher[3])">{{teacher[1]}}</div>
+            <div class="teacherItem col-4 z-depth-half" v-for="(teacher, idx) in sharedData.teacherlist" :key="teacher[0]" @click="selectTeacher(idx)">{{teacher[1]}}</div>
           </div>
         </div>
         <div class="menuSelect">
@@ -47,6 +54,7 @@
 <script>
 import axios from 'axios';
 import { apiurl } from '../js/globals';
+import Fuse from 'fuse.js';
 
 export default {
   data() {
@@ -62,30 +70,54 @@ export default {
       openHeight: 800,
       subsections: ["Teachers", "Students", "Admins", "General"],
       addOpen: false,
-      teacherEmail: ""
+      teacherEmail: "",
+      searchResults: []
     };
   },
   methods: {
+    searchCompute() {
+      let userinput = this.sharedData.adminusers.map(user => {
+        return {
+          email: user.email,
+          name: user.name
+        }
+      })
+
+      console.log("EE", userinput)
+
+      var fuse = new Fuse(userinput, {
+        keys: [{
+          name: 'email',
+          weight: 0.8
+        }, {
+          name: 'name',
+          weight: 0.2
+        }]
+      });
+
+      this.searchResults = fuse.search(this.teacherEmail);
+      console.log("aftere", this.searchResults, this.teacherEmail)
+      return this.searchResults
+    },
+    setTeacherEmail(email) {
+      console.log("SET", email)
+      this.teacherEmail = email;
+      this.$refs.teacherEmail.focus()
+    },
     setSection(section) {
       this.subsection = section;
     },
     toggleAdd() {
-      if (!this.addOpen) {
-        this.addOpen = true;
-      } else {
-        if (this.teacherEmail.length >= 1) {
-          this.addTeacher(this.teacherEmail, "000000000000000")
-        } else {
-          this.addOpen = false;
-        }
+      if (!this.addOpen) this.addOpen = true;
+      else {
+        if (this.teacherEmail.length >= 1) this.addTeacher(this.teacherEmail, "000000000000000");
+        else this.addOpen = false;
       }
     },
-    selectTeacher(idx, classes) {
+    selectTeacher(idx) {
+      let classes = this.sharedData.teacherlist[idx][3]
       this.selectBlink = 1;
-      setTimeout(function(e){
-        e.selectBlink = 0;
-        console.log("AU", e)
-      }, 500, this);
+      setTimeout(e => {e.selectBlink = 0;}, 500, this);
       this.selectedTeacher = idx;
       this.classToggle = classes;
     },
@@ -107,14 +139,17 @@ export default {
         .post(apiurl.addTeacher, { email: email, classes: classes, update: update })
         .then(res => {
           this.teacherEmail = ""
+          this.searchCompute()
+          if (!update) setTimeout(a => {this.selectTeacher(this.sharedData.teacherlist.findIndex(t => {return t[0] == a}), "")}, 200, email)
         })
     },
-    delTeacher(email) {
+    delTeacher(email, clear=false) {
       let confirmed = confirm("Are you sure you want to revoke this user's teacher privileges?")
-      if (confirmed) { 
-        axios
+      if (confirmed) axios
           .post(apiurl.delTeacher, { email: email })
-      }
+          .then(e => {
+            if (clear) this.selectedTeacher = false;
+          })
     }
   },
   props: ["classes", "globalData", "sharedData"],
@@ -228,6 +263,27 @@ export default {
     display: inline;
     cursor: pointer;
     width: fit-content;
+  }
+  .emailSearch {
+    display: block;
+    width: fit-content;
+    height: fit-content;
+    overflow-y: auto;
+    background: white;
+    margin-left: 66px;
+    border-radius: 5px;
+    position: relative;
+    margin-top: 5px;
+    z-index: 1;
+
+    .searchResult {
+      height: 25px;
+      cursor: pointer;
+      text-align: center;
+      line-height: 25px;
+      width: 100%;
+      padding: 0 5px;
+    }
   }
 }
 

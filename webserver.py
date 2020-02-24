@@ -438,9 +438,12 @@ def getdata(userid, extradata=False):
         if userid in admins:
             cur.execute('SELECT email, name, userid, teacherclasses FROM users WHERE student=2')
             teacherlist = cur.fetchall()
+
+            cur.execute('SELECT email, name, userid, classes, studentclasses, student FROM users')
+            adminusers = cur.fetchall()
     
 
-        return {'classes': classes, "teacher": student == 2, "users": userlist, "admin": userid in admins, "tclasses": teacherclasses, "teacherlist": teacherlist, "comments": comments if len(comments) >= 1 else [], "tcomments": commentlist if extradata else [], "email": data[3]}
+        return {'adminusers': adminusers, 'classes': classes, "teacher": student == 2, "users": userlist, "admin": userid in admins, "tclasses": teacherclasses, "teacherlist": teacherlist, "comments": comments if len(comments) >= 1 else [], "tcomments": commentlist if extradata else [], "email": data[3]}
     else:
         return "error"
 

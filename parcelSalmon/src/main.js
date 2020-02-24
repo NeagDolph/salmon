@@ -49,6 +49,11 @@ export var app = new Vue({
           return {email: el[0], name: el[1], userid: el[2], classes: el[3], comments: ["", "", "", "", "", "", "", "", "", ""]}
         });
 
+
+      if (this.rawData.adminusers) obj.adminusers = this.rawData.adminusers.map(el => {
+          return {email: el[0], name: el[1], userid: el[2], classes: el[3], studentclasses: el[4] }
+        });
+
       console.log("RAWDATCOMM", this.rawData)
 
       if ((this.rawData.tcomments | []).length >= 1) obj.tcomments = this.rawData.tcomments.map(el => {
