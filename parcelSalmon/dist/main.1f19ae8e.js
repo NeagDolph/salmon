@@ -13959,6 +13959,12 @@ var _default = {
   props: ["loggedin"],
   methods: {
     toggleSign: function toggleSign() {
+      console.log(_auth.signFuncs.auth2);
+
+      if (!_auth.signFuncs.auth2) {
+        return false;
+      }
+
       if (!this.loggedin) _auth.signFuncs.auth2.signIn().then(function () {
         return _auth.signFuncs.signedIn(_auth.signFuncs.auth2.currentUser.get(), true);
       });else _auth.signFuncs.signOut();
@@ -14982,6 +14988,8 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 //
 //
 //
+//
+//
 var _default = {
   data: function data() {
     return {
@@ -14997,7 +15005,8 @@ var _default = {
       subsections: ["Teachers", "Students", "Admins", "General"],
       addOpen: false,
       teacherEmail: "",
-      searchResults: []
+      searchResults: [],
+      teacherListHeight: false
     };
   },
   methods: {
@@ -15036,6 +15045,7 @@ var _default = {
       }
     },
     selectTeacher: function selectTeacher(idx) {
+      console.log(idx, this.sharedData.teacherlist[idx]);
       var classes = this.sharedData.teacherlist[idx][3];
       this.selectBlink = 1;
       setTimeout(function (e) {
@@ -15055,6 +15065,11 @@ var _default = {
     setMenu: function setMenu(isOpen) {
       this.open = isOpen;
       this.setGlobal("adminOpen", isOpen);
+      setTimeout(function (e) {
+        if (e.$refs.teacher) {
+          e.teacherListHeight = window.innerHeight - e.$refs.teacher.getBoundingClientRect().top;
+        }
+      }, 500, this);
     },
     addTeacher: function addTeacher(email, classes, update) {
       var _this = this;
@@ -15064,15 +15079,24 @@ var _default = {
         classes: classes,
         update: update
       }).then(function (res) {
+        if (update) return;
         _this.teacherEmail = "";
 
-        _this.searchCompute();
+        var existsIndex = _this.sharedData.teacherlist.findIndex(function (e) {
+          return e[0] == email;
+        });
 
-        if (!update) setTimeout(function (a) {
-          _this.selectTeacher(_this.sharedData.teacherlist.findIndex(function (t) {
-            return t[0] == a;
-          }), "");
-        }, 200, email);
+        if (existsIndex) {
+          var userObj = _this.sharedData.adminusers.find(function (e) {
+            return e.email == email;
+          });
+
+          _this.sharedData.teacherlist.push([userObj.email, userObj.name, userObj.userid, "000000000000000"]);
+
+          _this.selectedTeacher = _this.sharedData.teacherlist.length - 1;
+        } else {
+          _this.selectedTeacher = existsIndex;
+        }
       });
     },
     delTeacher: function delTeacher(email) {
@@ -15090,6 +15114,8 @@ var _default = {
   props: ["classes", "globalData", "sharedData"],
   mounted: function mounted() {
     this.$nextTick(function () {
+      console.log("this.refs", this.$refs);
+
       if (this.$refs.percent) {
         this.adminTop = this.$refs.percent.getBoundingClientRect().top;
         this.setMid = (window.innerHeight - this.$refs.percent.getBoundingClientRect().top) / 2 - 13 / 2
@@ -15241,32 +15267,34 @@ exports.default = _default;
                         })
                       : _vm._e(),
                     _vm._v(" "),
-                    _c(
-                      "div",
-                      { staticClass: "emailSearch z-depth-1-half" },
-                      _vm._l(_vm.searchResults, function(result) {
-                        return _c(
+                    _vm.teacherEmail.length >= 1
+                      ? _c(
                           "div",
-                          {
-                            key: result.email,
-                            staticClass: "searchResult",
-                            on: {
-                              click: function($event) {
-                                return _vm.setTeacherEmail(result.email)
-                              }
-                            }
-                          },
-                          [
-                            _vm._v(
-                              "\n            " +
-                                _vm._s(result.name) +
-                                "\n          "
+                          { staticClass: "emailSearch z-depth-1-half" },
+                          _vm._l(_vm.searchResults, function(result) {
+                            return _c(
+                              "div",
+                              {
+                                key: result.email,
+                                staticClass: "searchResult",
+                                on: {
+                                  click: function($event) {
+                                    return _vm.setTeacherEmail(result.email)
+                                  }
+                                }
+                              },
+                              [
+                                _vm._v(
+                                  "\n            " +
+                                    _vm._s(result.name) +
+                                    "\n          "
+                                )
+                              ]
                             )
-                          ]
+                          }),
+                          0
                         )
-                      }),
-                      0
-                    )
+                      : _vm._e()
                   ]),
                   _vm._v(" "),
                   _c("br"),
@@ -15290,38 +15318,49 @@ exports.default = _default;
                             ) +
                             " \n          "
                         ),
-                        _vm.selectedTeacher !== false
-                          ? _c(
-                              "svg",
-                              {
-                                attrs: {
-                                  title: "Revoke Teacher",
-                                  width: "20",
-                                  height: "20"
-                                },
-                                on: {
-                                  click: function($event) {
-                                    return _vm.delTeacher(
-                                      _vm.sharedData.teacherlist[
-                                        _vm.selectedTeacher
-                                      ][0],
-                                      true
-                                    )
-                                  }
-                                }
-                              },
-                              [
-                                _c("image", {
-                                  attrs: {
-                                    "xlink:href":
-                                      "https://atischool.net/static/delete.svg",
-                                    width: "20",
-                                    height: "20"
-                                  }
-                                })
-                              ]
-                            )
-                          : _vm._e()
+                        _c(
+                          "a",
+                          {
+                            staticStyle: {
+                              "text-decoration": "none",
+                              color: "black"
+                            },
+                            on: {
+                              click: function($event) {
+                                return _vm.delTeacher(
+                                  _vm.sharedData.teacherlist[
+                                    _vm.selectedTeacher
+                                  ][0],
+                                  true
+                                )
+                              }
+                            }
+                          },
+                          [
+                            _vm.selectedTeacher !== false
+                              ? _c(
+                                  "svg",
+                                  {
+                                    attrs: {
+                                      title: "Revoke Teacher",
+                                      width: "20",
+                                      height: "20"
+                                    }
+                                  },
+                                  [
+                                    _c("image", {
+                                      attrs: {
+                                        href:
+                                          "https://atischool.net/static/delete.svg",
+                                        width: "20",
+                                        height: "20"
+                                      }
+                                    })
+                                  ]
+                                )
+                              : _vm._e()
+                          ]
+                        )
                       ]),
                       _vm._v(" "),
                       _vm.selectedTeacher !== false
@@ -15360,7 +15399,11 @@ exports.default = _default;
                   _vm._v(" "),
                   _c(
                     "div",
-                    { staticClass: "teacherList" },
+                    {
+                      ref: "teacher",
+                      staticClass: "teacherList",
+                      style: { height: _vm.teacherListHeight + "px" }
+                    },
                     _vm._l(_vm.sharedData.teacherlist, function(teacher, idx) {
                       return _c(
                         "div",
@@ -15471,7 +15514,7 @@ exports.default = _default;
   var _vm = this
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
-  return _c("div", { staticClass: "col-3 col-xl-3 col-lg-3" }, [
+  return _c("div", { staticClass: "col-3 col-xl-3 col-lg-3 col-xs-12" }, [
     _c("div", { staticClass: "percentage z-depth-half" }, [
       _c("div", { staticClass: "targetHeader" }, [
         _c(
@@ -15579,108 +15622,112 @@ exports.default = _default;
   var _vm = this
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
-  return _c("div", { staticClass: "col-3 col-lg-3 col-xl-3 classescontcont" }, [
-    !_vm.loggedin
-      ? _c(
-          "div",
-          { staticClass: "classescont" },
-          _vm._l([1, 2, 3, 4, 5, 6], function(i) {
-            return _c(
-              "div",
-              {
-                key: i,
-                staticClass: "redclass-item mx-auto z-depth-half",
-                class: { greenclass: i % 2 == 1 }
-              },
-              [
-                _c(
-                  "div",
-                  {
-                    staticClass: "title",
-                    staticStyle: { "font-size": "50px" }
-                  },
-                  [_vm._v("Lorem Ipsum")]
-                ),
-                _vm._v(" "),
-                _c("span", { staticClass: "subtext" }, [
-                  _vm._v(_vm._s(i % 2 == 1 ? "Completed" : "Missing"))
-                ])
-              ]
-            )
-          }),
-          0
-        )
-      : _vm._e(),
-    _vm._v(" "),
-    _vm.loggedin
-      ? _c(
-          "div",
-          { staticClass: "classescont" },
-          _vm._l(_vm.sorted, function(classItem, idx) {
-            return _c(
-              "div",
-              {
-                key: classItem.name,
-                staticClass: "redclass-item mx-auto z-depth-half",
-                class: { greenclass: classItem.status }
-              },
-              [
-                _vm.getComment(idx)
-                  ? _c("div", { staticClass: "commentPopper" }, [
-                      _c("div", { staticClass: "commentBody z-depth-half" }, [
-                        _vm._v(_vm._s(_vm.getComment(idx)))
+  return _c(
+    "div",
+    { staticClass: "col-lg-3 col-xl-3 col-xs-12 classescontcont" },
+    [
+      !_vm.loggedin
+        ? _c(
+            "div",
+            { staticClass: "classescont" },
+            _vm._l([1, 2, 3, 4, 5, 6], function(i) {
+              return _c(
+                "div",
+                {
+                  key: i,
+                  staticClass: "redclass-item mx-auto z-depth-half",
+                  class: { greenclass: i % 2 == 1 }
+                },
+                [
+                  _c(
+                    "div",
+                    {
+                      staticClass: "title",
+                      staticStyle: { "font-size": "50px" }
+                    },
+                    [_vm._v("Lorem Ipsum")]
+                  ),
+                  _vm._v(" "),
+                  _c("span", { staticClass: "subtext" }, [
+                    _vm._v(_vm._s(i % 2 == 1 ? "Completed" : "Missing"))
+                  ])
+                ]
+              )
+            }),
+            0
+          )
+        : _vm._e(),
+      _vm._v(" "),
+      _vm.loggedin
+        ? _c(
+            "div",
+            { staticClass: "classescont" },
+            _vm._l(_vm.sorted, function(classItem, idx) {
+              return _c(
+                "div",
+                {
+                  key: classItem.name,
+                  staticClass: "redclass-item mx-auto z-depth-half",
+                  class: { greenclass: classItem.status }
+                },
+                [
+                  _vm.getComment(idx)
+                    ? _c("div", { staticClass: "commentPopper" }, [
+                        _c("div", { staticClass: "commentBody z-depth-half" }, [
+                          _vm._v(_vm._s(_vm.getComment(idx)))
+                        ])
                       ])
-                    ])
-                  : _vm._e(),
-                _vm._v(" "),
-                _c(
-                  "div",
-                  {
-                    staticClass: "title",
-                    staticStyle: { "font-size": "50px" }
-                  },
-                  [_vm._v(_vm._s(classItem.name))]
-                ),
-                _vm._v(" "),
-                _c("span", { staticClass: "subtext" }, [
-                  _vm._v(_vm._s(classItem.status ? "Completed" : "Missing"))
-                ]),
-                _vm._v(" "),
-                _vm.getComment(idx)
-                  ? _c("div", { staticClass: "commentIcon" }, [
-                      _c(
-                        "svg",
-                        {
-                          staticClass: "svg-inline--fa fa-comment fa-w-16",
-                          attrs: {
-                            "aria-hidden": "true",
-                            focusable: "false",
-                            "data-prefix": "fas",
-                            "data-icon": "comment",
-                            role: "img",
-                            xmlns: "http://www.w3.org/2000/svg",
-                            viewBox: "0 0 512 512"
-                          }
-                        },
-                        [
-                          _c("path", {
+                    : _vm._e(),
+                  _vm._v(" "),
+                  _c(
+                    "div",
+                    {
+                      staticClass: "title",
+                      staticStyle: { "font-size": "50px" }
+                    },
+                    [_vm._v(_vm._s(classItem.name))]
+                  ),
+                  _vm._v(" "),
+                  _c("span", { staticClass: "subtext" }, [
+                    _vm._v(_vm._s(classItem.status ? "Completed" : "Missing"))
+                  ]),
+                  _vm._v(" "),
+                  _vm.getComment(idx)
+                    ? _c("div", { staticClass: "commentIcon" }, [
+                        _c(
+                          "svg",
+                          {
+                            staticClass: "svg-inline--fa fa-comment fa-w-16",
                             attrs: {
-                              fill: "currentColor",
-                              d:
-                                "M256 32C114.6 32 0 125.1 0 240c0 49.6 21.4 95 57 130.7C44.5 421.1 2.7 466 2.2 466.5c-2.2 2.3-2.8 5.7-1.5 8.7S4.8 480 8 480c66.3 0 116-31.8 140.6-51.4 32.7 12.3 69 19.4 107.4 19.4 141.4 0 256-93.1 256-208S397.4 32 256 32z"
+                              "aria-hidden": "true",
+                              focusable: "false",
+                              "data-prefix": "fas",
+                              "data-icon": "comment",
+                              role: "img",
+                              xmlns: "http://www.w3.org/2000/svg",
+                              viewBox: "0 0 512 512"
                             }
-                          })
-                        ]
-                      )
-                    ])
-                  : _vm._e()
-              ]
-            )
-          }),
-          0
-        )
-      : _vm._e()
-  ])
+                          },
+                          [
+                            _c("path", {
+                              attrs: {
+                                fill: "currentColor",
+                                d:
+                                  "M256 32C114.6 32 0 125.1 0 240c0 49.6 21.4 95 57 130.7C44.5 421.1 2.7 466 2.2 466.5c-2.2 2.3-2.8 5.7-1.5 8.7S4.8 480 8 480c66.3 0 116-31.8 140.6-51.4 32.7 12.3 69 19.4 107.4 19.4 141.4 0 256-93.1 256-208S397.4 32 256 32z"
+                              }
+                            })
+                          ]
+                        )
+                      ])
+                    : _vm._e()
+                ]
+              )
+            }),
+            0
+          )
+        : _vm._e()
+    ]
+  )
 }
 var staticRenderFns = []
 render._withStripped = true
@@ -33416,7 +33463,7 @@ exports.default = _default;
               [
                 _c(
                   "div",
-                  { staticClass: "col-6 col-xl-6 col-lg-6" },
+                  { staticClass: "col-xl-6 col-lg-6 col-xs-12" },
                   [
                     _c("displayData", {
                       attrs: {

@@ -9,7 +9,7 @@
 
       <!-- Student -->
       <div class="row mainRow" v-if="!sharedData.teacher" :style="loggedin ? '' : 'filter: blur(8px)'">
-        <div class="col-6 col-xl-6 col-lg-6">
+        <div class="col-xl-6 col-lg-6 col-xs-12">
           <displayData :classes="sharedData.classes" :globalData="globalData"/>
           <adminPanel v-if="sharedData.admin" :globalData="globalData" :sharedData="sharedData"/>
         </div>

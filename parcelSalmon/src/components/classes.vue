@@ -1,5 +1,5 @@
 <template>
-  <div class="col-3 col-lg-3 col-xl-3 classescontcont">
+  <div class="col-lg-3 col-xl-3 col-xs-12 classescontcont">
     <div class="classescont" v-if="!loggedin">
       <div
         v-for="i in [1,2,3,4,5,6]"

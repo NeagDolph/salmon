@@ -51,8 +51,6 @@ def login():
 
     userid = session.get("userid", False)
 
-    print("USER ID", userid)
-
     if userid:
         teacher = session.get("teacher")
 
@@ -79,7 +77,7 @@ def login():
         cur = conn.cursor()
 
         if hd != "alt.app" and email not in allowedThirdParty:
-            print("Not ATI google account")
+            print("Non ATI email tried signing up (Email:", email + ")")
             session.clear()
             return "notati", 403
 
@@ -97,13 +95,13 @@ def login():
             session["offcampus"] = 1
             session["teacher"] = False
 
-            print("User doesnt exist")
+            print("User signed up to salmon on email:", email)
 
             cur.execute("INSERT INTO users VALUES (?,?,?,1,'000000000000','111111111111')", (email, name, str(userid),))
 
             updateteachers()
         else:
-            print("User exists")
+            print("User signed in on email:", email)
             userid = userdata[2]
             studenttype = userdata[3]
             offcampus = userdata[4]
@@ -417,6 +415,7 @@ def getdata(userid, extradata=False):
         userlist = []
         teacherlist = []
         commentlist = []
+        adminusers = []
 
         cur.execute('SELECT class, comment FROM comments WHERE userid=?', (userid, ))
         comments = cur.fetchall()
@@ -464,6 +463,5 @@ if __name__ == "__main__":
     cur = conn.cursor()
     cur.execute('SELECT userid FROM users')
     userids = [item for t in cur.fetchall() for item in t]
-    print("USERIDS", userids)
 
     socketio.run(app, debug=True, host="localhost", port=8080)

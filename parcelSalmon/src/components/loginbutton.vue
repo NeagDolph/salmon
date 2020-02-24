@@ -12,6 +12,10 @@ export default {
   props: ["loggedin"],
   methods: {
     toggleSign() {
+      console.log(signFuncs.auth2)
+      if (!signFuncs.auth2) {
+        return false
+      }
       if (!this.loggedin) signFuncs.auth2.signIn().then(() => signFuncs.signedIn(signFuncs.auth2.currentUser.get(), true));
       else signFuncs.signOut();
     }

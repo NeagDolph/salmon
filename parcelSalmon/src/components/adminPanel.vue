@@ -17,7 +17,7 @@
           <div class="addTeacher">
             <div class="add" @click="toggleAdd()">+ Add</div>
             <input class="emailInput" v-if="addOpen" ref="teacherEmail" v-model="teacherEmail" @keyup.enter="toggleAdd()" @keyup="searchCompute()"/>
-            <div class="emailSearch z-depth-1-half">
+            <div class="emailSearch z-depth-1-half" v-if="teacherEmail.length >= 1">
               <div class="searchResult" v-for="result in searchResults" :key="result.email" @click="setTeacherEmail(result.email)">
                 {{result.name}}
               </div>
@@ -39,7 +39,7 @@
             </div>
             </div>
           </div>
-          <div class="teacherList">
+          <div class="teacherList" ref="teacher" :style="{height: teacherListHeight + 'px'}">
             <div class="teacherItem col-4 z-depth-half" v-for="(teacher, idx) in sharedData.teacherlist" :key="teacher[0]" @click="selectTeacher(idx)">{{teacher[1]}}</div>
           </div>
         </div>
@@ -71,7 +71,8 @@ export default {
       subsections: ["Teachers", "Students", "Admins", "General"],
       addOpen: false,
       teacherEmail: "",
-      searchResults: []
+      searchResults: [],
+      teacherListHeight: false,
     };
   },
   methods: {
@@ -115,6 +116,7 @@ export default {
       }
     },
     selectTeacher(idx) {
+      console.log(idx, this.sharedData.teacherlist[idx])
       let classes = this.sharedData.teacherlist[idx][3]
       this.selectBlink = 1;
       setTimeout(e => {e.selectBlink = 0;}, 500, this);
@@ -133,14 +135,29 @@ export default {
     setMenu(isOpen) {
       this.open = isOpen;
       this.setGlobal("adminOpen", isOpen)
+      setTimeout(e => {
+        if (e.$refs.teacher) {
+          e.teacherListHeight = window.innerHeight - e.$refs.teacher.getBoundingClientRect().top
+        }},
+        500,
+        this)
     },
     addTeacher(email, classes, update) {
       axios
         .post(apiurl.addTeacher, { email: email, classes: classes, update: update })
         .then(res => {
+          if (update) return
           this.teacherEmail = ""
-          this.searchCompute()
-          if (!update) setTimeout(a => {this.selectTeacher(this.sharedData.teacherlist.findIndex(t => {return t[0] == a}), "")}, 200, email)
+          let existsIndex = this.sharedData.teacherlist.findIndex(e => {return e[0] == email})
+          if (existsIndex) {
+            let userObj = this.sharedData.adminusers.find(e => {
+              return e.email == email
+            });
+            this.sharedData.teacherlist.push([userObj.email, userObj.name, userObj.userid, "000000000000000"]);
+            this.selectedTeacher = this.sharedData.teacherlist.length - 1
+          } else {
+            this.selectedTeacher = existsIndex
+          }
         })
     },
     delTeacher(email, clear=false) {
@@ -155,13 +172,14 @@ export default {
   props: ["classes", "globalData", "sharedData"],
   mounted() {
     this.$nextTick(function() {
+      console.log("this.refs", this.$refs)
       if (this.$refs.percent) {
         this.adminTop = this.$refs.percent.getBoundingClientRect().top
         this.setMid = ((window.innerHeight - this.$refs.percent.getBoundingClientRect().top) / 2 - (13 / 2 /* bar height */)) + "px"
         this.buttonHeight = this.$refs.percent.offsetHeight
         this.openHeight = window.innerHeight - this.globalData.dataTop
       }
-    })
+    });
   }
 };
 </script>
@@ -292,7 +310,7 @@ export default {
   flex-basis: 100%;
   height: 30vh;
   overflow-x:auto;
-  margin-top: 50px;
+  margin-top: 20px;
   .teacherItem {
     height: 50px;
     line-height: 50px;
