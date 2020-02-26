@@ -1,5 +1,5 @@
 <template>
-  <div class="col-lg-3 col-xl-3 col-xs-12 classescontcont">
+  <div class="col-lg-3 col-xl-3 col-sm-3 col-xs-12 classescontcont">
     <div class="classescont" v-if="!loggedin">
       <div
         v-for="i in [1,2,3,4,5,6]"
@@ -22,7 +22,7 @@
         <div class="commentPopper" v-if="getComment(idx)">
           <div class="commentBody z-depth-half">{{getComment(idx)}}</div>
         </div>
-        <div class="title" style="font-size: 50px;">{{classItem.name}}</div>
+        <div class="title" :style="{fontSize: titleSize(classItem.name)}">{{classItem.name}}</div>
         <span class="subtext">{{classItem.status ? "Completed" : "Missing"}}</span>
         <div class="commentIcon" v-if="getComment(idx)">
           <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="comment" class="svg-inline--fa fa-comment fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M256 32C114.6 32 0 125.1 0 240c0 49.6 21.4 95 57 130.7C44.5 421.1 2.7 466 2.2 466.5c-2.2 2.3-2.8 5.7-1.5 8.7S4.8 480 8 480c66.3 0 116-31.8 140.6-51.4 32.7 12.3 69 19.4 107.4 19.4 141.4 0 256-93.1 256-208S397.4 32 256 32z"></path></svg>
@@ -41,6 +41,13 @@ export default {
       let returnComment = this.comments.find(e => {return e[0] == idx});
       if (returnComment) return returnComment[1];
       else return false;
+    },
+    titleSize(title) {
+      if (title.length > 8) {
+        return (3.125 - (title.length - 8) / 4) + "rem"
+      } else {
+        return "3.125rem"
+      }
     }
   },
   computed: {

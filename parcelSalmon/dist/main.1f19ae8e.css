@@ -41,6 +41,12 @@
     height: calc(20em - 6vw) !important;
 }
 }
+@media screen and (max-width: 768px) {
+#pieCont[data-v-dbd24a] {
+    width: calc(15em - 6vw) !important;
+    height: calc(15em - 6vw) !important;
+}
+}
 @media screen and (min-width: 1200px) {
 .statusMarker[data-v-dbd24a] {
     width: calc(2em + 1.5vw) !important;
@@ -54,6 +60,20 @@
 }
 .pieData[data-v-dbd24a] {
     font-size: 80px;
+}
+.percent[data-v-dbd24a] {
+    padding-top: 10px !important;
+}
+}
+@media screen and (max-width: 575px) {
+.subpercent[data-v-dbd24a] {
+    display: none;
+}
+.pieData[data-v-dbd24a] {
+    font-size: 80px;
+}
+.percent[data-v-dbd24a] {
+    padding-top: 20px !important;
 }
 }
 .adminOpen[data-v-dbd24a] {
@@ -109,11 +129,6 @@
   transform: rotateY(18deg);
   fill: #e3ebff;
 }
-@media screen and (max-width: 768px) {
-.pieDataCont[data-v-dbd24a] {
-    width: calc(10%);
-}
-}
 .pieDataCont[data-v-dbd24a] {
   width: calc(100px + 12%);
   display: flex;
@@ -141,21 +156,16 @@
 }
 .pieDataCont .pieData .subpercent[data-v-dbd24a] {
   color: #686868;
-  font-family: futura-pt, sans-serif;
-  font-weight: 400;
-  font-style: normal;
-  font-size: 24px;
-}
-.pieDataCont .pieData .subpercent .offTarget[data-v-dbd24a] {
   font-family: mr-eaves-modern, sans-serif;
   font-weight: 300;
   font-style: italic;
   font-size: 27px;
-  text-overflow: ellipsis;
-  overflow: hidden;
-  white-space: nowrap;
-  height: 0.7em;
-  display: inline-block;
+}
+.pieDataCont .pieData .subpercent .number[data-v-dbd24a] {
+  font-family: futura-pt, sans-serif;
+  font-weight: 400;
+  font-style: normal;
+  font-size: 24px;
 }
 @media screen and (max-width: 1120px) {
 #pieCont[data-v-dbd24a]::after {
@@ -201,7 +211,6 @@
   background: #e3ebff;
   border-radius: 10px;
   display: flex;
-  padding-top: 20px;
   position: relative;
 }
 .menuSelect[data-v-2085c5] {

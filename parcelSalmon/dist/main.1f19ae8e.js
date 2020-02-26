@@ -14127,7 +14127,6 @@ exports.default = void 0;
 //
 //
 //
-//
 var _default = {
   props: ["classes", "globalData", "isMobile"],
   computed: {
@@ -14237,14 +14236,10 @@ exports.default = _default;
                 _vm._v(" "),
                 _vm.percent < 100
                   ? _c("span", { staticClass: "subpercent" }, [
-                      _vm._v(
-                        "\n            " +
-                          _vm._s(100 - _vm.percent) +
-                          "%\n            "
-                      ),
-                      _c("div", { staticClass: "offTarget" }, [
-                        _vm._v("off target")
-                      ])
+                      _c("span", { staticClass: "number" }, [
+                        _vm._v(_vm._s(100 - _vm.percent) + "%")
+                      ]),
+                      _vm._v(" off target\n          ")
                     ])
                   : _vm._e()
               ])
@@ -15505,7 +15500,7 @@ exports.default = _default;
   var _vm = this
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
-  return _c("div", { staticClass: "col-xl-3 col-lg-3 col-xs-12" }, [
+  return _c("div", { staticClass: "col-xl-3 col-lg-3 col-sm-3 col-xs-12" }, [
     _c("div", { staticClass: "percentage z-depth-half" }, [
       _c("div", { staticClass: "targetHeader" }, [
         _c(
@@ -15589,6 +15584,13 @@ var _default = {
         return e[0] == idx;
       });
       if (returnComment) return returnComment[1];else return false;
+    },
+    titleSize: function titleSize(title) {
+      if (title.length > 8) {
+        return 3.125 - (title.length - 8) / 4 + "rem";
+      } else {
+        return "3.125rem";
+      }
     }
   },
   computed: {
@@ -15615,7 +15617,7 @@ exports.default = _default;
   var _c = _vm._self._c || _h
   return _c(
     "div",
-    { staticClass: "col-lg-3 col-xl-3 col-xs-12 classescontcont" },
+    { staticClass: "col-lg-3 col-xl-3 col-sm-3 col-xs-12 classescontcont" },
     [
       !_vm.loggedin
         ? _c(
@@ -15674,7 +15676,7 @@ exports.default = _default;
                     "div",
                     {
                       staticClass: "title",
-                      staticStyle: { "font-size": "50px" }
+                      style: { fontSize: _vm.titleSize(classItem.name) }
                     },
                     [_vm._v(_vm._s(classItem.name))]
                   ),
@@ -33400,7 +33402,7 @@ var _default = {
   },
   methods: {
     onResize: function onResize() {
-      this.isMobile = window.innerWidth < 768;
+      this.isMobile = window.innerWidth < 575;
     }
   },
   components: {
@@ -33460,7 +33462,7 @@ exports.default = _default;
               [
                 _c(
                   "div",
-                  { staticClass: "col-xl-6 col-lg-6 col-xs-12 xs-mb" },
+                  { staticClass: "col-xl-6 col-lg-6 col-sm-6 col-xs-12 xs-mb" },
                   [
                     _c("displayData", {
                       attrs: {

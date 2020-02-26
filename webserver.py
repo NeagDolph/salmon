@@ -97,7 +97,7 @@ def login():
 
             print("User signed up to salmon on email:", email)
 
-            cur.execute("INSERT INTO users VALUES (?,?,?,1,'000000000000','111111111111')", (email, name, str(userid),))
+            cur.execute("INSERT INTO users VALUES (?,?,?,1,'000000000000000','111111111111111','101011000000000')", (email, name, str(userid),))
 
             updateteachers()
         else:

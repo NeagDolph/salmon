@@ -9,7 +9,7 @@
 
       <!-- Student -->
       <div class="row mainRow" v-if="!sharedData.teacher" :style="loggedin ? '' : 'filter: blur(8px)'">
-        <div class="col-xl-6 col-lg-6 col-xs-12 xs-mb">
+        <div class="col-xl-6 col-lg-6 col-sm-6 col-xs-12 xs-mb">
           <displayData :classes="sharedData.classes" :globalData="globalData" :isMobile="isMobile"/>
           <adminPanel v-if="sharedData.admin && !isMobile" :globalData="globalData" :sharedData="sharedData"/>
         </div>
@@ -54,7 +54,7 @@ export default {
   },
   methods: {
     onResize () {
-      this.isMobile = window.innerWidth < 768
+      this.isMobile = window.innerWidth < 575
     }
   },
   components: {

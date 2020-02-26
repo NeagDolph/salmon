@@ -26,8 +26,7 @@
               {{percent}}%
               <br />
               <span class="subpercent" v-if="percent < 100">
-                {{100 - percent}}%
-                <div class="offTarget">off target</div>
+                <span class="number">{{100 - percent}}%</span> off target
               </span>
             </div>
           </div>
@@ -95,6 +94,25 @@ export default {
 
   .pieData {
     font-size: 80px;
+  }
+
+  .percent {
+    padding-top: 10px !important;
+  }
+}
+
+
+@media screen and (max-width: 575px) {
+  .subpercent {
+    display: none;
+  }
+
+  .pieData {
+    font-size: 80px;
+  }
+
+  .percent {
+    padding-top: 20px !important;
   }
 }
 
@@ -185,24 +203,17 @@ export default {
 
     .subpercent {
       color: rgb(104, 104, 104);
-      font-family: futura-pt, sans-serif; 
-      font-weight: 400;
-      font-style: normal;
-      font-size: 24px;
 
-      .offTarget {
-        font-family: mr-eaves-modern, sans-serif;
-        font-weight: 300;
-        font-style: italic;
-        font-size: 27px;
+      font-family: mr-eaves-modern, sans-serif;
+      font-weight: 300;
+      font-style: italic;
+      font-size: 27px;
 
-        text-overflow: ellipsis;
-        overflow: hidden;
-        white-space: nowrap; 
-
-        height: 0.7em;
-
-        display: inline-block;
+      .number {
+        font-family: futura-pt, sans-serif; 
+        font-weight: 400;
+        font-style: normal;
+        font-size: 24px;
       }
     }
   }
@@ -260,7 +271,6 @@ export default {
   background: $main1;
   border-radius: $curve;
   display: flex;
-  padding-top: 20px;
   position: relative;
 }
 </style>
