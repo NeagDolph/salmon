@@ -12,7 +12,6 @@ export default {
   },
   methods: {
     submitcomment() {
-      console.log("COMMENTAREA submitted")
       this.addComment(this.userdata, this.classidx, this.comment)
 
     }

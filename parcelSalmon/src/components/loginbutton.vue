@@ -12,7 +12,6 @@ export default {
   props: ["loggedin"],
   methods: {
     toggleSign() {
-      console.log(signFuncs.auth2)
       if (!signFuncs.auth2) {
         return false
       }

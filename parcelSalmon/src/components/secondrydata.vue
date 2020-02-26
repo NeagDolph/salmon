@@ -1,5 +1,5 @@
 <template>
-  <div class="col-3 col-xl-3 col-lg-3 col-xs-12">
+  <div class="col-xl-3 col-lg-3 col-xs-12">
     <div class="percentage z-depth-half">
       <div class="targetHeader"><p :class="{green: redclasses <= 0, red: redclasses >= 1}">{{redclasses}}</p> off target courses</div>
       <div class="targetBody">

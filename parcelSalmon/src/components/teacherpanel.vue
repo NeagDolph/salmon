@@ -69,7 +69,6 @@ export default {
   props: ["sharedData"],
   methods: {
     openModal(user) {
-      console.log("COMMENT")
       this.usereditmodal(true, user);
     },
     change(user, idx, userindex) {

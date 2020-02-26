@@ -13959,8 +13959,6 @@ var _default = {
   props: ["loggedin"],
   methods: {
     toggleSign: function toggleSign() {
-      console.log(_auth.signFuncs.auth2);
-
       if (!_auth.signFuncs.auth2) {
         return false;
       }
@@ -14131,7 +14129,7 @@ exports.default = void 0;
 //
 //
 var _default = {
-  props: ["classes", "globalData"],
+  props: ["classes", "globalData", "isMobile"],
   computed: {
     glob: function glob() {
       return this.globalData.adminOpen;
@@ -15017,7 +15015,6 @@ var _default = {
           name: user.name
         };
       });
-      console.log("EE", userinput);
       var fuse = new _fuse.default(userinput, {
         keys: [{
           name: 'email',
@@ -15028,11 +15025,9 @@ var _default = {
         }]
       });
       this.searchResults = fuse.search(this.teacherEmail);
-      console.log("aftere", this.searchResults, this.teacherEmail);
       return this.searchResults;
     },
     setTeacherEmail: function setTeacherEmail(email) {
-      console.log("SET", email);
       this.teacherEmail = email;
       this.$refs.teacherEmail.focus();
     },
@@ -15045,7 +15040,6 @@ var _default = {
       }
     },
     selectTeacher: function selectTeacher(idx) {
-      console.log(idx, this.sharedData.teacherlist[idx]);
       var classes = this.sharedData.teacherlist[idx][3];
       this.selectBlink = 1;
       setTimeout(function (e) {
@@ -15059,7 +15053,6 @@ var _default = {
       classCopy[idx] = classCopy[idx] == "1" ? "0" : "1";
       this.classToggle = classCopy.join("");
       this.sharedData.teacherlist[this.selectedTeacher][3] = this.classToggle;
-      console.log("classtog", this.classToggle, this.sharedData.teacherlist[this.selectedTeacher][2]);
       this.addTeacher(this.sharedData.teacherlist[this.selectedTeacher][0], this.classToggle, true);
     },
     setMenu: function setMenu(isOpen) {
@@ -15114,8 +15107,6 @@ var _default = {
   props: ["classes", "globalData", "sharedData"],
   mounted: function mounted() {
     this.$nextTick(function () {
-      console.log("this.refs", this.$refs);
-
       if (this.$refs.percent) {
         this.adminTop = this.$refs.percent.getBoundingClientRect().top;
         this.setMid = (window.innerHeight - this.$refs.percent.getBoundingClientRect().top) / 2 - 13 / 2
@@ -15514,7 +15505,7 @@ exports.default = _default;
   var _vm = this
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
-  return _c("div", { staticClass: "col-3 col-xl-3 col-lg-3 col-xs-12" }, [
+  return _c("div", { staticClass: "col-xl-3 col-lg-3 col-xs-12" }, [
     _c("div", { staticClass: "percentage z-depth-half" }, [
       _c("div", { staticClass: "targetHeader" }, [
         _c(
@@ -15753,6 +15744,7 @@ var _loginbutton = _interopRequireDefault(require("./loginbutton.vue"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+//
 //
 //
 //
@@ -18499,7 +18491,6 @@ var _default = {
   },
   methods: {
     submitcomment: function submitcomment() {
-      console.log("COMMENTAREA submitted");
       this.addComment(this.userdata, this.classidx, this.comment);
     }
   }
@@ -32923,7 +32914,6 @@ var _default = {
   props: ["sharedData"],
   methods: {
     openModal: function openModal(user) {
-      console.log("COMMENT");
       this.usereditmodal(true, user);
     },
     change: function change(user, idx, userindex) {
@@ -33404,12 +33394,13 @@ var _default = {
   data: function data() {
     return {
       // loggedin: true
-      classes: []
+      classes: [],
+      isMobile: false
     };
   },
   methods: {
-    peep: function peep() {
-      console.log("PEEP");
+    onResize: function onResize() {
+      this.isMobile = window.innerWidth < 768;
     }
   },
   components: {
@@ -33421,6 +33412,19 @@ var _default = {
     modaledit: _modaledit.default,
     secondrydata: _secondrydata.default,
     Header: _header.default
+  },
+  beforeDestroy: function beforeDestroy() {
+    if (typeof window !== 'undefined') {
+      window.removeEventListener('resize', this.onResize, {
+        passive: true
+      });
+    }
+  },
+  mounted: function mounted() {
+    this.onResize();
+    window.addEventListener('resize', this.onResize, {
+      passive: true
+    });
   }
 };
 exports.default = _default;
@@ -33438,14 +33442,7 @@ exports.default = _default;
   var _c = _vm._self._c || _h
   return _c(
     "div",
-    {
-      attrs: { id: "main" },
-      on: {
-        click: function($event) {
-          return _vm.peep()
-        }
-      }
-    },
+    { attrs: { id: "main" } },
     [
       _c("Header", {
         style: _vm.loggedin ? "" : "filter: blur(6px)",
@@ -33463,16 +33460,17 @@ exports.default = _default;
               [
                 _c(
                   "div",
-                  { staticClass: "col-xl-6 col-lg-6 col-xs-12" },
+                  { staticClass: "col-xl-6 col-lg-6 col-xs-12 xs-mb" },
                   [
                     _c("displayData", {
                       attrs: {
                         classes: _vm.sharedData.classes,
-                        globalData: _vm.globalData
+                        globalData: _vm.globalData,
+                        isMobile: _vm.isMobile
                       }
                     }),
                     _vm._v(" "),
-                    _vm.sharedData.admin
+                    _vm.sharedData.admin && !_vm.isMobile
                       ? _c("adminPanel", {
                           attrs: {
                             globalData: _vm.globalData,
@@ -33485,6 +33483,7 @@ exports.default = _default;
                 ),
                 _vm._v(" "),
                 _c("secondrydata", {
+                  staticClass: "xs-mb",
                   attrs: { classes: _vm.sharedData.classes }
                 }),
                 _vm._v(" "),
@@ -40956,7 +40955,6 @@ var app = new _vue.default({
           studentclasses: el[4]
         };
       });
-      console.log("RAWDATCOMM", this.rawData);
       if ((this.rawData.tcomments | []).length >= 1) obj.tcomments = this.rawData.tcomments.map(function (el) {
         var comment = {
           userid: el[0],
@@ -40999,6 +40997,10 @@ var app = new _vue.default({
 
     _sockets.default.on('connect', function () {
       (0, _auth.authFunc)(_this2);
+    });
+
+    _sockets.default.on('connect_error', function (error) {
+      console.log('%c Socket cannot connect to backend API!', 'background: #222; color: #ff6961; font-size: 18px;');
     });
   }
 });

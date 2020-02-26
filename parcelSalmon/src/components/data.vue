@@ -38,7 +38,7 @@
 
 <script>
 export default {
-  props: ["classes", "globalData"],
+  props: ["classes", "globalData", "isMobile"],
   computed: {
     glob() {
       return this.globalData.adminOpen
@@ -70,6 +70,13 @@ export default {
   #pieCont {
     width: calc(20em - 6vw) !important;
     height: calc(20em - 6vw) !important;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  #pieCont {
+    width: calc(15em - 6vw) !important;
+    height: calc(15em - 6vw) !important;
   }
 }
 
@@ -253,6 +260,7 @@ export default {
   background: $main1;
   border-radius: $curve;
   display: flex;
+  padding-top: 20px;
   position: relative;
 }
 </style>

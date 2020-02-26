@@ -84,7 +84,6 @@ export default {
         }
       })
 
-      console.log("EE", userinput)
 
       var fuse = new Fuse(userinput, {
         keys: [{
@@ -97,11 +96,9 @@ export default {
       });
 
       this.searchResults = fuse.search(this.teacherEmail);
-      console.log("aftere", this.searchResults, this.teacherEmail)
       return this.searchResults
     },
     setTeacherEmail(email) {
-      console.log("SET", email)
       this.teacherEmail = email;
       this.$refs.teacherEmail.focus()
     },
@@ -116,7 +113,6 @@ export default {
       }
     },
     selectTeacher(idx) {
-      console.log(idx, this.sharedData.teacherlist[idx])
       let classes = this.sharedData.teacherlist[idx][3]
       this.selectBlink = 1;
       setTimeout(e => {e.selectBlink = 0;}, 500, this);
@@ -129,7 +125,6 @@ export default {
       this.classToggle = classCopy.join("")
 
       this.sharedData.teacherlist[this.selectedTeacher][3] = this.classToggle
-      console.log("classtog", this.classToggle, this.sharedData.teacherlist[this.selectedTeacher][2])
       this.addTeacher(this.sharedData.teacherlist[this.selectedTeacher][0], this.classToggle, true)
     },
     setMenu(isOpen) {
@@ -172,7 +167,6 @@ export default {
   props: ["classes", "globalData", "sharedData"],
   mounted() {
     this.$nextTick(function() {
-      console.log("this.refs", this.$refs)
       if (this.$refs.percent) {
         this.adminTop = this.$refs.percent.getBoundingClientRect().top
         this.setMid = ((window.innerHeight - this.$refs.percent.getBoundingClientRect().top) / 2 - (13 / 2 /* bar height */)) + "px"

@@ -54,8 +54,6 @@ export var app = new Vue({
           return {email: el[0], name: el[1], userid: el[2], classes: el[3], studentclasses: el[4] }
         });
 
-      console.log("RAWDATCOMM", this.rawData)
-
       if ((this.rawData.tcomments | []).length >= 1) obj.tcomments = this.rawData.tcomments.map(el => {
         let comment = {userid: el[0], class: el[1], comment: el[2]}
         this.rawData.users.find(x => x.userid == comment.userid).comments[parseInt(comment.class)] = comment.comment
@@ -83,6 +81,9 @@ export var app = new Vue({
     socket.on("updatereq", () => axios.post(apiurl.data))
     socket.on('connect', () => {
       authFunc(this)
+    })
+    socket.on('connect_error', error => {
+      console.log('%c Socket cannot connect to backend API!', 'background: #222; color: #ff6961; font-size: 18px;');
     })
   }
 })

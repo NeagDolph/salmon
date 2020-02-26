@@ -26,6 +26,14 @@ export default {
 <style lang="scss" scoped>
 @import "../css/settings.scss";
 
+#headerCont {
+  .row {
+    .col-12 {
+      padding: 0;
+    }
+  }
+}
+
 #header {
   background: $accent1;
   height: 90px;

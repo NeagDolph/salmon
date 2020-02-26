@@ -9,6 +9,9 @@
   outline: 0;
   border: 0;
 }
+#headerCont .row .col-12[data-v-fdc882] {
+  padding: 0;
+}
 #header[data-v-fdc882] {
   background: #e58053;
   height: 90px;
@@ -106,6 +109,11 @@
   transform: rotateY(18deg);
   fill: #e3ebff;
 }
+@media screen and (max-width: 768px) {
+.pieDataCont[data-v-dbd24a] {
+    width: calc(10%);
+}
+}
 .pieDataCont[data-v-dbd24a] {
   width: calc(100px + 12%);
   display: flex;
@@ -193,6 +201,7 @@
   background: #e3ebff;
   border-radius: 10px;
   display: flex;
+  padding-top: 20px;
   position: relative;
 }
 .menuSelect[data-v-2085c5] {
@@ -544,10 +553,6 @@
   left: 0;
 }
 
-.classescontcont {
-  padding: 0 !important;
-}
-
 .classescont {
   width: 100%;
   height: calc(100vh - 165px);
@@ -556,6 +561,14 @@
   padding-left: 15px;
 }
 
+@media screen and (max-width: 768px) {
+  .classescont {
+    height: auto;
+    border-radius: 10px;
+    background: #e3ebff;
+    padding: 25px;
+  }
+}
 .redclass-item {
   border-radius: 10px;
   height: 100px;
@@ -1287,6 +1300,28 @@ to {
 
   #header {
     padding: 0 4em;
+  }
+}
+@media screen and (max-width: 768px) {
+  #student > .row {
+    padding: 2em 0.2em;
+  }
+
+  #header {
+    padding: 0 4em;
+  }
+
+  #main {
+    overflow-y: auto;
+  }
+
+  .xs-mb {
+    margin-bottom: 20px;
+  }
+
+  .row {
+    margin-right: 0 !important;
+    margin-left: 0 !important;
   }
 }
 #main {

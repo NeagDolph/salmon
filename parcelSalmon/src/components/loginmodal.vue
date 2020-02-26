@@ -15,6 +15,7 @@
             <div class="text-center mt-4">
               <loginButton :loggedin="loggedin"/>
             </div>
+            
           </div>
         </div>
         <!--/.Content-->

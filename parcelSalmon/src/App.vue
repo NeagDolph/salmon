@@ -1,5 +1,5 @@
 <template>
-  <div id="main" @click="peep()">
+  <div id="main">
 
     <!-- Header -->
     <Header :loggedin="loggedin" :style="loggedin ? '' : 'filter: blur(6px)'" :userAuth="userAuth"/>
@@ -9,11 +9,11 @@
 
       <!-- Student -->
       <div class="row mainRow" v-if="!sharedData.teacher" :style="loggedin ? '' : 'filter: blur(8px)'">
-        <div class="col-xl-6 col-lg-6 col-xs-12">
-          <displayData :classes="sharedData.classes" :globalData="globalData"/>
-          <adminPanel v-if="sharedData.admin" :globalData="globalData" :sharedData="sharedData"/>
+        <div class="col-xl-6 col-lg-6 col-xs-12 xs-mb">
+          <displayData :classes="sharedData.classes" :globalData="globalData" :isMobile="isMobile"/>
+          <adminPanel v-if="sharedData.admin && !isMobile" :globalData="globalData" :sharedData="sharedData"/>
         </div>
-        <secondrydata :classes="sharedData.classes"/>
+        <secondrydata :classes="sharedData.classes" class="xs-mb"/>
         <classes :classes="sharedData.classes" :comments="sharedData.comments" :loggedin="loggedin"/>
       </div>
 
@@ -49,11 +49,12 @@ export default {
     return {
       // loggedin: true
       classes: [],
+      isMobile: false,
     };
   },
   methods: {
-    peep() {
-      console.log("PEEP")
+    onResize () {
+      this.isMobile = window.innerWidth < 768
     }
   },
   components: {
@@ -65,6 +66,15 @@ export default {
     modaledit,
     secondrydata,
     Header
+  },
+  beforeDestroy () {
+    if (typeof window !== 'undefined') {
+      window.removeEventListener('resize', this.onResize, { passive: true })
+    }
+  },
+  mounted() {
+    this.onResize()
+    window.addEventListener('resize', this.onResize, { passive: true })
   }
 };
 </script>
@@ -124,6 +134,30 @@ export default {
 
   #header {
     padding: 0 4em;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  
+  #student > .row {
+    padding: 2em 0.2em;
+  }
+
+  #header {
+    padding: 0 4em;
+  }
+
+  #main {
+    overflow-y: auto;
+  }
+
+  .xs-mb {
+    margin-bottom: 20px;
+  }
+
+  .row {
+    margin-right: 0 !important;
+    margin-left: 0 !important;
   }
 }
 

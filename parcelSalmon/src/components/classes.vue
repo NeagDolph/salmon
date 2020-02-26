@@ -72,10 +72,6 @@ export default {
   }
 }
 
-.classescontcont {
-  padding: 0 !important;
-}
-
 .classescont {
   width: 100%;
   height: calc(100vh - 165px);
@@ -83,6 +79,17 @@ export default {
   padding-right: 15px;
   padding-left: 15px;
 }
+
+
+@media screen and (max-width: 768px) {
+  .classescont {
+    height: auto;
+    border-radius: 10px;
+    background: $main;
+    padding: 25px;
+  }
+}
+
 
 .redclass-item {
   border-radius: $curve;
