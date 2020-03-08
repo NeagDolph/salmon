@@ -159,8 +159,11 @@ def connect():
 
     join_room(userid)
 
-    if teacher or admin:
+    if teacher:
         join_room("teachers")
+
+    if admin:
+        join_room("admins")
 
     if not session.get("teacher"):
         join_room("students")
@@ -239,13 +242,15 @@ def removeteacher():
 
         cur = conn.cursor()
         cur.execute('SELECT userid FROM users WHERE email=?', (email,))
-        result = cur.fetchone()
+        [userid] = cur.fetchone()
 
-        if result:
-            cur.execute("UPDATE users SET student=1 WHERE userid=?", (result[0], ))
+        if userid:
+            cur.execute("UPDATE users SET student=1 WHERE userid=?", (userid, ))
             conn.commit()
-            updatereq()
-            emitupdate(result[0])
+
+            updatereq(2) # Ask admins (2) to re-request data
+
+            emitupdate(userid)
 
             return "success", 200
         else:
@@ -278,18 +283,18 @@ def addteacher():
 
         cur = conn.cursor()
         cur.execute('SELECT userid FROM users WHERE email=?', (email,))
-        result = cur.fetchone()
-        print("ERM", result)
+        [userid] = cur.fetchone()
 
-        if result:
+
+        if userid:
             cur.execute("UPDATE users SET student=2, teacherclasses=? WHERE email=?", (classes, email))
             conn.commit()
 
-            updatereq()
+            updatereq(2) #Asks admins to re-request data
 
-            emitupdate(result[0])
+            emitupdate(userid) #Sends updated status to modified user
 
-            return "success", 200
+            return getdata(adminid), 200
         else:
             cur.execute("INSERT INTO teacherqueue VALUES (?, ?)", (email, adminid))
             conn.commit()
@@ -396,8 +401,9 @@ def emitupdate(userid):
     socketio.emit('update', getdata(userid), room=userid)
 
 
-def updatereq():
-    socketio.emit('updatereq', room="students")
+def updatereq(usertype):
+    types = ["student", "teacher", "admins"]
+    socketio.emit('updatereq', room=types[usertype])
 
 
 def getdata(userid, extradata=False):
@@ -422,7 +428,7 @@ def getdata(userid, extradata=False):
 
         if student == 2:
             # cur.execute('SELECT email, name, userid, classes FROM users WHERE student = 1')
-            cur.execute('SELECT email, name, userid, classes FROM users')
+            cur.execute('SELECT email, name, userid, classes FROM users WHERE student = 1')
             userlist = cur.fetchall()
 
             # users = [{"email": i[0], "name": i[1], "userid": i[2], "classes": i[3]} for i in userlist]

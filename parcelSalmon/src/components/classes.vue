@@ -83,6 +83,7 @@ export default {
   width: 100%;
   height: calc(100vh - 165px);
   overflow-y: auto;
+  overflow-x: hidden;
   padding-right: 15px;
   padding-left: 15px;
 }
@@ -190,9 +191,6 @@ export default {
     padding-bottom: 0px;
     border-radius: 12px;
     display: block;
-  }
-
-  &:nth-child(1) {
   }
   
   

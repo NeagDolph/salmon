@@ -41,8 +41,14 @@ let signedIn = (googleUser, first=false) => {
         if (first) window.location.reload()
       }
     })
-    .catch(e => {
-      console.log("login failed", e);
+    .catch(error => {
+      if (error.response) {
+        console.log("login failed", error.response.status, error.response.data);
+
+        if (error.response.data == "notati" && error.response.status == 403) {
+          alert("ERROR! You are not an ATI user! Please use a google account under alt.app to login successfully.")
+        }
+      }
     });
 };
 

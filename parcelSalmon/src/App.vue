@@ -4,11 +4,10 @@
     <!-- Header -->
     <Header :loggedin="loggedin" :style="loggedin ? '' : 'filter: blur(6px)'" :userAuth="userAuth"/>
 
-    <!-- Main panel -->
-    <div id="student" class="pageContainer">
+    <!-- Student panel -->
+    <div id="student" class="pageContainer" v-if="!sharedData.teacher">
 
-      <!-- Student -->
-      <div class="row mainRow" v-if="!sharedData.teacher" :style="loggedin ? '' : 'filter: blur(8px)'">
+      <div class="row mainRow" :style="loggedin ? '' : 'filter: blur(8px)'">
         <div class="col-xl-6 col-lg-6 col-sm-6 col-xs-12 xs-mb">
           <displayData :classes="sharedData.classes" :globalData="globalData" :isMobile="isMobile"/>
           <adminPanel v-if="sharedData.admin && !isMobile" :globalData="globalData" :sharedData="sharedData"/>
@@ -17,11 +16,13 @@
         <classes :classes="sharedData.classes" :comments="sharedData.comments" :loggedin="loggedin"/>
       </div>
 
-      <!-- Teacher -->
-      <div class="row mainRow" v-if="sharedData.teacher && loggedin">
+    </div>
+
+    <!-- Teacher -->
+    <div id="teacher" class="pageContainer" v-if="sharedData.teacher">
+      <div class="row mainRow">
         <teacherpanel :sharedData="sharedData"/>
       </div>
-
     </div>
 
 
@@ -90,6 +91,10 @@ export default {
 @import url("https://use.typekit.net/qwh8nvj.css");
 @import "./css/settings.scss";
 
+* {
+    -webkit-overflow-scrolling: touch;
+}
+
 .trackerTitle {
   font-family: mr-eaves-modern, sans-serif;
   font-weight: 300;
@@ -118,7 +123,7 @@ export default {
 }
 
 @media screen and (min-width: 1630px) {
-  #student > .row {
+  .pageContainer > .row {
     padding: 2em 18em;
   }
 
@@ -128,7 +133,7 @@ export default {
 }
 
 @media screen and (max-width: 1200px) {
-  #student > .row {
+  .pageContainer > .row {
     padding: 2em 4em;
   }
 
@@ -139,7 +144,7 @@ export default {
 
 @media screen and (max-width: 768px) {
   
-  #student > .row {
+  .pageContainer > .row {
     padding: 2em 0.2em;
   }
 
@@ -147,8 +152,8 @@ export default {
     padding: 0 4em;
   }
 
-  #main {
-    overflow-y: auto;
+  body, html {
+    overflow-y: auto !important;
   }
 
   .xs-mb {
@@ -162,8 +167,7 @@ export default {
 }
 
 #main {
-  min-height: 100%;
-  height: 100vh;
+  height: auto;
   margin: 0;
   background: $background;
   font-family: 'Fanta';

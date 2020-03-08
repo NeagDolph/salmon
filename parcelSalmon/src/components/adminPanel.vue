@@ -16,18 +16,18 @@
         <div class="col-12 body teacher" v-if="subsection == 0">
           <div class="addTeacher">
             <div class="add" @click="toggleAdd()">+ Add</div>
-            <input class="emailInput" v-if="addOpen" ref="teacherEmail" v-model="teacherEmail" @keyup.enter="toggleAdd()" @keyup="searchCompute()"/>
-            <div class="emailSearch z-depth-1-half" v-if="teacherEmail.length >= 1">
+            <input class="emailInput" :class="{inputAnimate: addOpen}" ref="teacherEmail" v-model="teacherEmail" @keyup.enter="toggleAdd()" @keyup="searchCompute()"/>
+            <div class="emailSearch z-depth-1-half" v-if="teacherEmail.length >= 1" >
               <div class="searchResult" v-for="result in searchResults" :key="result.email" @click="setTeacherEmail(result.email)">
                 {{result.name}}
               </div>
             </div>
           </div>
           <br>
-          <div class="classSelect z-depth-1" :class="{invis: selectBlink}">
+          <div class="classSelect z-depth-1" v-if="selectedTeacher !== false">
             <div class="selectTitle">
-              {{selectedTeacher === false ? "Teachable classes" : sharedData.teacherlist[selectedTeacher][1]}} 
-              <a @click="delTeacher(sharedData.teacherlist[selectedTeacher][0], true)" style="text-decoration: none; color: black;">
+              {{sharedData.teacherlist[selectedTeacher].name}} 
+              <a @click="delTeacher(sharedData.teacherlist[selectedTeacher].email, true)" style="text-decoration: none; color: black;">
                 <svg title="Revoke Teacher" width="20" height="20" v-if="selectedTeacher !== false">       
                   <image href="https://atischool.net/static/delete.svg" width="20" height="20"/>    
                 </svg>
@@ -40,7 +40,7 @@
             </div>
           </div>
           <div class="teacherList" ref="teacher" :style="{height: teacherListHeight + 'px'}">
-            <div class="teacherItem col-4 z-depth-half" v-for="(teacher, idx) in sharedData.teacherlist" :key="teacher[0]" @click="selectTeacher(idx)">{{teacher[1]}}</div>
+            <div class="teacherItem col-4 z-depth-half" v-for="(teacher, idx) in sharedData.teacherlist" :key="teacher.email" @click="selectTeacher(idx)">{{teacher.name}}</div>
           </div>
         </div>
         <div class="menuSelect">
@@ -62,7 +62,6 @@ export default {
       buttonHeight: 0,
       open: false,
       setMid: "0px",
-      selectBlink: 0,
       adminTop: 0,
       classToggle: "000000000000000",
       selectedTeacher: false,
@@ -80,7 +79,7 @@ export default {
       let userinput = this.sharedData.adminusers.map(user => {
         return {
           email: user.email,
-          name: user.name
+          name: user.email
         }
       })
 
@@ -106,16 +105,18 @@ export default {
       this.subsection = section;
     },
     toggleAdd() {
-      if (!this.addOpen) this.addOpen = true;
+      if (!this.addOpen) {
+        this.addOpen = true;
+        this.$refs.teacherEmail.focus()
+      }
       else {
         if (this.teacherEmail.length >= 1) this.addTeacher(this.teacherEmail, "000000000000000");
         else this.addOpen = false;
       }
     },
     selectTeacher(idx) {
-      let classes = this.sharedData.teacherlist[idx][3]
-      this.selectBlink = 1;
-      setTimeout(e => {e.selectBlink = 0;}, 500, this);
+      let classes = this.sharedData.teacherlist[idx].teacherclasses
+      setTimeout(this.dataCalc, 300)
       this.selectedTeacher = idx;
       this.classToggle = classes;
     },
@@ -124,18 +125,13 @@ export default {
       classCopy[idx] = classCopy[idx] == "1" ? "0" : "1"
       this.classToggle = classCopy.join("")
 
-      this.sharedData.teacherlist[this.selectedTeacher][3] = this.classToggle
-      this.addTeacher(this.sharedData.teacherlist[this.selectedTeacher][0], this.classToggle, true)
+      this.sharedData.teacherlist[this.selectedTeacher].teacherclasses = this.classToggle
+      this.addTeacher(this.sharedData.teacherlist[this.selectedTeacher].email, this.classToggle, true)
     },
     setMenu(isOpen) {
       this.open = isOpen;
       this.setGlobal("adminOpen", isOpen)
-      setTimeout(e => {
-        if (e.$refs.teacher) {
-          e.teacherListHeight = window.innerHeight - e.$refs.teacher.getBoundingClientRect().top
-        }},
-        500,
-        this)
+      setTimeout(this.dataCalc, 400)
     },
     addTeacher(email, classes, update) {
       axios
@@ -143,16 +139,16 @@ export default {
         .then(res => {
           if (update) return
           this.teacherEmail = ""
-          let existsIndex = this.sharedData.teacherlist.findIndex(e => {return e[0] == email})
-          if (existsIndex) {
-            let userObj = this.sharedData.adminusers.find(e => {
-              return e.email == email
-            });
-            this.sharedData.teacherlist.push([userObj.email, userObj.name, userObj.userid, "000000000000000"]);
-            this.selectedTeacher = this.sharedData.teacherlist.length - 1
+
+          let userIndex = res.data.teacherlist.findIndex(e => {return e[0] == email})
+          
+          if (userIndex > -1) {
+            this.selectedTeacher = userIndex
           } else {
-            this.selectedTeacher = existsIndex
+            console.log(userIndex, res.data, email)
           }
+
+
         })
     },
     delTeacher(email, clear=false) {
@@ -162,17 +158,23 @@ export default {
           .then(e => {
             if (clear) this.selectedTeacher = false;
           })
+    },
+    dataCalc() {
+      if (this.$refs.teacher) {
+        this.teacherListHeight = window.innerHeight - this.$refs.teacher.getBoundingClientRect().top
+      }
     }
   },
   props: ["classes", "globalData", "sharedData"],
   mounted() {
     this.$nextTick(function() {
       if (this.$refs.percent) {
-        this.adminTop = this.$refs.percent.getBoundingClientRect().top
         this.setMid = ((window.innerHeight - this.$refs.percent.getBoundingClientRect().top) / 2 - (13 / 2 /* bar height */)) + "px"
         this.buttonHeight = this.$refs.percent.offsetHeight
         this.openHeight = window.innerHeight - this.globalData.dataTop
+        this.adminTop = this.$refs.percent.getBoundingClientRect().top
       }
+      this.dataCalc()
     });
   }
 };
@@ -265,16 +267,30 @@ export default {
   color: rgb(74, 113, 219);
   .emailInput {
     display: inline;
+    border: 0;
+    height: 26px;
+    border-radius: 5px;
+    margin-left: -2px;
+    outline: 0;
+    padding: 2px;
+    width: 0px;
+    transition: width 0.6s, opacity 0.3s;
+    opacity: 0;
+
+    &.inputAnimate {
+      width: 160px;
+      opacity: 1;
+    }
   }
   .add {
     background: white;
     border-radius: 4px;
-    height: 30px;
+    // height: 30px;
     line-height: 24px;
     padding: 4px 10px;
     display: inline;
     cursor: pointer;
-    width: fit-content;
+    // width: fit-content;
   }
   .emailSearch {
     display: block;

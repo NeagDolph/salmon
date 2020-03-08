@@ -1,77 +1,86 @@
 <template>
-  <div id="teacher" class="col-4">
-    <div v-for="(user, index) in sharedData.users" :key="user.userid" class="useritemcol">
-      <Popper
-        :trigger="'hover'"
-        :enter-active-class="'bounceIn'"
-        :leave-active-class="'bounceOut'"
-        :append-to-body="true"
-        :delay-on-mouse-out="100"
-        :visible-arrow="false"
-        :x-placement="'right-start'"
-        :options="{
-          placement: 'right-start'
-        }" 
-        class="useritemspan mb-4 z-depth-1"
-      >
-        <div class="popper z-depth-2">
+  <div style="width: 100%;" class="row">
+
+    <div class="teacherUserArea col-5">
+      <div v-for="(user, index) in sharedData.users" :key="user.userid" class="useritemcol">
+        <div class="useritem" @click="openMenu(user, index)">
+          <div class="name">{{user.name}}</div>
           <div
-            v-for="(status, idx) in filteredClasses[index]"
+            class="btn"
+            :class="{red: !isgreen[index], green: isgreen[index]}"
+            @click="openModal(user)"
+          >{{isgreen[index] ? "Green" : "Red"}}</div>
+        </div>
+
+        <div class="quickSelect">
+          <div 
+            v-tooltip="{content: classObj.fullname, offset: '13px'}"
+            class="quickSelectItemCont"
+            v-for="(classObj, idx) in filteredClasses[index]"
             :key="idx"
-            class="popperBlock"
-            :class="{red: status === '0', green: status === '1', cannot: status === '2'}"
-            @click.stop="change(user, idx, index)"
           >
-            {{sharedData.shortnames[idx]}}
-            <div class="commentIcon" @click.stop.prevent="openModal(user)" v-tooltip="{content: getComment(user, idx) + '<span class=\'editmsg\'>Edit (click)</span>', loadingContent: 'Loading...<br/><span class=\'editmsg\'>Edit (click)</span>', offset: '13px'}">
-              <!-- https://fontawesome.com/license -->
-              <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="comment" class="svg-inline--fa fa-comment fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M256 32C114.6 32 0 125.1 0 240c0 49.6 21.4 95 57 130.7C44.5 421.1 2.7 466 2.2 466.5c-2.2 2.3-2.8 5.7-1.5 8.7S4.8 480 8 480c66.3 0 116-31.8 140.6-51.4 32.7 12.3 69 19.4 107.4 19.4 141.4 0 256-93.1 256-208S397.4 32 256 32z"></path></svg>
+            <div
+              class="quickSelectItem"
+              :class="{red: classObj.status === '0', green: classObj.status === '1'}"
+              @click.stop="change(user, classObj.index, index)"
+            >
+              {{classObj.name[0]}}
             </div>
           </div>
         </div>
-
-        <div class="reference" slot="reference">
-          <div class="useritem" @click="openModal(user)">
-            <div class="name">{{user.name}}</div>
-            <div
-              class="btn"
-              :class="{red: !isgreen[index], green: isgreen[index]}"
-              @click="openModal(user)"
-            >{{isgreen[index] ? "Green" : "Red"}}</div>
-          </div>
-        </div>
-      </Popper>
+      </div>
     </div>
+
+    <div class="col-2"></div>
+
+    <div class="teacherClassArea col-5">
+      <label class="title">{{ selectedIndex === false ? "Manage User" : sharedData.users[selectedIndex].name }}</label>
+      <div class="classItemCont">
+        <div 
+          class="classItem"
+          v-for="(classObj, idx) in filteredClasses[selectedIndex]"
+          :key="idx"
+          @click.stop="change(sharedData.users[selectedIndex], classObj.index, selectedIndex)"
+          :class="{red: classObj.status === '0', green: classObj.status === '1'}"
+        >
+          {{classObj.name[0]}}
+        </div>
+      </div>
+    </div>
+
+
+
   </div>
 </template>
 
 <script>
-import Popper from "vue-popperjs";
-import "vue-popperjs/dist/vue-popper.css";
 import commentmodal from "./commentmodal.vue"
 import Vue from "vue"
 import VTooltip from 'v-tooltip'
 import './../css/animations.css'
-import simplebar from "simplebar-vue";
+import { classnames } from "./../js/globals.js";
 
 Vue.use(VTooltip)
 
 export default {
   components: {
-    Popper,
     commentmodal
   },
   data() {
     return {
-      show: {}
+      show: {},
+      classnames: classnames,
+      selectedIndex: false
     };
   },
   props: ["sharedData"],
   methods: {
-    openModal(user) {
-      this.usereditmodal(true, user);
+
+    openMenu(user, index) {
+      this.selectedIndex = index;
     },
     change(user, idx, userindex) {
+      console.log("change", user, idx, userindex)
       this.editUserClasses(user, idx, userindex);
     },
     getComment(user, idx) {
@@ -84,10 +93,12 @@ export default {
       return this.sharedData.users.map(user => {
         return user.classes
           .split("")
-          .map((v, i) => {
-            return this.sharedData.tclasses[i] == "0" ? "2" : v;
+          //If teacher has specific class enabled then set it to object else set to false
+          .map((el, i) => {
+            return this.sharedData.tclasses[i] === "0" ? false : {index: i, status: el, name: this.sharedData.shortnames[i], fullname: this.classnames[i]};
           })
-          .join("");
+          // Filter out all false elements
+          .filter(el => {return el})
       });
     },
     isgreen() {
@@ -101,16 +112,18 @@ export default {
 
 <style lang="scss">
 @import "../css/settings.scss";
-$zees: main, popper1, popper2;
+
+* {
+  font-family: 'Fanta', sans-serif; 
+  font-weight: 300; 
+  font-style: normal;
+}
+
 
 #teacher {
   height: 100% !important;
   margin: 15px 0;
   overflow-x: auto;
-}
-
-.useritemcol {
-  height: 90px;
 }
 
 .editmsg {
@@ -121,32 +134,6 @@ $zees: main, popper1, popper2;
 .fa-comment {
   width: 18px;
   height: 18px;
-}
-
-.useritemspan {
-  padding: 0px;
-  border-radius: $curve;
-  background: white;
-  display: block;
-  font-family: Roboto;
-  z-index: index($zees, main);
-
-  // .popper {
-  //   opacity: 0;
-  //   transition: opacity 0.3s;
-  // }
-
-  // &:hover {
-  //   .popper {
-  //     opacity: 1 !important;
-  //   }
-  // }
-}
-
-.commentPopper {
-  .popper {
-    z-index: index($zees, popper2);
-  }
 }
 
 @keyframes bounceIn {
@@ -189,133 +176,189 @@ $zees: main, popper1, popper2;
   opacity: 0;
 }
 
-.useritem {
-  height: fit-content;
-  padding: 6px;
-  height: 63px;
-  font-family: Roboto;
-  cursor: pointer;
+.teacherUserArea {
+  height: calc(100vh - 170px);
+  overflow-x: auto;
+}
 
-  .name {
-    width: 60%;
-    float: left;
-    top: 3px;
-    line-height: 18px;
-    position: relative;
-    margin: 5px;
+.teacherClassArea {
+  height: 20rem;
+  background: $main;
+  border-radius: 10px;
+
+  .title {
+    font-size: 26px;
+    margin-top: 10px;
   }
 
-  .btn {
-    float: right;
-    right: 15px;
-    top: 50%;
-    position: absolute;
-    transform: translate(0%, -50%);
+  .classItemCont {
+    width: 100%;
+    height: 200px;
+    display: flex;
+    align-items: center;
 
-    &.red {
-      background: $red;
-      color: white;
+    .classItem {
+      width: 90px;
+      height: 90px;
+      margin: 10px;
+      border-radius: 5px;
+
+
+      &.red {
+        background: #4f6284;
+      }
+
+      &.green {
+        background: $accent1;
+      }
+    }
+  }
+  
+}
+
+
+
+.useritemcol {
+  height: 80px;
+  margin-bottom: 20px;
+  position: relative;
+  display: block;
+
+  .useritem {
+    height: fit-content;
+    padding: 6px;
+    height: 80px;
+    width: 100%;
+    border-radius: 6px;
+    display: inline-flex;
+    background: $main;
+    font-family: Roboto;
+    cursor: pointer;
+
+    .name {
+      width: 55%;
+      float: left;
+      line-height: 28px;
+      position: relative;
+      font-size: 25px;
+      margin: auto 0;
+      font-family: futura-pt, sans-serif; 
+      font-weight: 300; 
+      padding: 0 15px;
+      font-style: normal;
     }
 
-    &.green {
-      background: $green;
-      color: black;
-      padding-left: 5px;
-      padding-right: 5px;
+    .btn {
+      float: right;
+      right: 15px;
+      top: 50%;
+      position: absolute;
+      transform: translate(0%, -50%);
+
+      &.red {
+        background: $red;
+        color: white;
+      }
+
+      &.green {
+        background: $green;
+        color: black;
+        padding-left: 5px;
+        padding-right: 5px;
+      }
     }
   }
 }
 
-@keyframes visi {
-  0% {
-    display: none;
-  }
-  59% {
-    display: none;
-  }
-  60% {
-    display: block;
-  }
-  100% {
-    display: block;
-  }
-}
 
-span > .popper {
-  width: 221px;
+.quickSelect {
+  width: fit-content;
+  padding: 0 10px;
+  height: 80px;
+  display: inline-flex;
+  position: absolute;
+  right: 0;
+  top: 0;
   transition: opacity 0.2s;
   font-family: Roboto;
-  z-index: index($zees, popper1);
+  background: $accent2;
+  border-bottom-right-radius: 6px;
+  align-items: center;
+  justify-content: center;
+  border-top-right-radius: 6px;
 
-  // opacity: 0;
-
-  .popperBlock {
-    width: 45px;
-    height: 45px;
-    border-radius: $curve;
-    user-select: none;
-    margin: 4px;
-    cursor: pointer;
-    float: left;
-    text-align: center;
-    display: block;
+  .quickSelectItemCont {
+    width: 25px;
+    height: 25px;
+    border-radius: 20px;
+    display: inline-block;
     position: relative;
-    line-height: 45px;
-    transition: 0.3s;
-    z-index: index($zees, popper1);
-
-    .commentIcon {
-      opacity: 0;
-      transition: 0.4s;
-      position: absolute;
-      top: -5px;
-      right: -5px;
-      width: 20px;
-      height: 20px;
-      color: black;
-      z-index: index($zees, popper1);
-
-      svg {
-        position: absolute;
-        left: 0;
-      }
-    }
-
-    &:hover {
-      transform: scale(1.07);
-      box-shadow: 0 1px 5px rgba(0, 0, 0, 0.15);
+    margin: 4px;
 
 
+    .quickSelectItem {
+      width: 25px;
+      height: 25px;
+      border-radius: 25px;
+      user-select: none;
+      cursor: pointer;
+      display: block;
+      position: relative;
+      text-align: center;
+      line-height: 25px;
+      transition: 0.3s;
 
       .commentIcon {
-        opacity: 0.7;
-        animation: visi 2s forwards;
+        opacity: 0;
+        transition: 0.4s;
+        position: absolute;
+        top: -5px;
+        right: -5px;
+        width: 20px;
+        height: 20px;
+        color: black;
+
+        svg {
+          position: absolute;
+          left: 0;
+        }
       }
-    }
 
-    &.green {
-      background: $green;
-      color: black;
-      &:active {
-        background: #42a76a;
+      &:hover {
+        transform: scale(1.1);
+        opacity: 0.8;
+
+
+
+        .commentIcon {
+          opacity: 0.7;
+        }
       }
-    }
 
-    &.red {
-      background: $red;
-      color: white;
-
-      &:active {
-        background: #e74f47;
+      &.green {
+        background: $green;
+        color: black;
+        &:active {
+          background: #42a76a;
+        }
       }
-    }
 
-    &.cannot {
-      user-select: none;
-      pointer-events: none;
-      cursor: default;
-      background: gray;
-      color: black;
+      &.red {
+        background: $red;
+        color: white;
+
+        &:active {
+          background: #e74f47;
+        }
+      }
+
+      &.cannot {
+        user-select: none;
+        pointer-events: none;
+        cursor: default;
+        background: gray;
+        color: black;
+      }
     }
   }
 }

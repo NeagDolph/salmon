@@ -1,11 +1,14 @@
 import Vue from "vue";
+// import Vuex from "vuex";
+
 import Main from "./App.vue";
 import axios from 'axios';
 import { classnames, userauth, apiurl } from "./js/globals";
-import './mixins/mixins'
-import socket from './js/sockets.js'
-import {authFunc} from './js/auth.js'
+import './mixins/mixins';
+import socket from './js/sockets.js';
+import {authFunc} from './js/auth.js';
 import "bootstrap/dist/css/bootstrap.min.css";
+
 
 export var app = new Vue({
   data() {
@@ -64,6 +67,10 @@ export var app = new Vue({
         obj.teacherlist = this.rawData.teacherlist
       }
 
+      if (this.rawData.admin) obj.teacherlist = this.rawData.teacherlist.map(el => {
+        return {email: el[0], name: el[1], userid: el[2], teacherclasses: el[3]}
+      });
+
       this.preData = obj
       return obj
     }
@@ -74,15 +81,13 @@ export var app = new Vue({
   created() {
     socket.on("update", data => {
       this.rawData = data
-    });
-    socket.on("users", data => {
-      this.rawUsers = data
-    });
-    socket.on("updatereq", () => axios.post(apiurl.data))
-    socket.on('connect', () => {
-      authFunc(this)
     })
-    socket.on('connect_error', error => {
+    .on("users", data => {
+      this.rawUsers = data
+    })
+    .on("updatereq", () => axios.post(apiurl.data))
+    .on('connect', () => {authFunc(this)})
+    .on('connect_error', error => {
       console.log('%c Socket cannot connect to backend API!', 'background: #222; color: #ff6961; font-size: 18px;');
     })
   }

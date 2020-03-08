@@ -1,12 +1,12 @@
 <template>
   <div class="loginmodal">
-    <div class="col-3 col-sm-3 mx-auto d-block" :class="animateClasses" tabindex="-1" aria-hidden="true">
+    <div class="col-xl-3 col-lg-3 col-sm-4 col-xs-6 mx-auto d-block" :class="animateClasses" tabindex="-1" aria-hidden="true">
       <div class="modal-dialog cascading-modal modal-avatar modal-sm">
         <!--Content-->
         <div class="modal-content z-depth-2">
           <!--Header-->
             <img
-              src="https://lemontree.dev/logo.png"
+              src="https://atischool.net/static/logo.png"
               alt="logo"
               class="rounded-circle img-responsive z-depth-2 mx-auto"
             />
@@ -39,6 +39,7 @@ export default {
 </script>
 
 <style lang="scss">
+
 .loginmodal {
   position: fixed;
   top: 0;
@@ -46,8 +47,8 @@ export default {
   padding: 0;
   overflow: hidden;
   margin: 0;
-  height: 100vh;
-  width: 100vw;
+  height: 100%;
+  width: 100%;
   background: rgba(0, 0, 0, 0.16);
   display: flex;
   align-items: center;

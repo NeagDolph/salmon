@@ -10,6 +10,10 @@ Vue.mixin({
         if (user) app.editSelect = user
       },
       editUserClasses(user, idx, userindex) {
+      //User = object with userid and classes
+      //Idx = index of class to be changed
+      //User = Index of user in userlist
+
         app.sharedData.users[userindex].oldclasses = user.classes
         let classes = user.classes.split("")
         classes[idx] = classes[idx] == "0" ? "1" : (classes[idx] == "1" ? "0" : "1")

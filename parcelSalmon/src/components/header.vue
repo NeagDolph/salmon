@@ -37,7 +37,7 @@ export default {
 #header {
   background: $accent1;
   height: 90px;
-  margin: 35px 0 10px;
+  margin: 1rem 0 0.8rem;
 
   .nightMode {
     width: 50px;
