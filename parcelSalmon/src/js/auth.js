@@ -31,12 +31,14 @@ let signedIn = (googleUser, first=false) => {
   axios
     .post(apiurl.login, { idtoken: userauth.authResponse.id_token })
     .then(data => {
+      console.log("DID", data)
       if (data == "success") {
         
         app.$set(app.loggedin, 'loggedin', true)
         axios.post(apiurl.data);
       } else {
-        app.rawData = data.data
+        app.$set(app.loggedin, 'loggedin', true)
+        app.updateData(data.data)
         axios.post(apiurl.data);
         if (first) window.location.reload()
       }

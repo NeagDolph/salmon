@@ -13911,12 +13911,15 @@ var authFunc = function authFunc(app) {
     _axios.default.post(_globals.apiurl.login, {
       idtoken: _globals.userauth.authResponse.id_token
     }).then(function (data) {
+      console.log("DID", data);
+
       if (data == "success") {
         app.$set(app.loggedin, 'loggedin', true);
 
         _axios.default.post(_globals.apiurl.data);
       } else {
-        app.rawData = data.data;
+        app.$set(app.loggedin, 'loggedin', true);
+        app.updateData(data.data);
 
         _axios.default.post(_globals.apiurl.data);
 
@@ -14134,15 +14137,15 @@ exports.default = void 0;
 //
 //
 var _default = {
-  props: ["classes", "globalData", "isMobile"],
+  props: ["sharedData", "globalData", "isMobile"],
   computed: {
     glob: function glob() {
       return this.globalData.adminOpen;
     },
     percent: function percent() {
-      return parseInt((this.classes.reduce(function (tot, el) {
+      return parseInt((this.sharedData.classes.reduce(function (tot, el) {
         return tot + el.status;
-      }, 0) / this.classes.length * 100).toFixed(1));
+      }, 0) / this.sharedData.classes.length * 100).toFixed(1));
     }
   },
   mounted: function mounted() {
@@ -15457,25 +15460,25 @@ exports.default = void 0;
 //
 //
 var _default = {
-  props: ["classes"],
+  props: ["sharedData"],
   methods: {},
   computed: {
     redclassArray: function redclassArray() {
-      return this.classes.map(function (e) {
+      return this.sharedData.classes.map(function (e) {
         if (!e.status) return e.name;else return 7;
       }).filter(function (e) {
         if (e == 7) return false;else return true;
       });
     },
     redclasses: function redclasses() {
-      return this.classes.reduce(function (tot, el) {
+      return this.sharedData.classes.reduce(function (tot, el) {
         return tot + (!el.status ? 1 : 0);
       }, 0);
     },
     percent: function percent() {
-      return parseInt((this.classes.reduce(function (tot, el) {
+      return parseInt((this.sharedData.classes.reduce(function (tot, el) {
         return tot + el.status;
-      }, 0) / this.classes.length * 100).toFixed(1));
+      }, 0) / this.sharedData.classes.length * 100).toFixed(1));
     }
   }
 };
@@ -15569,10 +15572,10 @@ exports.default = void 0;
 //
 //
 var _default = {
-  props: ["classes", "comments", "loggedin"],
+  props: ["sharedData", "loggedin"],
   methods: {
     getComment: function getComment(idx) {
-      var returnComment = this.comments.find(function (e) {
+      var returnComment = this.sharedData.comments.find(function (e) {
         return e[0] == idx;
       });
       if (returnComment) return returnComment[1];else return false;
@@ -15587,7 +15590,7 @@ var _default = {
   },
   computed: {
     sorted: function sorted() {
-      return this.classes.sort(function (a, b) {
+      return this.sharedData.classes.sort(function (a, b) {
         return a.status - b.status;
       });
     }
@@ -15647,7 +15650,7 @@ exports.default = _default;
         ? _c(
             "div",
             { staticClass: "classescont" },
-            _vm._l(_vm.sorted, function(classItem, idx) {
+            _vm._l(_vm.sharedData.classes, function(classItem, idx) {
               return _c(
                 "div",
                 {
@@ -26229,6 +26232,11 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 //
 //
 //
+//
+//
+//
+//
+//
 _vue.default.use(_vTooltip.default);
 
 var _default = {
@@ -26239,16 +26247,61 @@ var _default = {
     return {
       show: {},
       classnames: _globals.classnames,
-      selectedIndex: false
+      selectedIndex: false,
+      typingComment: false,
+      commentSelectMode: false,
+      commentSelectedIndex: false,
+      currentComment: "",
+      currentName: ""
     };
   },
   props: ["sharedData"],
   methods: {
+    createCommentLast: function createCommentLast() {
+      this.addComment({
+        userid: this.sharedData.users[this.selectedIndex].userid
+      }, this.commentSelectedIndex, this.currentComment).then(function (data) {});
+    },
+    createCommentSecond: function createCommentSecond(index) {
+      var _this = this;
+
+      if (this.commentSelectMode) {
+        this.commentSelectedIndex = index;
+        this.typingComment = true;
+        this.currentComment = this.sharedData.users[this.selectedIndex].comments[index];
+        setTimeout(function () {
+          _this.$refs.commentInput.focus();
+        }, 100);
+      }
+    },
+    createComment: function createComment() {
+      if (this.currentComment.length >= 1) {
+        this.createCommentLast();
+        return;
+      }
+
+      if (!this.commentSelectMode && this.selectedIndex !== false) {
+        this.commentSelectMode = true;
+        return;
+      } else if (this.commentSelectMode) {
+        this.commentSelectMode = false;
+        return;
+      }
+    },
     openMenu: function openMenu(user, index) {
+      this.currentComment = "";
+      this.commentSelectMode = false;
+      this.typingComment = false;
+      this.commentSelectedIndex = false;
       this.selectedIndex = index;
     },
     change: function change(user, idx, userindex) {
-      console.log("change", user, idx, userindex);
+      if (this.commentSelectMode) {
+        this.createCommentSecond(idx);
+        this.currentName = this.classnames[idx];
+        return;
+      }
+
       this.editUserClasses(user, idx, userindex);
     },
     getComment: function getComment(user, idx) {
@@ -26260,16 +26313,16 @@ var _default = {
   },
   computed: {
     filteredClasses: function filteredClasses() {
-      var _this = this;
+      var _this2 = this;
 
       return this.sharedData.users.map(function (user) {
         return user.classes.split("") //If teacher has specific class enabled then set it to object else set to false
         .map(function (el, i) {
-          return _this.sharedData.tclasses[i] === "0" ? false : {
+          return _this2.sharedData.tclasses[i] === "0" ? false : {
             index: i,
             status: el,
-            name: _this.sharedData.shortnames[i],
-            fullname: _this.classnames[i]
+            name: _this2.sharedData.shortnames[i],
+            fullname: _this2.classnames[i]
           };
         }) // Filter out all false elements
         .filter(function (el) {
@@ -26397,7 +26450,8 @@ exports.default = _default;
               ? "Manage User"
               : _vm.sharedData.users[_vm.selectedIndex].name
           )
-        )
+        ),
+        _vm.commentSelectMode ? _c("span", [_vm._v("Selecting")]) : _vm._e()
       ]),
       _vm._v(" "),
       _c(
@@ -26411,7 +26465,8 @@ exports.default = _default;
               staticClass: "classItem",
               class: {
                 red: classObj.status === "0",
-                green: classObj.status === "1"
+                green: classObj.status === "1",
+                selecting: _vm.commentSelectMode
               },
               on: {
                 click: function($event) {
@@ -26424,11 +26479,86 @@ exports.default = _default;
                 }
               }
             },
-            [_vm._v("\n        " + _vm._s(classObj.name[0]) + "\n      ")]
+            [
+              _vm._v(
+                "\n        " +
+                  _vm._s(_vm.classnames[classObj.index]) +
+                  "\n      "
+              )
+            ]
           )
         }),
         0
-      )
+      ),
+      _vm._v(" "),
+      _c("div", { staticClass: "commentarea" }, [
+        _vm.typingComment
+          ? _c("input", {
+              directives: [
+                {
+                  name: "model",
+                  rawName: "v-model",
+                  value: _vm.currentComment,
+                  expression: "currentComment"
+                }
+              ],
+              ref: "commentInput",
+              staticClass: "commentInput",
+              domProps: { value: _vm.currentComment },
+              on: {
+                keyup: function($event) {
+                  if (
+                    !$event.type.indexOf("key") &&
+                    _vm._k($event.keyCode, "enter", 13, $event.key, "Enter")
+                  ) {
+                    return null
+                  }
+                  return _vm.createCommentLast()
+                },
+                input: function($event) {
+                  if ($event.target.composing) {
+                    return
+                  }
+                  _vm.currentComment = $event.target.value
+                }
+              }
+            })
+          : _vm._e(),
+        _vm._v(" "),
+        !_vm.typingComment
+          ? _c("div", { staticClass: "placeholder" })
+          : _vm._e(),
+        _vm._v(" "),
+        _c(
+          "svg",
+          {
+            staticClass: "createComment",
+            attrs: {
+              viewBox: "0 -1 401.52289 401",
+              xmlns: "http://www.w3.org/2000/svg"
+            },
+            on: {
+              click: function($event) {
+                return _vm.createComment()
+              }
+            }
+          },
+          [
+            _c("path", {
+              attrs: {
+                d:
+                  "m370.589844 250.972656c-5.523438 0-10 4.476563-10 10v88.789063c-.019532 16.5625-13.4375 29.984375-30 30h-280.589844c-16.5625-.015625-29.980469-13.4375-30-30v-260.589844c.019531-16.558594 13.4375-29.980469 30-30h88.789062c5.523438 0 10-4.476563 10-10 0-5.519531-4.476562-10-10-10h-88.789062c-27.601562.03125-49.96875 22.398437-50 50v260.59375c.03125 27.601563 22.398438 49.96875 50 50h280.589844c27.601562-.03125 49.96875-22.398437 50-50v-88.792969c0-5.523437-4.476563-10-10-10zm0 0"
+              }
+            }),
+            _c("path", {
+              attrs: {
+                d:
+                  "m376.628906 13.441406c-17.574218-17.574218-46.066406-17.574218-63.640625 0l-178.40625 178.40625c-1.222656 1.222656-2.105469 2.738282-2.566406 4.402344l-23.460937 84.699219c-.964844 3.472656.015624 7.191406 2.5625 9.742187 2.550781 2.546875 6.269531 3.527344 9.742187 2.566406l84.699219-23.464843c1.664062-.460938 3.179687-1.34375 4.402344-2.566407l178.402343-178.410156c17.546875-17.585937 17.546875-46.054687 0-63.640625zm-220.257812 184.90625 146.011718-146.015625 47.089844 47.089844-146.015625 146.015625zm-9.40625 18.875 37.621094 37.625-52.039063 14.417969zm227.257812-142.546875-10.605468 10.605469-47.09375-47.09375 10.609374-10.605469c9.761719-9.761719 25.589844-9.761719 35.351563 0l11.738281 11.734375c9.746094 9.773438 9.746094 25.589844 0 35.359375zm0 0"
+              }
+            })
+          ]
+        )
+      ])
     ])
   ])
 }
@@ -26780,7 +26910,7 @@ exports.default = _default;
                     [
                       _c("displayData", {
                         attrs: {
-                          classes: _vm.sharedData.classes,
+                          sharedData: _vm.sharedData,
                           globalData: _vm.globalData,
                           isMobile: _vm.isMobile
                         }
@@ -26800,13 +26930,12 @@ exports.default = _default;
                   _vm._v(" "),
                   _c("secondrydata", {
                     staticClass: "xs-mb",
-                    attrs: { classes: _vm.sharedData.classes }
+                    attrs: { sharedData: _vm.sharedData }
                   }),
                   _vm._v(" "),
                   _c("classes", {
                     attrs: {
-                      classes: _vm.sharedData.classes,
-                      comments: _vm.sharedData.comments,
+                      sharedData: _vm.sharedData,
                       loggedin: _vm.loggedin
                     }
                   })
@@ -26883,11 +27012,16 @@ _vue.default.mixin({
       //User = object with userid and classes
       //Idx = index of class to be changed
       //User = Index of user in userlist
-      _main.app.sharedData.users[userindex].oldclasses = user.classes;
+      // Flip selected class index
       var classes = user.classes.split("");
-      classes[idx] = classes[idx] == "0" ? "1" : classes[idx] == "1" ? "0" : "1";
-      classes = classes.join("");
-      _main.app.sharedData.users[userindex].classes = classes;
+      classes[idx] = classes[idx] == "1" ? "0" : "1";
+      classes = classes.join(""); // Create a temp sharedData, modify it and set the app.sharedData as the temp one
+
+      var tempShared = _main.app.sharedData;
+      tempShared.users[userindex].classes = classes;
+
+      _main.app.$set(_main.app.sharedData, 'sharedData', tempShared); // Send class change to server
+
 
       _axios.default.post(_globals.apiurl.classes, {
         class: idx,
@@ -26896,21 +27030,17 @@ _vue.default.mixin({
       }).then(function () {
         _axios.default.post(_globals.apiurl.data);
       }).catch(function (error) {
-        console.log(error.response);
-        console.log("error: ", _main.app.sharedData.users[userindex].oldclasses, user.classes, classes);
-        _main.app.sharedData.users[userindex].classes = _main.app.sharedData.users[userindex].oldclasses;
+        var tempShared = _main.app.sharedData;
+        tempShared.users[userindex].classes = user.classes;
+
+        _main.app.$set(_main.app.sharedData, 'sharedData', tempShared);
       });
     },
     addComment: function addComment(user, idx, usercomment) {
-      _axios.default.post(_globals.apiurl.comment, {
+      return _axios.default.post(_globals.apiurl.comment, {
         class: idx,
         userid: user.userid,
-        "comment": usercomment
-      }).then(function (data) {
-        return "PEE";
-      }).catch(function () {
-        console.log("EE");
-        return "PEE";
+        comment: usercomment
       });
     },
     requestComment: function requestComment(user, idx) {
@@ -34215,21 +34345,21 @@ require("bootstrap/dist/css/bootstrap.min.css");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
-
-function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
-
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-
+// import Vuex from "vuex";
 var app = new _vue.default({
   data: function data() {
     return {
+      sharedData: {
+        classes: [],
+        comments: []
+      },
       userauth: _globals.userauth,
       editSelect: "",
       editState: false,
       rawData: {},
       rawUsers: {},
       rawTeachers: {},
+      oldclasses: ['', '', '', '', '', '', '', '', '', '', '', '', '', '', ''],
       loggedin: {
         loggedin: false
       },
@@ -34246,33 +34376,26 @@ var app = new _vue.default({
       }
     };
   },
-  methods: {},
-  computed: {
-    sharedData: function sharedData() {
+  methods: {
+    updateData: function updateData(data) {
       var _this = this;
 
-      var obj = _objectSpread({}, this.preData, {}, this.rawData);
-
-      if (this.rawData.classes) {
-        obj.classes = obj.classes.split("").map(function (val, idx) {
-          return {
-            "name": _globals.classnames[idx],
-            "status": parseInt(val)
-          };
-        });
-        this.loggedin.loggedin = true;
-      }
-
-      if (this.rawData.users) obj.users = this.rawData.users.map(function (el) {
+      if (data.classes) this.sharedData.classes = data.classes.split("").map(function (val, idx) {
+        return {
+          "name": _globals.classnames[idx],
+          "status": parseInt(val)
+        };
+      });
+      if (data.users) this.sharedData.users = data.users.map(function (el, idx) {
         return {
           email: el[0],
           name: el[1],
           userid: el[2],
           classes: el[3],
-          comments: ["", "", "", "", "", "", "", "", "", ""]
+          comments: []
         };
       });
-      if (this.rawData.adminusers) obj.adminusers = this.rawData.adminusers.map(function (el) {
+      if (data.adminusers) this.sharedData.adminusers = data.adminusers.map(function (el) {
         return {
           email: el[0],
           name: el[1],
@@ -34281,50 +34404,86 @@ var app = new _vue.default({
           studentclasses: el[4]
         };
       });
-      if ((this.rawData.tcomments | []).length >= 1) obj.tcomments = this.rawData.tcomments.map(function (el) {
+      if (data.tcomments ? data.tcomments.length >= 1 : false) data.tcomments.forEach(function (el) {
         var comment = {
           userid: el[0],
           class: el[1],
           comment: el[2]
         };
-        _this.rawData.users.find(function (x) {
+
+        var foundIndex = _this.sharedData.users.findIndex(function (x) {
           return x.userid == comment.userid;
-        }).comments[parseInt(comment.class)] = comment.comment;
-        return comment;
+        });
+
+        if (foundIndex > -1) _this.sharedData.users[foundIndex].comments[parseInt(comment.class)] = comment.comment;
       });
 
-      if (this.rawData.admin) {
-        obj.teacherlist = this.rawData.teacherlist;
+      if (data.admin) {
+        this.sharedData.teacherlist = data.teacherlist.map(function (el) {
+          return {
+            email: el[0],
+            name: el[1],
+            userid: el[2],
+            teacherclasses: el[3]
+          };
+        });
+        this.sharedData.admin = true;
       }
 
-      if (this.rawData.admin) obj.teacherlist = this.rawData.teacherlist.map(function (el) {
+      if (data.teacher) {
+        this.sharedData.teacher = true;
+      }
+    },
+    updateUsers: function updateUsers(data) {
+      var _this2 = this;
+
+      if (data.users) this.sharedData.users = data.users.map(function (el) {
         return {
           email: el[0],
           name: el[1],
           userid: el[2],
-          teacherclasses: el[3]
+          classes: el[3],
+          comments: []
         };
       });
-      this.preData = obj;
-      return obj;
+      if (data.comments ? data.comments.length >= 1 : false) data.comments.forEach(function (el) {
+        var comment = {
+          userid: el[0],
+          class: el[1],
+          comment: el[2]
+        };
+
+        var foundIndex = _this2.sharedData.users.findIndex(function (x) {
+          return x.userid == comment.userid;
+        });
+
+        if (foundIndex > -1) _this2.sharedData.users[foundIndex].comments[parseInt(comment.class)] = comment.comment;
+      });
     }
   },
+  computed: {},
   template: '<Main :userAuth="userauth" :sharedData="sharedData" :loggedin="loggedin.loggedin" :editSelect="editSelect" :editState="editState" :globalData="global"/>',
   components: {
     Main: _App.default
   },
   el: "#app",
   created: function created() {
-    var _this2 = this;
+    var _this3 = this;
 
     _sockets.default.on("update", function (data) {
-      _this2.rawData = data;
+      // this.rawData = data
+      _this3.updateData(data);
+
+      console.log("Received General data", data.users[0][3]);
     }).on("users", function (data) {
-      _this2.rawUsers = data;
+      // this.rawUsers = data
+      _this3.updateUsers(data);
+
+      console.log("Received Student data", data.users[0][3]);
     }).on("updatereq", function () {
       return _axios.default.post(_globals.apiurl.data);
     }).on('connect', function () {
-      (0, _auth.authFunc)(_this2);
+      (0, _auth.authFunc)(_this3);
     }).on('connect_error', function (error) {
       console.log('%c Socket cannot connect to backend API!', 'background: #222; color: #ff6961; font-size: 18px;');
     });

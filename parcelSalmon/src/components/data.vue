@@ -37,7 +37,7 @@
 
 <script>
 export default {
-  props: ["classes", "globalData", "isMobile"],
+  props: ["sharedData", "globalData", "isMobile"],
   computed: {
     glob() {
       return this.globalData.adminOpen
@@ -45,10 +45,10 @@ export default {
     percent() {
       return parseInt(
         (
-          (this.classes.reduce((tot, el) => {
+          (this.sharedData.classes.reduce((tot, el) => {
             return tot + el.status;
           }, 0) /
-            this.classes.length) *
+            this.sharedData.classes.length) *
           100
         ).toFixed(1)
       );

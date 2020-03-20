@@ -13,12 +13,17 @@ import "bootstrap/dist/css/bootstrap.min.css";
 export var app = new Vue({
   data() {
     return {
+      sharedData: {
+        classes: [],
+        comments: []
+      },
       userauth: userauth,
       editSelect: "",
       editState: false,
       rawData: {},
       rawUsers: {},
       rawTeachers: {},
+      oldclasses: ['', '', '', '', '', '', '', '', '', '', '', '', '', '', ''],
       loggedin: {
         loggedin: false,
       },
@@ -36,54 +41,68 @@ export var app = new Vue({
     }
   },
   methods: {
-  },
-  computed: {
-    sharedData() {
-      let obj = {...this.preData, ...this.rawData}
+    updateData(data) {
+      if (data.classes) this.sharedData.classes = data.classes.split("").map((val, idx) => {
+        return {"name": classnames[idx], "status": parseInt(val)}
+      });
 
-      if (this.rawData.classes) {
-        obj.classes = obj.classes.split("").map((val, idx) => {
-          return {"name": classnames[idx], "status": parseInt(val)}
-        });
-        this.loggedin.loggedin = true;
-      }
-
-      if (this.rawData.users) obj.users = this.rawData.users.map(el => {
-          return {email: el[0], name: el[1], userid: el[2], classes: el[3], comments: ["", "", "", "", "", "", "", "", "", ""]}
+      if (data.users) this.sharedData.users = data.users.map((el, idx) => {
+          return {email: el[0], name: el[1], userid: el[2], classes: el[3], comments: []}
         });
 
 
-      if (this.rawData.adminusers) obj.adminusers = this.rawData.adminusers.map(el => {
+      if (data.adminusers) this.sharedData.adminusers = data.adminusers.map(el => {
           return {email: el[0], name: el[1], userid: el[2], classes: el[3], studentclasses: el[4] }
         });
 
-      if ((this.rawData.tcomments | []).length >= 1) obj.tcomments = this.rawData.tcomments.map(el => {
+      if (data.tcomments ? (data.tcomments.length >= 1) : false) data.tcomments.forEach(el => {
         let comment = {userid: el[0], class: el[1], comment: el[2]}
-        this.rawData.users.find(x => x.userid == comment.userid).comments[parseInt(comment.class)] = comment.comment
-        return comment
-      });
+        let foundIndex = this.sharedData.users.findIndex(x => x.userid == comment.userid)
 
-      if (this.rawData.admin) {
-        obj.teacherlist = this.rawData.teacherlist
+        if (foundIndex > -1) this.sharedData.users[foundIndex].comments[parseInt(comment.class)] = comment.comment;
+      });
+      
+
+      if (data.admin) {
+        this.sharedData.teacherlist = data.teacherlist.map(el => {
+          return {email: el[0], name: el[1], userid: el[2], teacherclasses: el[3]}
+        });
+        this.sharedData.admin = true;
       }
 
-      if (this.rawData.admin) obj.teacherlist = this.rawData.teacherlist.map(el => {
-        return {email: el[0], name: el[1], userid: el[2], teacherclasses: el[3]}
+      if (data.teacher) {
+        this.sharedData.teacher = true;
+      }
+    },
+
+    updateUsers(data) {
+      if (data.users) this.sharedData.users = data.users.map(el => {
+        return {email: el[0], name: el[1], userid: el[2], classes: el[3], comments: []}
       });
 
-      this.preData = obj
-      return obj
+      if (data.comments ? (data.comments.length >= 1) : false) data.comments.forEach(el => {
+        const comment = {userid: el[0], class: el[1], comment: el[2]}
+        const foundIndex = this.sharedData.users.findIndex(x => x.userid == comment.userid)
+
+        if (foundIndex > -1) this.sharedData.users[foundIndex].comments[parseInt(comment.class)] = comment.comment;
+      });
     }
+  },
+  computed: {
   },
   template: '<Main :userAuth="userauth" :sharedData="sharedData" :loggedin="loggedin.loggedin" :editSelect="editSelect" :editState="editState" :globalData="global"/>',
   components: {Main},
   el: "#app",
   created() {
     socket.on("update", data => {
-      this.rawData = data
+      // this.rawData = data
+      this.updateData(data)
+      console.log("Received General data", data.users[0][3])
     })
     .on("users", data => {
-      this.rawUsers = data
+      // this.rawUsers = data
+      this.updateUsers(data)
+      console.log("Received Student data", data.users[0][3])
     })
     .on("updatereq", () => axios.post(apiurl.data))
     .on('connect', () => {authFunc(this)})

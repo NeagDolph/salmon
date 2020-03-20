@@ -12,24 +12,24 @@
 
 <script>
 export default {
-  props: ["classes"],
+  props: ["sharedData"],
   methods: {},
   computed: {
     redclassArray() {
-      return this.classes.map(e => {if (!e.status) return e.name; else return 7}).filter(e => {if (e == 7) return false; else return true})
+      return this.sharedData.classes.map(e => {if (!e.status) return e.name; else return 7}).filter(e => {if (e == 7) return false; else return true})
     },
     redclasses() {
-      return this.classes.reduce((tot, el) => {
+      return this.sharedData.classes.reduce((tot, el) => {
         return tot + (!el.status ? 1 : 0);
       }, 0)
     },
     percent() {
       return parseInt(
         (
-          (this.classes.reduce((tot, el) => {
+          (this.sharedData.classes.reduce((tot, el) => {
             return tot + el.status;
           }, 0) /
-            this.classes.length) *
+            this.sharedData.classes.length) *
           100
         ).toFixed(1)
       );

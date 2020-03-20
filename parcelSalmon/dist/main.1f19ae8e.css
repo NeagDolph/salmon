@@ -927,9 +927,53 @@ to {
   background: #e3ebff;
   border-radius: 10px;
 }
+.teacherClassArea .commentarea {
+  display: flex;
+  align-items: center;
+  padding-left: 20px;
+  width: 100%;
+  height: 50px;
+  position: relative;
+  top: 30px;
+  background: #e3ebff;
+  border-radius: 10px;
+  box-shadow: 0 0px 6px 0 rgba(0, 0, 0, 0.16), 0 0px 6px 0 rgba(0, 0, 0, 0.12);
+}
+.teacherClassArea .commentarea .placeholder {
+  height: 20px;
+  width: 80%;
+  border-radius: 6px;
+  background: #adcae6;
+}
+.teacherClassArea .commentarea .commentInput {
+  height: 20px;
+  border-radius: 6px;
+  width: 80%;
+  background: #adcae6;
+  padding: 5px;
+  border: 0;
+  outline: 0;
+}
+.teacherClassArea .commentarea .createComment {
+  width: 35px;
+  height: 35px;
+  padding-left: 15px;
+}
 .teacherClassArea .title {
   font-size: 26px;
   margin-top: 10px;
+  display: flex;
+  align-items: center;
+}
+.teacherClassArea .title span {
+  height: 22px;
+  font-size: 14px;
+  line-height: 18px;
+  color: #ceceef;
+  background: #ff6961;
+  margin-left: 10px;
+  padding: 2px;
+  border-radius: 2px;
 }
 .teacherClassArea .classItemCont {
   width: 100%;
@@ -948,6 +992,12 @@ to {
 }
 .teacherClassArea .classItemCont .classItem.green {
   background: #e58053;
+}
+.teacherClassArea .classItemCont .classItem.selecting {
+  background: #32326b;
+}
+.teacherClassArea .classItemCont .classItem.selecting.selected {
+  background: #ff6961;
 }
 
 .useritemcol {

@@ -15,7 +15,7 @@ from google.oauth2 import id_token
 from google.auth.transport import requests
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'schloopy'
+app.config['SECRET_KEY'] = 'ae72d8a4546087bcc20d1853ddfe8ae0475a6516fad0e8e3'
 socketio = SocketIO(app, logger=False, async_mode='eventlet', engineio_logger=False, ping_timeout=60, cors_allowed_origins="*")
 
 SESSION_TYPE = 'filesystem'
@@ -129,20 +129,17 @@ def logout():
         return "success"
     except:
         return "error", 500
-
-
-@socketio.on('message')
-def handle_message(message):
-    print('received message: ' + message)
     
 
 @app.route("/api/getdata", methods=["POST"])
 def ajaxgetclasses():
     userid = session.get("userid", False)
+    teacher = session.get("teacher")
+
     print("User requested data")
 
     if userid:
-        emitupdate(userid)
+        emitupdate(userid, teacher)
         return "", 200
     else:
         return "", 403
@@ -187,7 +184,7 @@ def editclasses():
 
         if not isinstance(changeclass, int):
             return "errora", 500
-        elif changeclass > 12 or changeclass < 0:
+        elif changeclass > 15 or changeclass < 0:
             return "errorb", 500
         
         if not isinstance(new, str):
@@ -221,8 +218,9 @@ def editclasses():
         cur.execute("UPDATE users SET classes=? WHERE userid=?", (newclasses, userid,))
         conn.commit()
 
+        print("test send 1", newclasses)
         updateteachers()
-        print("emitting update to userid")
+        print("emitting update to userid", newclasses)
         emitupdate(userid)
 
         return "success", 200
@@ -292,7 +290,7 @@ def addteacher():
 
             updatereq(2) #Asks admins to re-request data
 
-            emitupdate(userid) #Sends updated status to modified user
+            emitupdate(userid, True) #Sends updated status to modified user
 
             return getdata(adminid), 200
         else:
@@ -315,12 +313,14 @@ def comment():
         classidx = dataform.get("class")
         comment = dataform.get("comment")
 
+        print("SUPE", classidx)
+
         cur = conn.cursor()
 
         #Check if input datatypes are correct
         if not isinstance(classidx, int):
             return "bad request a", 400
-        elif classidx > 12 or classidx < 0:
+        elif classidx > 15 or classidx < 0:
             return "bad request b", 400
         
         if not isinstance(comment, str):
@@ -385,7 +385,7 @@ def getusers():
 def updateteachers(getcomments=False):
     cur = conn.cursor()
 
-    cur.execute('SELECT email, name, userid, classes FROM users')
+    cur.execute('SELECT email, name, userid, classes FROM users WHERE student = 1')
     userlist = cur.fetchall()
     commentlist = []
 
@@ -393,12 +393,14 @@ def updateteachers(getcomments=False):
         cur.execute('SELECT userid, class, comment FROM comments')
         commentlist = cur.fetchall()
 
+    print("test send 2", userlist[0][3])
+
     socketio.emit('users', {"users": userlist, "comments": commentlist}, room="teachers")
 
 
-def emitupdate(userid):
+def emitupdate(userid, isTeacher=False):
     print("emitting")
-    socketio.emit('update', getdata(userid), room=userid)
+    socketio.emit('update', getdata(userid, isTeacher), room=userid)
 
 
 def updatereq(usertype):
@@ -434,6 +436,8 @@ def getdata(userid, extradata=False):
             # users = [{"email": i[0], "name": i[1], "userid": i[2], "classes": i[3]} for i in userlist]
             
             teacherclasses = data[2]
+
+            print("IS Student", extradata)
             
 
             if extradata:

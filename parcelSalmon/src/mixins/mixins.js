@@ -14,33 +14,30 @@ Vue.mixin({
       //Idx = index of class to be changed
       //User = Index of user in userlist
 
-        app.sharedData.users[userindex].oldclasses = user.classes
+        // Flip selected class index
         let classes = user.classes.split("")
-        classes[idx] = classes[idx] == "0" ? "1" : (classes[idx] == "1" ? "0" : "1")
+        classes[idx] = classes[idx] == "1" ? "0" : "1"
         classes = classes.join("")
-        app.sharedData.users[userindex].classes = classes
-  
+        
+        // Create a temp sharedData, modify it and set the app.sharedData as the temp one
+        let tempShared = app.sharedData
+        tempShared.users[userindex].classes = classes
+        app.$set(app.sharedData, 'sharedData', tempShared)
+
+        // Send class change to server
         axios
           .post(apiurl.classes, { class: idx, userid: user.userid, new: classes[idx] })
           .then(() => {
             axios.post(apiurl.data);
           })
           .catch(error => {
-            console.log(error.response)
-            console.log("error: ", app.sharedData.users[userindex].oldclasses, user.classes, classes)
-            app.sharedData.users[userindex].classes = app.sharedData.users[userindex].oldclasses
+            let tempShared = app.sharedData
+            tempShared.users[userindex].classes = user.classes
+            app.$set(app.sharedData, 'sharedData', tempShared)
           });
       },
       addComment(user, idx, usercomment) {
-        axios
-        .post(apiurl.comment, { class: idx, userid: user.userid, "comment": usercomment})
-        .then((data) => {
-          return "PEE"
-        })
-        .catch(() => {
-          console.log("EE")
-          return "PEE"
-        })
+        return axios.post(apiurl.comment, { class: idx, userid: user.userid, comment: usercomment})
       },
       requestComment(user, idx) {
         axios

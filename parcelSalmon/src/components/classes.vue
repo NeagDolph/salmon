@@ -14,7 +14,7 @@
     </div>
     <div class="classescont" v-if="loggedin">
       <div
-        v-for="(classItem, idx) in sorted"
+        v-for="(classItem, idx) in sharedData.classes"
         v-bind:key="classItem.name"
         :class="{greenclass: classItem.status}"
         class="redclass-item mx-auto z-depth-half"
@@ -35,10 +35,10 @@
 
 <script>
 export default {
-  props: ["classes", "comments", "loggedin"],
+  props: ["sharedData", "loggedin"],
   methods: {
     getComment(idx) {
-      let returnComment = this.comments.find(e => {return e[0] == idx});
+      let returnComment = this.sharedData.comments.find(e => {return e[0] == idx});
       if (returnComment) return returnComment[1];
       else return false;
     },
@@ -52,7 +52,7 @@ export default {
   },
   computed: {
     sorted() {
-      return this.classes.sort((a, b) => {
+      return this.sharedData.classes.sort((a, b) => {
         return a.status - b.status;
       });
     }

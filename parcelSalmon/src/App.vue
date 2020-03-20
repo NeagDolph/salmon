@@ -9,11 +9,11 @@
 
       <div class="row mainRow" :style="loggedin ? '' : 'filter: blur(8px)'">
         <div class="col-xl-6 col-lg-6 col-sm-6 col-xs-12 xs-mb">
-          <displayData :classes="sharedData.classes" :globalData="globalData" :isMobile="isMobile"/>
+          <displayData :sharedData="sharedData" :globalData="globalData" :isMobile="isMobile"/>
           <adminPanel v-if="sharedData.admin && !isMobile" :globalData="globalData" :sharedData="sharedData"/>
         </div>
-        <secondrydata :classes="sharedData.classes" class="xs-mb"/>
-        <classes :classes="sharedData.classes" :comments="sharedData.comments" :loggedin="loggedin"/>
+        <secondrydata :sharedData="sharedData" class="xs-mb"/>
+        <classes :sharedData="sharedData" :loggedin="loggedin"/>
       </div>
 
     </div>
