@@ -15,7 +15,11 @@ export var app = new Vue({
     return {
       sharedData: {
         classes: [],
-        comments: []
+        comments: [],
+        teacher: false,
+        admin: false,
+        users: [],
+        shortnames: ["Soc", "Soc2", "Wr", "Wr2", "Geo", "Stats", "LD", "PS", "Phy", "HRI", "CW", "UM", "Maker", "Pract", "CvS"]
       },
       userauth: userauth,
       editSelect: "",
@@ -27,13 +31,6 @@ export var app = new Vue({
       loggedin: {
         loggedin: false,
       },
-      preData: {
-        teacher: false,
-        admin: false,
-        users: [],
-        classes: [],
-        shortnames: ["Soc", "Soc2", "Wr", "Wr2", "Geo", "Stats", "LD", "PS", "Phy", "HRI", "CW", "UM", "Maker", "Pract", "CvS"]
-      },
       global: {
         adminOpen: false,
         dataTop: 0
@@ -42,6 +39,8 @@ export var app = new Vue({
   },
   methods: {
     updateData(data) {
+      this.sharedData = {...this.sharedData, ...data}
+
       if (data.classes) this.sharedData.classes = data.classes.split("").map((val, idx) => {
         return {"name": classnames[idx], "status": parseInt(val)}
       });
@@ -63,16 +62,9 @@ export var app = new Vue({
       });
       
 
-      if (data.admin) {
-        this.sharedData.teacherlist = data.teacherlist.map(el => {
+      if (data.admin) this.sharedData.teacherlist = data.teacherlist.map(el => {
           return {email: el[0], name: el[1], userid: el[2], teacherclasses: el[3]}
         });
-        this.sharedData.admin = true;
-      }
-
-      if (data.teacher) {
-        this.sharedData.teacher = true;
-      }
     },
 
     updateUsers(data) {
@@ -95,14 +87,12 @@ export var app = new Vue({
   el: "#app",
   created() {
     socket.on("update", data => {
-      // this.rawData = data
       this.updateData(data)
-      console.log("Received General data", data.users[0][3])
+      console.log("Received General data")
     })
     .on("users", data => {
-      // this.rawUsers = data
       this.updateUsers(data)
-      console.log("Received Student data", data.users[0][3])
+      console.log("Received Student data")
     })
     .on("updatereq", () => axios.post(apiurl.data))
     .on('connect', () => {authFunc(this)})

@@ -3,28 +3,30 @@
 
     <div class="teacherUserArea col-5">
       <div v-for="(user, index) in sharedData.users" :key="user.userid" class="useritemcol">
-        <div class="useritem" @click="openMenu(user, index)">
-          <div class="name">{{user.name}}</div>
-          <div
-            class="btn"
-            :class="{red: !isgreen[index], green: isgreen[index]}"
-            @click="openModal(user)"
-          >{{isgreen[index] ? "Green" : "Red"}}</div>
-        </div>
-
-        <div class="quickSelect">
-          <div 
-            v-tooltip="{content: classObj.fullname, offset: '13px'}"
-            class="quickSelectItemCont"
-            v-for="(classObj, idx) in filteredClasses[index]"
-            :key="idx"
-          >
+        <div v-if="filteredClasses[index].length >= 1">
+          <div class="useritem" @click="openMenu(user, index)">
+            <div class="name">{{user.name}}</div>
             <div
-              class="quickSelectItem"
-              :class="{red: classObj.status === '0', green: classObj.status === '1'}"
-              @click.stop="change(user, classObj.index, index)"
+              class="btn"
+              :class="{red: !isgreen[index], green: isgreen[index]}"
+              @click="openModal(user)"
+            >{{isgreen[index] ? "Green" : "Red"}}</div>
+          </div>
+
+          <div class="quickSelect">
+            <div 
+              v-tooltip.top="{content: classObj.fullname, offset: '6px'}"
+              class="quickSelectItemCont"
+              v-for="(classObj, idx) in filteredClasses[index]"
+              :key="idx"
             >
-              {{classObj.name[0]}}
+              <div
+                class="quickSelectItem"
+                :class="{red: classObj.status === '0', green: classObj.status === '1'}"
+                @click.stop="change(user, classObj.index, index)"
+              >
+                {{classObj.name[0]}}
+              </div>
             </div>
           </div>
         </div>
@@ -33,24 +35,30 @@
 
     <div class="col-2"></div>
 
-    <div class="teacherClassArea col-5">
-      <label class="title">{{ selectedIndex === false ? "Manage User" : sharedData.users[selectedIndex].name }}<span v-if="commentSelectMode">Selecting</span></label>
-      <div class="classItemCont">
-        <div 
-          class="classItem"
-          v-for="(classObj, idx) in filteredClasses[selectedIndex]"
-          :key="idx"
-          @click.stop="change(sharedData.users[selectedIndex], classObj.index, selectedIndex)"
-          :class="{red: classObj.status === '0', green: classObj.status === '1', selecting: commentSelectMode}"
-        >
-          {{classnames[classObj.index]}}
+    <div class="col-5">
+      <div class="teacherClassArea">
+        <label class="title">{{ selectedIndex === false ? "Manage User" : sharedData.users[selectedIndex].name }}<span v-if="commentSelectMode">Selecting</span></label>
+        <div class="classItemCont">
+          <div 
+            class="classItem"
+            v-for="(classObj, idx) in filteredClasses[selectedIndex]"
+            :key="idx"
+            @click.stop="change(sharedData.users[selectedIndex], classObj.index, selectedIndex)"
+            :class="{red: classObj.status === '0', green: classObj.status === '1', selecting: commentSelectMode}"
+          >
+            {{classnames[classObj.index]}}
+          </div>
+        </div>
+        <div class="commentarea">
+          <input class="commentInput" v-model="currentComment" @keyup.enter="createCommentLast()" ref="commentInput" v-if="typingComment">
+          <div class="placeholder" v-if="!typingComment"></div>
+          <span v-on:click="createComment()">
+            <svg class="createComment" viewBox="0 -1 401.52289 401" xmlns="http://www.w3.org/2000/svg"><path d="m370.589844 250.972656c-5.523438 0-10 4.476563-10 10v88.789063c-.019532 16.5625-13.4375 29.984375-30 30h-280.589844c-16.5625-.015625-29.980469-13.4375-30-30v-260.589844c.019531-16.558594 13.4375-29.980469 30-30h88.789062c5.523438 0 10-4.476563 10-10 0-5.519531-4.476562-10-10-10h-88.789062c-27.601562.03125-49.96875 22.398437-50 50v260.59375c.03125 27.601563 22.398438 49.96875 50 50h280.589844c27.601562-.03125 49.96875-22.398437 50-50v-88.792969c0-5.523437-4.476563-10-10-10zm0 0"/><path d="m376.628906 13.441406c-17.574218-17.574218-46.066406-17.574218-63.640625 0l-178.40625 178.40625c-1.222656 1.222656-2.105469 2.738282-2.566406 4.402344l-23.460937 84.699219c-.964844 3.472656.015624 7.191406 2.5625 9.742187 2.550781 2.546875 6.269531 3.527344 9.742187 2.566406l84.699219-23.464843c1.664062-.460938 3.179687-1.34375 4.402344-2.566407l178.402343-178.410156c17.546875-17.585937 17.546875-46.054687 0-63.640625zm-220.257812 184.90625 146.011718-146.015625 47.089844 47.089844-146.015625 146.015625zm-9.40625 18.875 37.621094 37.625-52.039063 14.417969zm227.257812-142.546875-10.605468 10.605469-47.09375-47.09375 10.609374-10.605469c9.761719-9.761719 25.589844-9.761719 35.351563 0l11.738281 11.734375c9.746094 9.773438 9.746094 25.589844 0 35.359375zm0 0"/></svg>
+          </span>
         </div>
       </div>
-      <div class="commentarea">
-        <input class="commentInput" v-model="currentComment" @keyup.enter="createCommentLast()" ref="commentInput" v-if="typingComment">
-        <div class="placeholder" v-if="!typingComment"></div>
-        <svg class="createComment" @click="createComment()" viewBox="0 -1 401.52289 401" xmlns="http://www.w3.org/2000/svg"><path d="m370.589844 250.972656c-5.523438 0-10 4.476563-10 10v88.789063c-.019532 16.5625-13.4375 29.984375-30 30h-280.589844c-16.5625-.015625-29.980469-13.4375-30-30v-260.589844c.019531-16.558594 13.4375-29.980469 30-30h88.789062c5.523438 0 10-4.476563 10-10 0-5.519531-4.476562-10-10-10h-88.789062c-27.601562.03125-49.96875 22.398437-50 50v260.59375c.03125 27.601563 22.398438 49.96875 50 50h280.589844c27.601562-.03125 49.96875-22.398437 50-50v-88.792969c0-5.523437-4.476563-10-10-10zm0 0"/><path d="m376.628906 13.441406c-17.574218-17.574218-46.066406-17.574218-63.640625 0l-178.40625 178.40625c-1.222656 1.222656-2.105469 2.738282-2.566406 4.402344l-23.460937 84.699219c-.964844 3.472656.015624 7.191406 2.5625 9.742187 2.550781 2.546875 6.269531 3.527344 9.742187 2.566406l84.699219-23.464843c1.664062-.460938 3.179687-1.34375 4.402344-2.566407l178.402343-178.410156c17.546875-17.585937 17.546875-46.054687 0-63.640625zm-220.257812 184.90625 146.011718-146.015625 47.089844 47.089844-146.015625 146.015625zm-9.40625 18.875 37.621094 37.625-52.039063 14.417969zm227.257812-142.546875-10.605468 10.605469-47.09375-47.09375 10.609374-10.605469c9.761719-9.761719 25.589844-9.761719 35.351563 0l11.738281 11.734375c9.746094 9.773438 9.746094 25.589844 0 35.359375zm0 0"/></svg>
-      </div>
+      
+      <adminPanel v-if="sharedData.admin && !isMobile" :globalData="globalData" :sharedData="sharedData"/>
     </div>
 
 
@@ -65,12 +73,14 @@ import VTooltip from 'v-tooltip'
 import './../css/animations.css'
 import { classnames } from "./../js/globals.js";
 import commentmodalVue from './commentmodal.vue'
+import adminPanel from "./adminPanel.vue";
 
 Vue.use(VTooltip)
 
 export default {
   components: {
-    commentmodal
+    commentmodal,
+    adminPanel
   },
   data() {
     return {
@@ -84,7 +94,7 @@ export default {
       currentName: ""
     };
   },
-  props: ["sharedData"],
+  props: ["sharedData", "isMobile", "globalData"],
   methods: {
     createCommentLast() {
       this.addComment({userid: this.sharedData.users[this.selectedIndex].userid}, this.commentSelectedIndex, this.currentComment)
@@ -295,6 +305,7 @@ export default {
       width: 90px;
       height: 90px;
       margin: 10px;
+      text-align: center;
       border-radius: 5px;
 
 
@@ -322,8 +333,7 @@ export default {
 
 
 .useritemcol {
-  height: 80px;
-  margin-bottom: 20px;
+  height: fit-content;
   position: relative;
   display: block;
 
@@ -337,6 +347,7 @@ export default {
     background: $main;
     font-family: Roboto;
     cursor: pointer;
+    margin-bottom: 20px;
 
     .name {
       width: 55%;
@@ -375,6 +386,7 @@ export default {
 
 
 .quickSelect {
+  min-width: 7rem;
   width: fit-content;
   padding: 0 10px;
   height: 80px;

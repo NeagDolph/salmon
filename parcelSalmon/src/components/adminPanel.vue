@@ -1,7 +1,7 @@
 <template>
-    <div class="percent z-depth-half" ref="percent" v-bind:style="{ height: open ? openHeight + 'px' : (setMid == '0px' ? false : (parseInt(setMid) * 2 + 30 + 'px')), transform: open == true ? `translateY(${-(adminTop - globalData.dataTop) + 'px'})` : ''}" @click.stop="open ? false : setMenu(true)" :class="{adminOpen: open, adminClose: !open}">
+    <div class="percent z-depth-half" ref="percent" v-bind:style="{ height: open ? openHeight + 'px' : false, transform: open == true ? `translateY(${-((adminTop - globalData.dataTop) + buttonTop) + 'px'})` : '', top: buttonTop + 'px'}" @click.stop="open ? false : setMenu(true)" :class="{adminOpen: open === 1, adminClose: open === 0, adminLoad: open === false}">
       <div class="row" v-if="!open">
-        <div class="buttonBar" v-bind:style="{ top: setMid }"></div>
+        <div class="buttonBar" v-bind:style="{ top: setMid + 'px' }"></div>
       </div>
       <div class="row" v-if="open">
         <h2>Admin Panel<span style="font-size: 23px;"> &gt; {{subsections[subsection]}}</span></h2>
@@ -59,7 +59,7 @@ import Fuse from 'fuse.js';
 export default {
   data() {
     return {
-      buttonHeight: 0,
+      buttonTop: 0,
       open: false,
       setMid: "0px",
       adminTop: 0,
@@ -129,7 +129,7 @@ export default {
       this.addTeacher(this.sharedData.teacherlist[this.selectedTeacher].email, this.classToggle, true)
     },
     setMenu(isOpen) {
-      this.open = isOpen;
+      this.open = isOpen ? 1 : 0;
       this.setGlobal("adminOpen", isOpen)
       setTimeout(this.dataCalc, 400)
     },
@@ -169,10 +169,10 @@ export default {
   mounted() {
     this.$nextTick(function() {
       if (this.$refs.percent) {
-        this.setMid = ((window.innerHeight - this.$refs.percent.getBoundingClientRect().top) / 2 - (13 / 2 /* bar height */)) + "px"
-        this.buttonHeight = this.$refs.percent.offsetHeight
+        this.buttonTop = (window.innerHeight - this.$refs.percent.getBoundingClientRect().top) - this.$refs.percent.offsetHeight + 15
         this.openHeight = window.innerHeight - this.globalData.dataTop
         this.adminTop = this.$refs.percent.getBoundingClientRect().top
+        this.setMid = ((this.$refs.percent.offsetHeight - 15) / 2) - (13 / 2 /* bar height */)
       }
       this.dataCalc()
     });
@@ -432,17 +432,23 @@ export default {
 
 .percent {
   width: 100%;
-  height: 158px;
+  height: 130px;
+  top: 100vh;
   padding-bottom: 15px;
   bottom: 0;
-  top: calc(57.8vh - 360px);
-  transition: 0.5s ease;
+  transition: transform 0.5s ease, height 0s;
 
   .row {
     justify-content: center;
     display: flex;
     width: 100%;
     margin: 0;
+  }
+
+  &.adminLoad {
+    &:hover {
+      transform: translateY(-15px);
+    }
   }
 
 
@@ -457,6 +463,7 @@ export default {
   &.adminOpen {
     transition: 0.5s ease, height 0s;
     box-shadow:0 5px 11px 0 rgba(0,0,0,.18),0 4px 15px 0 rgba(0,0,0,.15)!important;
+
     .row {
       padding: 1rem;
       display: block;

@@ -14995,7 +14995,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 var _default = {
   data: function data() {
     return {
-      buttonHeight: 0,
+      buttonTop: 0,
       open: false,
       setMid: "0px",
       adminTop: 0,
@@ -15059,7 +15059,7 @@ var _default = {
       this.addTeacher(this.sharedData.teacherlist[this.selectedTeacher].email, this.classToggle, true);
     },
     setMenu: function setMenu(isOpen) {
-      this.open = isOpen;
+      this.open = isOpen ? 1 : 0;
       this.setGlobal("adminOpen", isOpen);
       setTimeout(this.dataCalc, 400);
     },
@@ -15105,12 +15105,12 @@ var _default = {
   mounted: function mounted() {
     this.$nextTick(function () {
       if (this.$refs.percent) {
-        this.setMid = (window.innerHeight - this.$refs.percent.getBoundingClientRect().top) / 2 - 13 / 2
-        /* bar height */
-        + "px";
-        this.buttonHeight = this.$refs.percent.offsetHeight;
+        this.buttonTop = window.innerHeight - this.$refs.percent.getBoundingClientRect().top - this.$refs.percent.offsetHeight + 15;
         this.openHeight = window.innerHeight - this.globalData.dataTop;
         this.adminTop = this.$refs.percent.getBoundingClientRect().top;
+        this.setMid = (this.$refs.percent.offsetHeight - 15) / 2 - 13 / 2
+        /* bar height */
+        ;
       }
 
       this.dataCalc();
@@ -15135,19 +15135,21 @@ exports.default = _default;
     {
       ref: "percent",
       staticClass: "percent z-depth-half",
-      class: { adminOpen: _vm.open, adminClose: !_vm.open },
+      class: {
+        adminOpen: _vm.open === 1,
+        adminClose: _vm.open === 0,
+        adminLoad: _vm.open === false
+      },
       style: {
-        height: _vm.open
-          ? _vm.openHeight + "px"
-          : _vm.setMid == "0px"
-          ? false
-          : parseInt(_vm.setMid) * 2 + 30 + "px",
+        height: _vm.open ? _vm.openHeight + "px" : false,
         transform:
           _vm.open == true
             ? "translateY(" +
-              (-(_vm.adminTop - _vm.globalData.dataTop) + "px") +
+              (-(_vm.adminTop - _vm.globalData.dataTop + _vm.buttonTop) +
+                "px") +
               ")"
-            : ""
+            : "",
+        top: _vm.buttonTop + "px"
       },
       on: {
         click: function($event) {
@@ -15159,7 +15161,10 @@ exports.default = _default;
     [
       !_vm.open
         ? _c("div", { staticClass: "row" }, [
-            _c("div", { staticClass: "buttonBar", style: { top: _vm.setMid } })
+            _c("div", {
+              staticClass: "buttonBar",
+              style: { top: _vm.setMid + "px" }
+            })
           ])
         : _vm._e(),
       _vm._v(" "),
@@ -26175,8 +26180,18 @@ require("./../css/animations.css");
 
 var _globals = require("./../js/globals.js");
 
+var _adminPanel = _interopRequireDefault(require("./adminPanel.vue"));
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+//
+//
+//
+//
+//
+//
+//
+//
 //
 //
 //
@@ -26241,7 +26256,8 @@ _vue.default.use(_vTooltip.default);
 
 var _default = {
   components: {
-    commentmodal: _commentmodal.default
+    commentmodal: _commentmodal.default,
+    adminPanel: _adminPanel.default
   },
   data: function data() {
     return {
@@ -26255,7 +26271,7 @@ var _default = {
       currentName: ""
     };
   },
-  props: ["sharedData"],
+  props: ["sharedData", "isMobile", "globalData"],
   methods: {
     createCommentLast: function createCommentLast() {
       this.addComment({
@@ -26356,85 +26372,96 @@ exports.default = _default;
       { staticClass: "teacherUserArea col-5" },
       _vm._l(_vm.sharedData.users, function(user, index) {
         return _c("div", { key: user.userid, staticClass: "useritemcol" }, [
-          _c(
-            "div",
-            {
-              staticClass: "useritem",
-              on: {
-                click: function($event) {
-                  return _vm.openMenu(user, index)
-                }
-              }
-            },
-            [
-              _c("div", { staticClass: "name" }, [_vm._v(_vm._s(user.name))]),
-              _vm._v(" "),
-              _c(
-                "div",
-                {
-                  staticClass: "btn",
-                  class: {
-                    red: !_vm.isgreen[index],
-                    green: _vm.isgreen[index]
-                  },
-                  on: {
-                    click: function($event) {
-                      return _vm.openModal(user)
-                    }
-                  }
-                },
-                [_vm._v(_vm._s(_vm.isgreen[index] ? "Green" : "Red"))]
-              )
-            ]
-          ),
-          _vm._v(" "),
-          _c(
-            "div",
-            { staticClass: "quickSelect" },
-            _vm._l(_vm.filteredClasses[index], function(classObj, idx) {
-              return _c(
-                "div",
-                {
-                  directives: [
-                    {
-                      name: "tooltip",
-                      rawName: "v-tooltip",
-                      value: { content: classObj.fullname, offset: "13px" },
-                      expression: "{content: classObj.fullname, offset: '13px'}"
-                    }
-                  ],
-                  key: idx,
-                  staticClass: "quickSelectItemCont"
-                },
-                [
-                  _c(
-                    "div",
-                    {
-                      staticClass: "quickSelectItem",
-                      class: {
-                        red: classObj.status === "0",
-                        green: classObj.status === "1"
-                      },
-                      on: {
-                        click: function($event) {
-                          $event.stopPropagation()
-                          return _vm.change(user, classObj.index, index)
-                        }
+          _vm.filteredClasses[index].length >= 1
+            ? _c("div", [
+                _c(
+                  "div",
+                  {
+                    staticClass: "useritem",
+                    on: {
+                      click: function($event) {
+                        return _vm.openMenu(user, index)
                       }
-                    },
-                    [
-                      _vm._v(
-                        "\n            " +
-                          _vm._s(classObj.name[0]) +
-                          "\n          "
-                      )
-                    ]
-                  )
-                ]
-              )
-            }),
-            0
-          )
+                    }
+                  },
+                  [
+                    _c("div", { staticClass: "name" }, [
+                      _vm._v(_vm._s(user.name))
+                    ]),
+                    _vm._v(" "),
+                    _c(
+                      "div",
+                      {
+                        staticClass: "btn",
+                        class: {
+                          red: !_vm.isgreen[index],
+                          green: _vm.isgreen[index]
+                        },
+                        on: {
+                          click: function($event) {
+                            return _vm.openModal(user)
+                          }
+                        }
+                      },
+                      [_vm._v(_vm._s(_vm.isgreen[index] ? "Green" : "Red"))]
+                    )
+                  ]
+                ),
+                _vm._v(" "),
+                _c(
+                  "div",
+                  { staticClass: "quickSelect" },
+                  _vm._l(_vm.filteredClasses[index], function(classObj, idx) {
+                    return _c(
+                      "div",
+                      {
+                        directives: [
+                          {
+                            name: "tooltip",
+                            rawName: "v-tooltip.top",
+                            value: {
+                              content: classObj.fullname,
+                              offset: "6px"
+                            },
+                            expression:
+                              "{content: classObj.fullname, offset: '6px'}",
+                            modifiers: { top: true }
+                          }
+                        ],
+                        key: idx,
+                        staticClass: "quickSelectItemCont"
+                      },
+                      [
+                        _c(
+                          "div",
+                          {
+                            staticClass: "quickSelectItem",
+                            class: {
+                              red: classObj.status === "0",
+                              green: classObj.status === "1"
+                            },
+                            on: {
+                              click: function($event) {
+                                $event.stopPropagation()
+                                return _vm.change(user, classObj.index, index)
+                              }
+                            }
+                          },
+                          [
+                            _vm._v(
+                              "\n              " +
+                                _vm._s(classObj.name[0]) +
+                                "\n            "
+                            )
+                          ]
+                        )
+                      ]
+                    )
+                  }),
+                  0
+                )
+              ])
+            : _vm._e()
         ])
       }),
       0
@@ -26442,124 +26469,147 @@ exports.default = _default;
     _vm._v(" "),
     _c("div", { staticClass: "col-2" }),
     _vm._v(" "),
-    _c("div", { staticClass: "teacherClassArea col-5" }, [
-      _c("label", { staticClass: "title" }, [
-        _vm._v(
-          _vm._s(
-            _vm.selectedIndex === false
-              ? "Manage User"
-              : _vm.sharedData.users[_vm.selectedIndex].name
-          )
-        ),
-        _vm.commentSelectMode ? _c("span", [_vm._v("Selecting")]) : _vm._e()
-      ]),
-      _vm._v(" "),
-      _c(
-        "div",
-        { staticClass: "classItemCont" },
-        _vm._l(_vm.filteredClasses[_vm.selectedIndex], function(classObj, idx) {
-          return _c(
-            "div",
-            {
-              key: idx,
-              staticClass: "classItem",
-              class: {
-                red: classObj.status === "0",
-                green: classObj.status === "1",
-                selecting: _vm.commentSelectMode
-              },
-              on: {
-                click: function($event) {
-                  $event.stopPropagation()
-                  return _vm.change(
-                    _vm.sharedData.users[_vm.selectedIndex],
-                    classObj.index,
-                    _vm.selectedIndex
-                  )
-                }
-              }
-            },
-            [
-              _vm._v(
-                "\n        " +
-                  _vm._s(_vm.classnames[classObj.index]) +
-                  "\n      "
+    _c(
+      "div",
+      { staticClass: "col-5" },
+      [
+        _c("div", { staticClass: "teacherClassArea" }, [
+          _c("label", { staticClass: "title" }, [
+            _vm._v(
+              _vm._s(
+                _vm.selectedIndex === false
+                  ? "Manage User"
+                  : _vm.sharedData.users[_vm.selectedIndex].name
               )
-            ]
-          )
-        }),
-        0
-      ),
-      _vm._v(" "),
-      _c("div", { staticClass: "commentarea" }, [
-        _vm.typingComment
-          ? _c("input", {
-              directives: [
+            ),
+            _vm.commentSelectMode ? _c("span", [_vm._v("Selecting")]) : _vm._e()
+          ]),
+          _vm._v(" "),
+          _c(
+            "div",
+            { staticClass: "classItemCont" },
+            _vm._l(_vm.filteredClasses[_vm.selectedIndex], function(
+              classObj,
+              idx
+            ) {
+              return _c(
+                "div",
                 {
-                  name: "model",
-                  rawName: "v-model",
-                  value: _vm.currentComment,
-                  expression: "currentComment"
-                }
-              ],
-              ref: "commentInput",
-              staticClass: "commentInput",
-              domProps: { value: _vm.currentComment },
-              on: {
-                keyup: function($event) {
-                  if (
-                    !$event.type.indexOf("key") &&
-                    _vm._k($event.keyCode, "enter", 13, $event.key, "Enter")
-                  ) {
-                    return null
+                  key: idx,
+                  staticClass: "classItem",
+                  class: {
+                    red: classObj.status === "0",
+                    green: classObj.status === "1",
+                    selecting: _vm.commentSelectMode
+                  },
+                  on: {
+                    click: function($event) {
+                      $event.stopPropagation()
+                      return _vm.change(
+                        _vm.sharedData.users[_vm.selectedIndex],
+                        classObj.index,
+                        _vm.selectedIndex
+                      )
+                    }
                   }
-                  return _vm.createCommentLast()
                 },
-                input: function($event) {
-                  if ($event.target.composing) {
-                    return
-                  }
-                  _vm.currentComment = $event.target.value
-                }
-              }
-            })
-          : _vm._e(),
-        _vm._v(" "),
-        !_vm.typingComment
-          ? _c("div", { staticClass: "placeholder" })
-          : _vm._e(),
-        _vm._v(" "),
-        _c(
-          "svg",
-          {
-            staticClass: "createComment",
-            attrs: {
-              viewBox: "0 -1 401.52289 401",
-              xmlns: "http://www.w3.org/2000/svg"
-            },
-            on: {
-              click: function($event) {
-                return _vm.createComment()
-              }
-            }
-          },
-          [
-            _c("path", {
-              attrs: {
-                d:
-                  "m370.589844 250.972656c-5.523438 0-10 4.476563-10 10v88.789063c-.019532 16.5625-13.4375 29.984375-30 30h-280.589844c-16.5625-.015625-29.980469-13.4375-30-30v-260.589844c.019531-16.558594 13.4375-29.980469 30-30h88.789062c5.523438 0 10-4.476563 10-10 0-5.519531-4.476562-10-10-10h-88.789062c-27.601562.03125-49.96875 22.398437-50 50v260.59375c.03125 27.601563 22.398438 49.96875 50 50h280.589844c27.601562-.03125 49.96875-22.398437 50-50v-88.792969c0-5.523437-4.476563-10-10-10zm0 0"
-              }
+                [
+                  _vm._v(
+                    "\n          " +
+                      _vm._s(_vm.classnames[classObj.index]) +
+                      "\n        "
+                  )
+                ]
+              )
             }),
-            _c("path", {
-              attrs: {
-                d:
-                  "m376.628906 13.441406c-17.574218-17.574218-46.066406-17.574218-63.640625 0l-178.40625 178.40625c-1.222656 1.222656-2.105469 2.738282-2.566406 4.402344l-23.460937 84.699219c-.964844 3.472656.015624 7.191406 2.5625 9.742187 2.550781 2.546875 6.269531 3.527344 9.742187 2.566406l84.699219-23.464843c1.664062-.460938 3.179687-1.34375 4.402344-2.566407l178.402343-178.410156c17.546875-17.585937 17.546875-46.054687 0-63.640625zm-220.257812 184.90625 146.011718-146.015625 47.089844 47.089844-146.015625 146.015625zm-9.40625 18.875 37.621094 37.625-52.039063 14.417969zm227.257812-142.546875-10.605468 10.605469-47.09375-47.09375 10.609374-10.605469c9.761719-9.761719 25.589844-9.761719 35.351563 0l11.738281 11.734375c9.746094 9.773438 9.746094 25.589844 0 35.359375zm0 0"
-              }
+            0
+          ),
+          _vm._v(" "),
+          _c("div", { staticClass: "commentarea" }, [
+            _vm.typingComment
+              ? _c("input", {
+                  directives: [
+                    {
+                      name: "model",
+                      rawName: "v-model",
+                      value: _vm.currentComment,
+                      expression: "currentComment"
+                    }
+                  ],
+                  ref: "commentInput",
+                  staticClass: "commentInput",
+                  domProps: { value: _vm.currentComment },
+                  on: {
+                    keyup: function($event) {
+                      if (
+                        !$event.type.indexOf("key") &&
+                        _vm._k($event.keyCode, "enter", 13, $event.key, "Enter")
+                      ) {
+                        return null
+                      }
+                      return _vm.createCommentLast()
+                    },
+                    input: function($event) {
+                      if ($event.target.composing) {
+                        return
+                      }
+                      _vm.currentComment = $event.target.value
+                    }
+                  }
+                })
+              : _vm._e(),
+            _vm._v(" "),
+            !_vm.typingComment
+              ? _c("div", { staticClass: "placeholder" })
+              : _vm._e(),
+            _vm._v(" "),
+            _c(
+              "span",
+              {
+                on: {
+                  click: function($event) {
+                    return _vm.createComment()
+                  }
+                }
+              },
+              [
+                _c(
+                  "svg",
+                  {
+                    staticClass: "createComment",
+                    attrs: {
+                      viewBox: "0 -1 401.52289 401",
+                      xmlns: "http://www.w3.org/2000/svg"
+                    }
+                  },
+                  [
+                    _c("path", {
+                      attrs: {
+                        d:
+                          "m370.589844 250.972656c-5.523438 0-10 4.476563-10 10v88.789063c-.019532 16.5625-13.4375 29.984375-30 30h-280.589844c-16.5625-.015625-29.980469-13.4375-30-30v-260.589844c.019531-16.558594 13.4375-29.980469 30-30h88.789062c5.523438 0 10-4.476563 10-10 0-5.519531-4.476562-10-10-10h-88.789062c-27.601562.03125-49.96875 22.398437-50 50v260.59375c.03125 27.601563 22.398438 49.96875 50 50h280.589844c27.601562-.03125 49.96875-22.398437 50-50v-88.792969c0-5.523437-4.476563-10-10-10zm0 0"
+                      }
+                    }),
+                    _c("path", {
+                      attrs: {
+                        d:
+                          "m376.628906 13.441406c-17.574218-17.574218-46.066406-17.574218-63.640625 0l-178.40625 178.40625c-1.222656 1.222656-2.105469 2.738282-2.566406 4.402344l-23.460937 84.699219c-.964844 3.472656.015624 7.191406 2.5625 9.742187 2.550781 2.546875 6.269531 3.527344 9.742187 2.566406l84.699219-23.464843c1.664062-.460938 3.179687-1.34375 4.402344-2.566407l178.402343-178.410156c17.546875-17.585937 17.546875-46.054687 0-63.640625zm-220.257812 184.90625 146.011718-146.015625 47.089844 47.089844-146.015625 146.015625zm-9.40625 18.875 37.621094 37.625-52.039063 14.417969zm227.257812-142.546875-10.605468 10.605469-47.09375-47.09375 10.609374-10.605469c9.761719-9.761719 25.589844-9.761719 35.351563 0l11.738281 11.734375c9.746094 9.773438 9.746094 25.589844 0 35.359375zm0 0"
+                      }
+                    })
+                  ]
+                )
+              ]
+            )
+          ])
+        ]),
+        _vm._v(" "),
+        _vm.sharedData.admin && !_vm.isMobile
+          ? _c("adminPanel", {
+              attrs: { globalData: _vm.globalData, sharedData: _vm.sharedData }
             })
-          ]
-        )
-      ])
-    ])
+          : _vm._e()
+      ],
+      1
+    )
   ])
 }
 var staticRenderFns = []
@@ -26574,7 +26624,7 @@ render._withStripped = true
           };
         })());
       
-},{"./commentmodal.vue":"components/commentmodal.vue","vue":"../node_modules/vue/dist/vue.common.js","v-tooltip":"../node_modules/v-tooltip/dist/v-tooltip.esm.js","./../css/animations.css":"css/animations.css","./../js/globals.js":"js/globals.js"}],"components/modaledit.vue":[function(require,module,exports) {
+},{"./commentmodal.vue":"components/commentmodal.vue","vue":"../node_modules/vue/dist/vue.common.js","v-tooltip":"../node_modules/v-tooltip/dist/v-tooltip.esm.js","./../css/animations.css":"css/animations.css","./../js/globals.js":"js/globals.js","./adminPanel.vue":"components/adminPanel.vue"}],"components/modaledit.vue":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -26954,7 +27004,15 @@ exports.default = _default;
               _c(
                 "div",
                 { staticClass: "row mainRow" },
-                [_c("teacherpanel", { attrs: { sharedData: _vm.sharedData } })],
+                [
+                  _c("teacherpanel", {
+                    attrs: {
+                      sharedData: _vm.sharedData,
+                      isMobile: _vm.isMobile,
+                      globalData: _vm.globalData
+                    }
+                  })
+                ],
                 1
               )
             ]
@@ -34345,13 +34403,22 @@ require("bootstrap/dist/css/bootstrap.min.css");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-// import Vuex from "vuex";
+function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
+
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
 var app = new _vue.default({
   data: function data() {
     return {
       sharedData: {
         classes: [],
-        comments: []
+        comments: [],
+        teacher: false,
+        admin: false,
+        users: [],
+        shortnames: ["Soc", "Soc2", "Wr", "Wr2", "Geo", "Stats", "LD", "PS", "Phy", "HRI", "CW", "UM", "Maker", "Pract", "CvS"]
       },
       userauth: _globals.userauth,
       editSelect: "",
@@ -34363,13 +34430,6 @@ var app = new _vue.default({
       loggedin: {
         loggedin: false
       },
-      preData: {
-        teacher: false,
-        admin: false,
-        users: [],
-        classes: [],
-        shortnames: ["Soc", "Soc2", "Wr", "Wr2", "Geo", "Stats", "LD", "PS", "Phy", "HRI", "CW", "UM", "Maker", "Pract", "CvS"]
-      },
       global: {
         adminOpen: false,
         dataTop: 0
@@ -34380,6 +34440,7 @@ var app = new _vue.default({
     updateData: function updateData(data) {
       var _this = this;
 
+      this.sharedData = _objectSpread({}, this.sharedData, {}, data);
       if (data.classes) this.sharedData.classes = data.classes.split("").map(function (val, idx) {
         return {
           "name": _globals.classnames[idx],
@@ -34417,22 +34478,14 @@ var app = new _vue.default({
 
         if (foundIndex > -1) _this.sharedData.users[foundIndex].comments[parseInt(comment.class)] = comment.comment;
       });
-
-      if (data.admin) {
-        this.sharedData.teacherlist = data.teacherlist.map(function (el) {
-          return {
-            email: el[0],
-            name: el[1],
-            userid: el[2],
-            teacherclasses: el[3]
-          };
-        });
-        this.sharedData.admin = true;
-      }
-
-      if (data.teacher) {
-        this.sharedData.teacher = true;
-      }
+      if (data.admin) this.sharedData.teacherlist = data.teacherlist.map(function (el) {
+        return {
+          email: el[0],
+          name: el[1],
+          userid: el[2],
+          teacherclasses: el[3]
+        };
+      });
     },
     updateUsers: function updateUsers(data) {
       var _this2 = this;
@@ -34471,15 +34524,13 @@ var app = new _vue.default({
     var _this3 = this;
 
     _sockets.default.on("update", function (data) {
-      // this.rawData = data
       _this3.updateData(data);
 
-      console.log("Received General data", data.users[0][3]);
+      console.log("Received General data");
     }).on("users", function (data) {
-      // this.rawUsers = data
       _this3.updateUsers(data);
 
-      console.log("Received Student data", data.users[0][3]);
+      console.log("Received Student data");
     }).on("updatereq", function () {
       return _axios.default.post(_globals.apiurl.data);
     }).on('connect', function () {

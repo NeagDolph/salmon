@@ -21,7 +21,7 @@
     <!-- Teacher -->
     <div id="teacher" class="pageContainer" v-if="sharedData.teacher">
       <div class="row mainRow">
-        <teacherpanel :sharedData="sharedData"/>
+        <teacherpanel :sharedData="sharedData" :isMobile="isMobile" :globalData="globalData"/>
       </div>
     </div>
 
@@ -103,6 +103,7 @@ export default {
 }
 
 .pageContainer {
+  overflow-x: hidden;
   &>.row {
     padding: 2em 7em;
   }
@@ -132,6 +133,7 @@ export default {
   }
 }
 
+
 @media screen and (max-width: 1200px) {
   .pageContainer > .row {
     padding: 2em 4em;
@@ -142,6 +144,8 @@ export default {
   }
 }
 
+
+// Targets mobile device screen ratios
 @media screen and (max-width: 768px) {
   
   .pageContainer > .row {
@@ -164,6 +168,16 @@ export default {
     margin-right: 0 !important;
     margin-left: 0 !important;
   }
+}
+
+
+// Targets non mobile device screen ratios
+@media screen and (min-width: 768px) {
+  .mainRow {
+    overflow: hidden;
+  }
+
+
 }
 
 #main {
@@ -212,21 +226,97 @@ html {
 }
 
 .tooltip {
-  opacity: 1 !important;
-  transition: opacity 0.5s;
+  display: block !important;
+  z-index: 10000;
 
-  &:after {
-    border: solid transparent;
-    content: " ";
-    width: 0px;
-    border-color: transparent;
-    height: 0px;
-    border-top-color: black;
-    border-width: 6px;
-    margin-left: -6px;
-    top: 100%;
-    left: 50%;
+  .tooltip-inner {
+    background: black;
+    color: white;
+    border-radius: 4px;
+    padding: 5px 10px 4px;
+  }
+
+  .tooltip-arrow {
+    width: 0;
+    height: 0;
+    border-style: solid;
     position: absolute;
+    margin: 5px;
+    border-color: black;
+    z-index: 1;
+  }
+
+  &[x-placement^="top"] {
+    margin-bottom: 5px;
+
+    .tooltip-arrow {
+      border-width: 5px 5px 0 5px;
+      border-left-color: transparent !important;
+      border-right-color: transparent !important;
+      border-bottom-color: transparent !important;
+      bottom: -5px;
+      left: calc(50% - 5px);
+      margin-top: 0;
+      margin-bottom: 0;
+    }
+  }
+
+  &[x-placement^="bottom"] {
+    margin-top: 5px;
+
+    .tooltip-arrow {
+      border-width: 0 5px 5px 5px;
+      border-left-color: transparent !important;
+      border-right-color: transparent !important;
+      border-top-color: transparent !important;
+      top: -5px;
+      left: calc(50% - 5px);
+      margin-top: 0;
+      margin-bottom: 0;
+    }
+  }
+
+  &[x-placement^="right"] {
+    margin-left: 5px;
+
+    .tooltip-arrow {
+      border-width: 5px 5px 5px 0;
+      border-left-color: transparent !important;
+      border-top-color: transparent !important;
+      border-bottom-color: transparent !important;
+      left: -5px;
+      top: calc(50% - 5px);
+      margin-left: 0;
+      margin-right: 0;
+    }
+  }
+
+  &[x-placement^="left"] {
+    margin-right: 5px;
+
+    .tooltip-arrow {
+      border-width: 5px 0 5px 5px;
+      border-top-color: transparent !important;
+      border-right-color: transparent !important;
+      border-bottom-color: transparent !important;
+      right: -5px;
+      top: calc(50% - 5px);
+      margin-left: 0;
+      margin-right: 0;
+    }
+  }
+
+
+  &[aria-hidden='true'] {
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity .15s, visibility .15s;
+  }
+
+  &[aria-hidden='false'] {
+    visibility: visible;
+    opacity: 1;
+    transition: opacity .15s;
   }
 }
 </style>

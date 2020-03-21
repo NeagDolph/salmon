@@ -29,8 +29,8 @@ userids = []
 
 allowedThirdParty = ["neilagrawal1990@gmail.com"]
 
-
-admins = ["0cd38e5c-d75a-4990-84ce-ceb3b4beb1cb", "2dcdaab7-4f08-4f62-9ad1-488c5799cf54", "8e579d65-04a3-479c-9268-4ab928237ee5"]
+# nagrawal@alt.app jsutton@alt.app neilagrawal1990@gmail.com cready@alt.app
+admins = ["0cd38e5c-d75a-4990-84ce-ceb3b4beb1cb", "2dcdaab7-4f08-4f62-9ad1-488c5799cf54", "8e579d65-04a3-479c-9268-4ab928237ee5", "daae0f57-8ee9-41fc-9885-d203fabf3b0c"]
 
 classlist = ["Socratic", "Writing", "Geometry", "Statistics", "Life Design", "Problem Solving", "Physics", "HRI", "Creative Writing", "Urban Movement", "Makerspace", "Practicum"]
 
