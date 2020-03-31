@@ -13,6 +13,7 @@
             </path>
           </svg>
         </div>
+
         <div class="col-12 body teacher" v-if="subsection == 0">
           <div class="addTeacher">
             <div class="add" @click="toggleAdd()">+ Add</div>
@@ -34,15 +35,33 @@
               </a>
             </div>
             <div v-if="selectedTeacher !== false">
-            <div class="classBlock" @click="toggleClass(parseInt(idx))" v-for="(status, idx) in classToggle" :key="'classBlock' + idx" :class="{selected: parseInt(classToggle[idx])}" :style="{content: classToggle[idx] }">
+            <div class="classBlock" @click="teacherToggleClass(parseInt(idx))" v-for="(status, idx) in classToggle" :key="'classBlock' + idx" :class="{selected: parseInt(classToggle[idx])}" :style="{content: classToggle[idx] }">
               {{sharedData.shortnames[idx]}}
             </div>
             </div>
           </div>
-          <div class="teacherList" ref="teacher" :style="{height: teacherListHeight + 'px'}">
-            <div class="teacherItem col-4 z-depth-half" v-for="(teacher, idx) in sharedData.teacherlist" :key="teacher.email" @click="selectTeacher(idx)">{{teacher.name}}</div>
+          <div class="userList" ref="userlist" :style="{height: listHeight + 'px'}">
+            <div class="userItem col-4 z-depth-half" v-for="(teacher, idx) in sharedData.teacherlist" :key="teacher.email" @click="selectTeacher(idx)">{{teacher.name}}</div>
           </div>
         </div>
+        
+        <div class="col-12 body student" v-if="subsection == 1">
+          <div class="classSelect z-depth-1" v-if="selectedStudent !== false">
+            <div class="selectTitle">
+              {{sharedData.adminusers[selectedStudent].name}} 
+            </div>
+            <div v-if="selectedStudent !== false">
+            <div class="classBlock" @click="studentToggleClass(parseInt(idx))" v-for="(status, idx) in studentClassToggle" :key="'classBlock' + idx" :class="{selected: parseInt(studentClassToggle[idx])}" :style="{content: studentClassToggle[idx] }">
+              {{sharedData.shortnames[idx]}}
+            </div>
+            </div>
+          </div>
+          <div class="userList" ref="userlist" :style="{height: listHeight + 'px'}">
+            <div class="userItem col-4 z-depth-half" v-for="(student, idx) in sharedData.adminusers" :key="student.email" @click="selectStudent(idx)">{{student.name}}</div>
+          </div>
+        </div>
+
+
         <div class="menuSelect">
           <div class="menuButton" v-for="(section, idx) in [1, 2, 3, 4]" :key="'section' + idx" :id="'b' + section" :class="{currentMenu: subsection == idx}" @click="setSection(idx)"></div>
         </div>
@@ -63,15 +82,17 @@ export default {
       open: false,
       setMid: "0px",
       adminTop: 0,
-      classToggle: "000000000000000",
+      studentClassToggle: "000000000000000",
+      teacherClassToggle: "000000000000000",
       selectedTeacher: false,
+      selectedStudent: false,
       subsection: 0,
       openHeight: 800,
-      subsections: ["Teachers", "Students", "Admins", "General"],
+      subsections: ["Teachers", "Students", "Stats", "General"],
       addOpen: false,
       teacherEmail: "",
       searchResults: [],
-      teacherListHeight: false,
+      listHeight: false,
     };
   },
   methods: {
@@ -115,18 +136,38 @@ export default {
       }
     },
     selectTeacher(idx) {
-      let classes = this.sharedData.teacherlist[idx].teacherclasses
-      setTimeout(this.dataCalc, 300)
+      setTimeout(this.dataCalc, 100)
       this.selectedTeacher = idx;
-      this.classToggle = classes;
+      this.teacherClassToggle = this.sharedData.teacherlist[idx].teacherclasses
     },
-    toggleClass(idx) {
-      let classCopy = this.classToggle.split("")
+    selectStudent(idx) {
+      setTimeout(this.dataCalc, 100)
+      this.selectedStudent = idx;
+      this.studentClassToggle = this.sharedData.adminusers[idx].studentclasses
+    },
+    teacherToggleClass(idx) {
+      let classCopy = this.teacherClassToggle.split("")
       classCopy[idx] = classCopy[idx] == "1" ? "0" : "1"
-      this.classToggle = classCopy.join("")
+      this.teacherClassToggle = classCopy.join("")
 
-      this.sharedData.teacherlist[this.selectedTeacher].teacherclasses = this.classToggle
-      this.addTeacher(this.sharedData.teacherlist[this.selectedTeacher].email, this.classToggle, true)
+      this.sharedData.teacherlist[this.selectedTeacher].teacherclasses = this.teacherClassToggle
+      this.addTeacher(this.sharedData.teacherlist[this.selectedTeacher].email, this.teacherClassToggle, true)
+    },
+    studentToggleClass(idx) {
+
+      let classCopy = this.studentClassToggle.split("")
+      classCopy[idx] = classCopy[idx] == "1" ? "0" : "1"
+      let newclasses = classCopy.join("")
+
+      this.sharedData.adminusers[this.selectedStudent].studentclasses = newclasses
+
+      let userid = this.sharedData.adminusers[this.selectedStudent].userid
+
+      axios
+        .post(apiurl.enrolledClasses, { userid: userid, classes: newclasses })
+        .catch(() => {
+          this.sharedData.adminusers[this.selectedStudent].studentclasses = this.studentClassToggle
+        })
     },
     setMenu(isOpen) {
       this.open = isOpen ? 1 : 0;
@@ -160,8 +201,8 @@ export default {
           })
     },
     dataCalc() {
-      if (this.$refs.teacher) {
-        this.teacherListHeight = window.innerHeight - this.$refs.teacher.getBoundingClientRect().top
+      if (this.$refs.userlist) {
+        this.listHeight = window.innerHeight - this.$refs.userlist.getBoundingClientRect().top
       }
     }
   },
@@ -208,7 +249,7 @@ export default {
     }
 
     &#b3 {
-      padding: 0 5px;
+      padding: 0 6px;
     }
     &#b4 {
       padding: 0 4px;
@@ -226,7 +267,7 @@ export default {
     &:hover {
       width: 82px;
       &#b3 {
-        width: 70px;
+        width: 50px;
       }
       &#b4 {
         width: 70px;
@@ -245,10 +286,11 @@ export default {
     
     &#b2:after {
       content: "Students";
+      width: 10px;
     }
 
     &#b3:after {
-      content: "Admins";
+      content: "Stats";
       width: 10px;
     }
 
@@ -315,13 +357,13 @@ export default {
   }
 }
 
-.teacherList {
+.userList {
   float: left;
   flex-basis: 100%;
   height: 30vh;
   overflow-x:auto;
   margin-top: 20px;
-  .teacherItem {
+  .userItem {
     height: 50px;
     line-height: 50px;
     text-align: center;

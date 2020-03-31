@@ -37,7 +37,7 @@ classlist = ["Socratic", "Writing", "Geometry", "Statistics", "Life Design", "Pr
 conn = sqlite3.connect('sqlite.db', check_same_thread=False)
 
 
-@app.route("/api/glogin", methods=["POST"])
+@app.route("/api/login", methods=["POST"])
 def login():
     try:
         idtoken = request.json.get('idtoken', False)
@@ -131,7 +131,7 @@ def logout():
         return "error", 500
     
 
-@app.route("/api/getdata", methods=["POST"])
+@app.route("/api/data", methods=["POST"])
 def ajaxgetclasses():
     userid = session.get("userid", False)
     teacher = session.get("teacher")
@@ -170,7 +170,39 @@ def connect():
         # socketio.emit('update', {'classes': userdata["classes"], 'offcampus': session.get("offcampus", 2), "teacher": userdata["teacher"], "admin": userid in admins}, room=userid)
 
 
-@app.route('/api/editclasses', methods=["POST"])
+@app.route('/api/student/enrolled', methods=["POST"])
+def editenrolled():
+    adminid = session.get("userid")
+    dataform = request.json or request.form
+
+
+    if adminid:
+        if adminid in admins:
+            userid = dataform.get("userid")
+            enrolledclass = dataform.get("classes")
+
+            if len(enrolledclass) < 15:
+                return "error"
+
+
+            cur = conn.cursor()
+            cur.execute('UPDATE users SET studentclasses=? WHERE userid=?', (enrolledclass, userid,))
+            conn.commit()
+
+            emitupdate(userid)
+
+            return "success", 200
+        else:
+            return "No permission", 403
+    else:
+        return "error"
+
+
+
+
+
+
+@app.route('/api/student/status', methods=["POST"])
 def editclasses():
     teacher = session.get("teacher")
     teacherid = session.get("userid")
@@ -183,14 +215,14 @@ def editclasses():
         cur = conn.cursor()
 
         if not isinstance(changeclass, int):
-            return "errora", 500
+            return "error", 500
         elif changeclass > 15 or changeclass < 0:
-            return "errorb", 500
+            return "error", 500
         
         if not isinstance(new, str):
-            return "errorc", 500
+            return "error", 500
         elif len(new) != 1 or new not in ["0", "1"]:
-            return "errord", 500
+            return "error", 500
 
         cur.execute('SELECT teacherclasses FROM users WHERE userid=?', (teacherid,))
         result = cur.fetchone()
@@ -226,6 +258,8 @@ def editclasses():
         return "success", 200
     else:
         return "No permission", 403
+
+
 
 
 @app.route('/api/teacher/del', methods=["POST"])
@@ -359,7 +393,7 @@ def comment():
     else:
         return "No permission", 403
 
-@app.route('/api/comment/delete', methods=["POST"])
+@app.route('/api/comment/del', methods=["POST"])
 def delcomment():
     pass
 
@@ -367,7 +401,13 @@ def delcomment():
 def getcomment():
     pass
 
-@app.route('/api/getusers', methods=["GET"])
+
+@app.route('/api/stats/', methods=["GET"])
+def stats():
+    pass
+
+
+@app.route('/api/users/get', methods=["GET"])
 def getusers():
     teacher = session.get("teacher")
     userid = session.get("userid", "")
@@ -380,6 +420,7 @@ def getusers():
         return jsonify(users)
     else:
         return "No permission", 403
+
 
 
 def updateteachers(getcomments=False):
@@ -448,7 +489,7 @@ def getdata(userid, extradata=False):
             cur.execute('SELECT email, name, userid, teacherclasses FROM users WHERE student=2')
             teacherlist = cur.fetchall()
 
-            cur.execute('SELECT email, name, userid, classes, studentclasses, student FROM users')
+            cur.execute('SELECT email, name, userid, classes, studentclasses, student FROM users WHERE student=1')
             adminusers = cur.fetchall()
     
 
@@ -474,4 +515,4 @@ if __name__ == "__main__":
     cur.execute('SELECT userid FROM users')
     userids = [item for t in cur.fetchall() for item in t]
 
-    socketio.run(app, debug=True, host="localhost", port=8080)
+    socketio.run(app, debug=True, host="localhost", port=8082)

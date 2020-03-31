@@ -13121,7 +13121,7 @@ module.exports = function xhrAdapter(config) {
   });
 };
 
-},{"./../utils":"../node_modules/axios/lib/utils.js","./../core/settle":"../node_modules/axios/lib/core/settle.js","./../helpers/buildURL":"../node_modules/axios/lib/helpers/buildURL.js","../core/buildFullPath":"../node_modules/axios/lib/core/buildFullPath.js","./../helpers/parseHeaders":"../node_modules/axios/lib/helpers/parseHeaders.js","./../helpers/isURLSameOrigin":"../node_modules/axios/lib/helpers/isURLSameOrigin.js","../core/createError":"../node_modules/axios/lib/core/createError.js","./../helpers/cookies":"../node_modules/axios/lib/helpers/cookies.js"}],"../../../../usr/lib/node_modules/parcel-bundler/node_modules/process/browser.js":[function(require,module,exports) {
+},{"./../utils":"../node_modules/axios/lib/utils.js","./../core/settle":"../node_modules/axios/lib/core/settle.js","./../helpers/buildURL":"../node_modules/axios/lib/helpers/buildURL.js","../core/buildFullPath":"../node_modules/axios/lib/core/buildFullPath.js","./../helpers/parseHeaders":"../node_modules/axios/lib/helpers/parseHeaders.js","./../helpers/isURLSameOrigin":"../node_modules/axios/lib/helpers/isURLSameOrigin.js","../core/createError":"../node_modules/axios/lib/core/createError.js","./../helpers/cookies":"../node_modules/axios/lib/helpers/cookies.js"}],"../node_modules/process/browser.js":[function(require,module,exports) {
 
 // shim for using process in browser
 var process = module.exports = {}; // cached from whatever global is present so that test runners that stub it
@@ -13430,7 +13430,7 @@ utils.forEach(['post', 'put', 'patch'], function forEachMethodWithData(method) {
 
 module.exports = defaults;
 
-},{"./utils":"../node_modules/axios/lib/utils.js","./helpers/normalizeHeaderName":"../node_modules/axios/lib/helpers/normalizeHeaderName.js","./adapters/xhr":"../node_modules/axios/lib/adapters/xhr.js","./adapters/http":"../node_modules/axios/lib/adapters/xhr.js","process":"../../../../usr/lib/node_modules/parcel-bundler/node_modules/process/browser.js"}],"../node_modules/axios/lib/core/dispatchRequest.js":[function(require,module,exports) {
+},{"./utils":"../node_modules/axios/lib/utils.js","./helpers/normalizeHeaderName":"../node_modules/axios/lib/helpers/normalizeHeaderName.js","./adapters/xhr":"../node_modules/axios/lib/adapters/xhr.js","./adapters/http":"../node_modules/axios/lib/adapters/xhr.js","process":"../node_modules/process/browser.js"}],"../node_modules/axios/lib/core/dispatchRequest.js":[function(require,module,exports) {
 'use strict';
 
 var utils = require('./../utils');
@@ -13857,17 +13857,19 @@ Object.defineProperty(exports, "__esModule", {
 exports.apiurl = exports.shortnames = exports.classnames = exports.userauth = void 0;
 var userauth = {};
 exports.userauth = userauth;
-var classnames = ["Socratic 1", "Socratic 2", "Writing 1", "Writing 2", "Geometry", "Statistics", "Life Design", "Problem", "Physics", "HRI", "Creative", "Urban Mvmt", "Makerspace", "Practicum", "Cap vs Soc"];
+var classnames = ["Socratic 1", "Socratic 2", "Writing 1", "Writing 2", "Geometry", "Statistics", "Life Design", "Problem", "Physics", "HRI", "Creative Writing", "Urban Mvmt", "Makerspace", "Practicum", "Cap vs Soc"];
 exports.classnames = classnames;
 var shortnames = ["Soc", "Soc2", "Wr", "Wr2", "Geo", "Stats", "LD", "PS", "Phy", "HRI", "CW", "UM", "Maker", "Pract"];
 exports.shortnames = shortnames;
 var apiurl = {
-  data: "/api/getdata",
-  login: "/api/glogin",
-  classes: "/api/editclasses",
+  getdata: "/api/getdata",
+  senddata: "/api/senddata",
+  login: "/api/login",
+  classes: "/api/student/status",
+  enrolledClasses: "/api/student/enrolled",
   getcomment: "/api/comment/get",
   comment: "/api/comment/create",
-  delcomment: "/api/comment/delete",
+  delcomment: "/api/comment/del",
   logout: "/api/logout",
   addTeacher: "/api/teacher/add",
   delTeacher: "/api/teacher/del"
@@ -13879,18 +13881,20 @@ exports.apiurl = apiurl;
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.authFunc = exports.signFuncs = void 0;
+exports.authFunc2 = exports.authFunc = exports.signFuncs = void 0;
 
 var _axios = _interopRequireDefault(require("axios"));
 
 var _globals = require("./globals");
+
+var _main = require("../main");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 var signFuncs = {};
 exports.signFuncs = signFuncs;
 
-var authFunc = function authFunc(app) {
+var authFunc = function authFunc(callback) {
   gapi.load("auth2", function () {
     gapi.auth2.init({
       client_id: "203450520052-4olsv1k1uj6ditok97qncbho9n8usk36.apps.googleusercontent.com",
@@ -13898,57 +13902,45 @@ var authFunc = function authFunc(app) {
       scopes: ["https://www.googleapis.com/auth/userinfo.email", "https://www.googleapis.com/auth/userinfo.profile"]
     }).then(function (auth2) {
       signFuncs.auth2 = auth2;
-      signFuncs.signedIn = signedIn;
-      if (auth2.isSignedIn.get()) signedIn(auth2.currentUser.get());else app.$set(app.loggedin, 'loggedin', false);
+      callback(auth2.isSignedIn.get());
     });
   });
-
-  var signedIn = function signedIn(googleUser) {
-    var first = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
-    _globals.userauth.authResponse = googleUser.getAuthResponse();
-    _globals.userauth.profile = googleUser.getBasicProfile();
-
-    _axios.default.post(_globals.apiurl.login, {
-      idtoken: _globals.userauth.authResponse.id_token
-    }).then(function (data) {
-      console.log("DID", data);
-
-      if (data == "success") {
-        app.$set(app.loggedin, 'loggedin', true);
-
-        _axios.default.post(_globals.apiurl.data);
-      } else {
-        app.$set(app.loggedin, 'loggedin', true);
-        app.updateData(data.data);
-
-        _axios.default.post(_globals.apiurl.data);
-
-        if (first) window.location.reload();
-      }
-    }).catch(function (error) {
-      if (error.response) {
-        console.log("login failed", error.response.status, error.response.data);
-
-        if (error.response.data == "notati" && error.response.status == 403) {
-          alert("ERROR! You are not an ATI user! Please use a google account under alt.app to login successfully.");
-        }
-      }
-    });
-  };
-
-  signFuncs.signOut = function () {
-    _globals.userauth.authInstance = gapi.auth2.getAuthInstance();
-
-    _globals.userauth.authInstance.signOut().then(function () {
-      _axios.default.get(_globals.apiurl.logout).then(function () {
-        window.location.reload();
-      });
-    });
-  };
 };
 
 exports.authFunc = authFunc;
-},{"axios":"../node_modules/axios/index.js","./globals":"js/globals.js"}],"components/loginbutton.vue":[function(require,module,exports) {
+
+var authFunc2 = function authFunc2() {
+  var googleUser = signFuncs.auth2.currentUser.get();
+  _globals.userauth.authResponse = googleUser.getAuthResponse();
+  _globals.userauth.profile = googleUser.getBasicProfile();
+
+  _axios.default.post(_globals.apiurl.login, {
+    idtoken: _globals.userauth.authResponse.id_token
+  }).then(function (data) {
+    _main.app.$set(_main.app.loggedin, 'loggedin', true);
+
+    _main.app.updateData(data.data);
+  }).catch(function (error) {
+    if (error.response) {
+      console.log("login failed", error.response.status, error.response.data);
+
+      if (error.response.data == "notati") {
+        alert("ERROR! You are not an ATI user! Please use a google account under alt.app to login successfully.");
+      }
+    }
+  });
+};
+
+exports.authFunc2 = authFunc2;
+
+signFuncs.signOut = function () {
+  gapi.auth2.getAuthInstance().signOut().then(function () {
+    _axios.default.get(_globals.apiurl.logout).then(function () {
+      window.location.reload();
+    });
+  });
+};
+},{"axios":"../node_modules/axios/index.js","./globals":"js/globals.js","../main":"main.js"}],"components/loginbutton.vue":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -13973,7 +13965,7 @@ var _default = {
       }
 
       if (!this.loggedin) _auth.signFuncs.auth2.signIn().then(function () {
-        return _auth.signFuncs.signedIn(_auth.signFuncs.auth2.currentUser.get(), true);
+        return (0, _auth.authFunc2)();
       });else _auth.signFuncs.signOut();
     }
   }
@@ -14273,7 +14265,7 @@ render._withStripped = true
       
 },{}],"../node_modules/fuse.js/dist/fuse.js":[function(require,module,exports) {
 var define;
-function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function (obj) { return typeof obj; }; } else { _typeof = function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function (obj) { return typeof obj; }; } else { _typeof = function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 /*!
  * Fuse.js v3.4.6 - Lightweight fuzzy-search (http://fusejs.io)
@@ -14992,6 +14984,25 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 var _default = {
   data: function data() {
     return {
@@ -14999,15 +15010,17 @@ var _default = {
       open: false,
       setMid: "0px",
       adminTop: 0,
-      classToggle: "000000000000000",
+      studentClassToggle: "000000000000000",
+      teacherClassToggle: "000000000000000",
       selectedTeacher: false,
+      selectedStudent: false,
       subsection: 0,
       openHeight: 800,
-      subsections: ["Teachers", "Students", "Admins", "General"],
+      subsections: ["Teachers", "Students", "Stats", "General"],
       addOpen: false,
       teacherEmail: "",
       searchResults: [],
-      teacherListHeight: false
+      listHeight: false
     };
   },
   methods: {
@@ -15046,17 +15059,37 @@ var _default = {
       }
     },
     selectTeacher: function selectTeacher(idx) {
-      var classes = this.sharedData.teacherlist[idx].teacherclasses;
-      setTimeout(this.dataCalc, 300);
+      setTimeout(this.dataCalc, 100);
       this.selectedTeacher = idx;
-      this.classToggle = classes;
+      this.teacherClassToggle = this.sharedData.teacherlist[idx].teacherclasses;
     },
-    toggleClass: function toggleClass(idx) {
-      var classCopy = this.classToggle.split("");
+    selectStudent: function selectStudent(idx) {
+      setTimeout(this.dataCalc, 100);
+      this.selectedStudent = idx;
+      this.studentClassToggle = this.sharedData.adminusers[idx].studentclasses;
+    },
+    teacherToggleClass: function teacherToggleClass(idx) {
+      var classCopy = this.teacherClassToggle.split("");
       classCopy[idx] = classCopy[idx] == "1" ? "0" : "1";
-      this.classToggle = classCopy.join("");
-      this.sharedData.teacherlist[this.selectedTeacher].teacherclasses = this.classToggle;
-      this.addTeacher(this.sharedData.teacherlist[this.selectedTeacher].email, this.classToggle, true);
+      this.teacherClassToggle = classCopy.join("");
+      this.sharedData.teacherlist[this.selectedTeacher].teacherclasses = this.teacherClassToggle;
+      this.addTeacher(this.sharedData.teacherlist[this.selectedTeacher].email, this.teacherClassToggle, true);
+    },
+    studentToggleClass: function studentToggleClass(idx) {
+      var _this = this;
+
+      var classCopy = this.studentClassToggle.split("");
+      classCopy[idx] = classCopy[idx] == "1" ? "0" : "1";
+      var newclasses = classCopy.join("");
+      this.sharedData.adminusers[this.selectedStudent].studentclasses = newclasses;
+      var userid = this.sharedData.adminusers[this.selectedStudent].userid;
+
+      _axios.default.post(_globals.apiurl.enrolledClasses, {
+        userid: userid,
+        classes: newclasses
+      }).catch(function () {
+        _this.sharedData.adminusers[_this.selectedStudent].studentclasses = _this.studentClassToggle;
+      });
     },
     setMenu: function setMenu(isOpen) {
       this.open = isOpen ? 1 : 0;
@@ -15064,7 +15097,7 @@ var _default = {
       setTimeout(this.dataCalc, 400);
     },
     addTeacher: function addTeacher(email, classes, update) {
-      var _this = this;
+      var _this2 = this;
 
       _axios.default.post(_globals.apiurl.addTeacher, {
         email: email,
@@ -15072,32 +15105,32 @@ var _default = {
         update: update
       }).then(function (res) {
         if (update) return;
-        _this.teacherEmail = "";
+        _this2.teacherEmail = "";
         var userIndex = res.data.teacherlist.findIndex(function (e) {
           return e[0] == email;
         });
 
         if (userIndex > -1) {
-          _this.selectedTeacher = userIndex;
+          _this2.selectedTeacher = userIndex;
         } else {
           console.log(userIndex, res.data, email);
         }
       });
     },
     delTeacher: function delTeacher(email) {
-      var _this2 = this;
+      var _this3 = this;
 
       var clear = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
       var confirmed = confirm("Are you sure you want to revoke this user's teacher privileges?");
       if (confirmed) _axios.default.post(_globals.apiurl.delTeacher, {
         email: email
       }).then(function (e) {
-        if (clear) _this2.selectedTeacher = false;
+        if (clear) _this3.selectedTeacher = false;
       });
     },
     dataCalc: function dataCalc() {
-      if (this.$refs.teacher) {
-        this.teacherListHeight = window.innerHeight - this.$refs.teacher.getBoundingClientRect().top;
+      if (this.$refs.userlist) {
+        this.listHeight = window.innerHeight - this.$refs.userlist.getBoundingClientRect().top;
       }
     }
   },
@@ -15364,7 +15397,7 @@ exports.default = _default;
                                     style: { content: _vm.classToggle[idx] },
                                     on: {
                                       click: function($event) {
-                                        _vm.toggleClass(parseInt(idx))
+                                        _vm.teacherToggleClass(parseInt(idx))
                                       }
                                     }
                                   },
@@ -15386,16 +15419,16 @@ exports.default = _default;
                   _c(
                     "div",
                     {
-                      ref: "teacher",
-                      staticClass: "teacherList",
-                      style: { height: _vm.teacherListHeight + "px" }
+                      ref: "userlist",
+                      staticClass: "userList",
+                      style: { height: _vm.listHeight + "px" }
                     },
                     _vm._l(_vm.sharedData.teacherlist, function(teacher, idx) {
                       return _c(
                         "div",
                         {
                           key: teacher.email,
-                          staticClass: "teacherItem col-4 z-depth-half",
+                          staticClass: "userItem col-4 z-depth-half",
                           on: {
                             click: function($event) {
                               return _vm.selectTeacher(idx)
@@ -15403,6 +15436,89 @@ exports.default = _default;
                           }
                         },
                         [_vm._v(_vm._s(teacher.name))]
+                      )
+                    }),
+                    0
+                  )
+                ])
+              : _vm._e(),
+            _vm._v(" "),
+            _vm.subsection == 1
+              ? _c("div", { staticClass: "col-12 body student" }, [
+                  _vm.selectedStudent !== false
+                    ? _c("div", { staticClass: "classSelect z-depth-1" }, [
+                        _c("div", { staticClass: "selectTitle" }, [
+                          _vm._v(
+                            "\n          " +
+                              _vm._s(
+                                _vm.sharedData.adminusers[_vm.selectedStudent]
+                                  .name
+                              ) +
+                              " \n        "
+                          )
+                        ]),
+                        _vm._v(" "),
+                        _vm.selectedStudent !== false
+                          ? _c(
+                              "div",
+                              _vm._l(_vm.studentClassToggle, function(
+                                status,
+                                idx
+                              ) {
+                                return _c(
+                                  "div",
+                                  {
+                                    key: "classBlock" + idx,
+                                    staticClass: "classBlock",
+                                    class: {
+                                      selected: parseInt(
+                                        _vm.studentClassToggle[idx]
+                                      )
+                                    },
+                                    style: {
+                                      content: _vm.studentClassToggle[idx]
+                                    },
+                                    on: {
+                                      click: function($event) {
+                                        _vm.studentToggleClass(parseInt(idx))
+                                      }
+                                    }
+                                  },
+                                  [
+                                    _vm._v(
+                                      "\n          " +
+                                        _vm._s(_vm.sharedData.shortnames[idx]) +
+                                        "\n        "
+                                    )
+                                  ]
+                                )
+                              }),
+                              0
+                            )
+                          : _vm._e()
+                      ])
+                    : _vm._e(),
+                  _vm._v(" "),
+                  _c(
+                    "div",
+                    {
+                      ref: "userlist",
+                      staticClass: "userList",
+                      style: { height: _vm.listHeight + "px" }
+                    },
+                    _vm._l(_vm.sharedData.adminusers, function(student, idx) {
+                      return _c(
+                        "div",
+                        {
+                          key: student.email,
+                          staticClass: "userItem col-4 z-depth-half",
+                          on: {
+                            click: function($event) {
+                              return _vm.selectStudent(idx)
+                            }
+                          }
+                        },
+                        [_vm._v(_vm._s(student.name))]
                       )
                     }),
                     0
@@ -18860,7 +18976,7 @@ if (GlobalVue) {
 
 var _default = plugin;
 exports.default = _default;
-},{}],"../../../../usr/lib/node_modules/parcel-bundler/node_modules/base64-js/index.js":[function(require,module,exports) {
+},{}],"../node_modules/base64-js/index.js":[function(require,module,exports) {
 'use strict'
 
 exports.byteLength = byteLength
@@ -19014,7 +19130,7 @@ function fromByteArray (uint8) {
   return parts.join('')
 }
 
-},{}],"../../../../usr/lib/node_modules/parcel-bundler/node_modules/ieee754/index.js":[function(require,module,exports) {
+},{}],"../node_modules/ieee754/index.js":[function(require,module,exports) {
 exports.read = function (buffer, offset, isLE, mLen, nBytes) {
   var e, m
   var eLen = (nBytes * 8) - mLen - 1
@@ -19100,14 +19216,14 @@ exports.write = function (buffer, value, offset, isLE, mLen, nBytes) {
   buffer[offset + i - d] |= s * 128
 }
 
-},{}],"../../../../usr/lib/node_modules/parcel-bundler/node_modules/isarray/index.js":[function(require,module,exports) {
+},{}],"../node_modules/buffer/node_modules/isarray/index.js":[function(require,module,exports) {
 var toString = {}.toString;
 
 module.exports = Array.isArray || function (arr) {
   return toString.call(arr) == '[object Array]';
 };
 
-},{}],"../../../../usr/lib/node_modules/parcel-bundler/node_modules/buffer/index.js":[function(require,module,exports) {
+},{}],"../node_modules/buffer/index.js":[function(require,module,exports) {
 
 var global = arguments[3];
 /*!
@@ -20900,7 +21016,7 @@ function isnan (val) {
   return val !== val // eslint-disable-line no-self-compare
 }
 
-},{"base64-js":"../../../../usr/lib/node_modules/parcel-bundler/node_modules/base64-js/index.js","ieee754":"../../../../usr/lib/node_modules/parcel-bundler/node_modules/ieee754/index.js","isarray":"../../../../usr/lib/node_modules/parcel-bundler/node_modules/isarray/index.js","buffer":"../../../../usr/lib/node_modules/parcel-bundler/node_modules/buffer/index.js"}],"../node_modules/v-tooltip/dist/v-tooltip.esm.js":[function(require,module,exports) {
+},{"base64-js":"../node_modules/base64-js/index.js","ieee754":"../node_modules/ieee754/index.js","isarray":"../node_modules/buffer/node_modules/isarray/index.js","buffer":"../node_modules/buffer/index.js"}],"../node_modules/v-tooltip/dist/v-tooltip.esm.js":[function(require,module,exports) {
 var global = arguments[3];
 var Buffer = require("buffer").Buffer;
 "use strict";
@@ -23307,9 +23423,7 @@ var DEFAULT_OPTIONS = {
 };
 var openTooltips = [];
 
-var Tooltip =
-/*#__PURE__*/
-function () {
+var Tooltip = /*#__PURE__*/function () {
   /**
    * Create a new Tooltip.js instance
    * @class Tooltip
@@ -26160,7 +26274,7 @@ if (GlobalVue) {
 
 var _default2 = plugin;
 exports.default = _default2;
-},{"popper.js":"../node_modules/popper.js/dist/esm/popper.js","vue-resize":"../node_modules/vue-resize/dist/vue-resize.esm.js","buffer":"../../../../usr/lib/node_modules/parcel-bundler/node_modules/buffer/index.js"}],"css/animations.css":[function(require,module,exports) {
+},{"popper.js":"../node_modules/popper.js/dist/esm/popper.js","vue-resize":"../node_modules/vue-resize/dist/vue-resize.esm.js","buffer":"../node_modules/buffer/index.js"}],"css/animations.css":[function(require,module,exports) {
 
 },{}],"components/teacherpanel.vue":[function(require,module,exports) {
 "use strict";
@@ -27766,7 +27880,7 @@ formatters.j = function (v) {
     return '[UnexpectedJSONParseError]: ' + error.message;
   }
 };
-},{"./common":"../node_modules/socket.io-client/node_modules/debug/src/common.js","process":"../../../../usr/lib/node_modules/parcel-bundler/node_modules/process/browser.js"}],"../node_modules/socket.io-client/lib/url.js":[function(require,module,exports) {
+},{"./common":"../node_modules/socket.io-client/node_modules/debug/src/common.js","process":"../node_modules/process/browser.js"}],"../node_modules/socket.io-client/lib/url.js":[function(require,module,exports) {
 
 /**
  * Module dependencies.
@@ -28388,7 +28502,7 @@ function localstorage() {
     return window.localStorage;
   } catch (e) {}
 }
-},{"./debug":"../node_modules/debug/src/debug.js","process":"../../../../usr/lib/node_modules/parcel-bundler/node_modules/process/browser.js"}],"../node_modules/component-emitter/index.js":[function(require,module,exports) {
+},{"./debug":"../node_modules/debug/src/debug.js","process":"../node_modules/process/browser.js"}],"../node_modules/component-emitter/index.js":[function(require,module,exports) {
 
 /**
  * Expose `Emitter`.
@@ -28576,7 +28690,7 @@ function isBuf(obj) {
           (withNativeArrayBuffer && (obj instanceof ArrayBuffer || isView(obj)));
 }
 
-},{"buffer":"../../../../usr/lib/node_modules/parcel-bundler/node_modules/buffer/index.js"}],"../node_modules/socket.io-parser/binary.js":[function(require,module,exports) {
+},{"buffer":"../node_modules/buffer/index.js"}],"../node_modules/socket.io-parser/binary.js":[function(require,module,exports) {
 /*global Blob,File*/
 
 /**
@@ -28719,7 +28833,7 @@ exports.removeBlobs = function(data, callback) {
   }
 };
 
-},{"isarray":"../../../../usr/lib/node_modules/parcel-bundler/node_modules/isarray/index.js","./is-buffer":"../node_modules/socket.io-parser/is-buffer.js"}],"../node_modules/socket.io-parser/index.js":[function(require,module,exports) {
+},{"isarray":"../node_modules/buffer/node_modules/isarray/index.js","./is-buffer":"../node_modules/socket.io-parser/is-buffer.js"}],"../node_modules/socket.io-parser/index.js":[function(require,module,exports) {
 
 /**
  * Module dependencies.
@@ -29136,7 +29250,7 @@ function error(msg) {
   };
 }
 
-},{"debug":"../node_modules/debug/src/browser.js","component-emitter":"../node_modules/component-emitter/index.js","./binary":"../node_modules/socket.io-parser/binary.js","isarray":"../../../../usr/lib/node_modules/parcel-bundler/node_modules/isarray/index.js","./is-buffer":"../node_modules/socket.io-parser/is-buffer.js"}],"../node_modules/has-cors/index.js":[function(require,module,exports) {
+},{"debug":"../node_modules/debug/src/browser.js","component-emitter":"../node_modules/component-emitter/index.js","./binary":"../node_modules/socket.io-parser/binary.js","isarray":"../node_modules/buffer/node_modules/isarray/index.js","./is-buffer":"../node_modules/socket.io-parser/is-buffer.js"}],"../node_modules/has-cors/index.js":[function(require,module,exports) {
 
 /**
  * Module exports.
@@ -29282,7 +29396,7 @@ function hasBinary (obj) {
   return false;
 }
 
-},{"isarray":"../../../../usr/lib/node_modules/parcel-bundler/node_modules/isarray/index.js","buffer":"../../../../usr/lib/node_modules/parcel-bundler/node_modules/buffer/index.js"}],"../node_modules/arraybuffer.slice/index.js":[function(require,module,exports) {
+},{"isarray":"../node_modules/buffer/node_modules/isarray/index.js","buffer":"../node_modules/buffer/index.js"}],"../node_modules/arraybuffer.slice/index.js":[function(require,module,exports) {
 /**
  * An abstraction for slicing an arraybuffer even when
  * ArrayBuffer.prototype.slice is not supported
@@ -31064,7 +31178,7 @@ formatters.j = function (v) {
     return '[UnexpectedJSONParseError]: ' + error.message;
   }
 };
-},{"./common":"../node_modules/engine.io-client/node_modules/debug/src/common.js","process":"../../../../usr/lib/node_modules/parcel-bundler/node_modules/process/browser.js"}],"../node_modules/engine.io-client/lib/transports/polling.js":[function(require,module,exports) {
+},{"./common":"../node_modules/engine.io-client/node_modules/debug/src/common.js","process":"../node_modules/process/browser.js"}],"../node_modules/engine.io-client/lib/transports/polling.js":[function(require,module,exports) {
 /**
  * Module dependencies.
  */
@@ -32270,7 +32384,7 @@ WS.prototype.check = function () {
   return !!WebSocketImpl && !('__initialize' in WebSocketImpl && this.name === WS.prototype.name);
 };
 
-},{"../transport":"../node_modules/engine.io-client/lib/transport.js","engine.io-parser":"../node_modules/engine.io-parser/lib/browser.js","parseqs":"../node_modules/parseqs/index.js","component-inherit":"../node_modules/component-inherit/index.js","yeast":"../node_modules/yeast/index.js","debug":"../node_modules/engine.io-client/node_modules/debug/src/browser.js","ws":"css/animations.css","buffer":"../../../../usr/lib/node_modules/parcel-bundler/node_modules/buffer/index.js"}],"../node_modules/engine.io-client/lib/transports/index.js":[function(require,module,exports) {
+},{"../transport":"../node_modules/engine.io-client/lib/transport.js","engine.io-parser":"../node_modules/engine.io-parser/lib/browser.js","parseqs":"../node_modules/parseqs/index.js","component-inherit":"../node_modules/component-inherit/index.js","yeast":"../node_modules/yeast/index.js","debug":"../node_modules/engine.io-client/node_modules/debug/src/browser.js","ws":"css/animations.css","buffer":"../node_modules/buffer/index.js"}],"../node_modules/engine.io-client/lib/transports/index.js":[function(require,module,exports) {
 /**
  * Module dependencies
  */
@@ -34403,12 +34517,7 @@ require("bootstrap/dist/css/bootstrap.min.css");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
-
-function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
-
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-
+// import Vuex from "vuex";
 var app = new _vue.default({
   data: function data() {
     return {
@@ -34440,72 +34549,26 @@ var app = new _vue.default({
     updateData: function updateData(data) {
       var _this = this;
 
-      this.sharedData = _objectSpread({}, this.sharedData, {}, data);
+      this.sharedData = data;
       if (data.classes) this.sharedData.classes = data.classes.split("").map(function (val, idx) {
         return {
           "name": _globals.classnames[idx],
           "status": parseInt(val)
         };
       });
-      if (data.users) this.sharedData.users = data.users.map(function (el, idx) {
-        return {
-          email: el[0],
-          name: el[1],
-          userid: el[2],
-          classes: el[3],
-          comments: []
-        };
-      });
-      if (data.adminusers) this.sharedData.adminusers = data.adminusers.map(function (el) {
-        return {
-          email: el[0],
-          name: el[1],
-          userid: el[2],
-          classes: el[3],
-          studentclasses: el[4]
-        };
-      });
-      if (data.tcomments ? data.tcomments.length >= 1 : false) data.tcomments.forEach(function (el) {
-        var comment = {
-          userid: el[0],
-          class: el[1],
-          comment: el[2]
-        };
-
+      if (data.tcomments ? data.tcomments.length >= 1 : false) data.tcomments.forEach(function (comment) {
         var foundIndex = _this.sharedData.users.findIndex(function (x) {
           return x.userid == comment.userid;
         });
 
         if (foundIndex > -1) _this.sharedData.users[foundIndex].comments[parseInt(comment.class)] = comment.comment;
       });
-      if (data.admin) this.sharedData.teacherlist = data.teacherlist.map(function (el) {
-        return {
-          email: el[0],
-          name: el[1],
-          userid: el[2],
-          teacherclasses: el[3]
-        };
-      });
     },
     updateUsers: function updateUsers(data) {
       var _this2 = this;
 
-      if (data.users) this.sharedData.users = data.users.map(function (el) {
-        return {
-          email: el[0],
-          name: el[1],
-          userid: el[2],
-          classes: el[3],
-          comments: []
-        };
-      });
-      if (data.comments ? data.comments.length >= 1 : false) data.comments.forEach(function (el) {
-        var comment = {
-          userid: el[0],
-          class: el[1],
-          comment: el[2]
-        };
-
+      if (data.users) this.sharedData.users = data.users;
+      if (data.comments ? data.comments.length >= 1 : false) data.comments.forEach(function (comment) {
         var foundIndex = _this2.sharedData.users.findIndex(function (x) {
           return x.userid == comment.userid;
         });
@@ -34534,7 +34597,21 @@ var app = new _vue.default({
     }).on("updatereq", function () {
       return _axios.default.post(_globals.apiurl.data);
     }).on('connect', function () {
-      (0, _auth.authFunc)(_this3);
+      (0, _auth.authFunc)(function (loggedin) {
+        if (!loggedin) return;
+
+        _axios.default.get(_globals.apiurl.getdata).then(function (data) {
+          _this3.updateData(data.data);
+
+          _this3.loggedin.loggedin = true;
+        }).catch(function (err) {
+          if (err.response) {
+            if (err.response.status == 403) {
+              (0, _auth.authFunc2)();
+            }
+          }
+        });
+      });
     }).on('connect_error', function (error) {
       console.log('%c Socket cannot connect to backend API!', 'background: #222; color: #ff6961; font-size: 18px;');
     });

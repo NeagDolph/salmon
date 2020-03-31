@@ -85,7 +85,7 @@ export default {
   overflow-y: auto;
   overflow-x: hidden;
   padding-right: 15px;
-  padding-left: 15px;
+  padding-left: 5px;
 }
 
 

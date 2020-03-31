@@ -1,0 +1,19 @@
+{
+    "allowedThirdParty": [
+        "neilagrawal1990@gmail.com"
+    ],
+    "adminsuserids": [
+        "7191454f-1b43-497c-ad07-7152a163f19c", 
+        "2dcdaab7-4f08-4f62-9ad1-488c5799cf54", 
+        "8e579d65-04a3-479c-9268-4ab928237ee5", 
+        "daae0f57-8ee9-41fc-9885-d203fabf3b0c"
+    ],
+    "admins": [
+        "nagrawal@alt.app",
+        "jsutton@alt.app",
+        "neilagrawal1990@gmail.com",
+        "cready@alt.app"
+    ],
+    "db": "sqlite.db",
+    "googleAuthCode": "203450520052-4olsv1k1uj6ditok97qncbho9n8usk36.apps.googleusercontent.com"
+}

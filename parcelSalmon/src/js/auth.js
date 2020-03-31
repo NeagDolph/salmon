@@ -1,11 +1,12 @@
 import axios from 'axios';
 import { userauth, apiurl } from './globals';
+import { app } from '../main';
 
 export var signFuncs = {};
 
 
-export var authFunc = app => {
-gapi.load("auth2", function() {
+export var authFunc = callback => {
+gapi.load("auth2", () => {
   gapi.auth2
     .init({
       client_id:
@@ -18,48 +19,37 @@ gapi.load("auth2", function() {
     })
     .then(auth2 => {
       signFuncs.auth2 = auth2;
-      signFuncs.signedIn = signedIn;
-      if (auth2.isSignedIn.get()) signedIn(auth2.currentUser.get());
-      else app.$set(app.loggedin, 'loggedin', false)
+      callback(auth2.isSignedIn.get())
     });
 });
+}
 
-let signedIn = (googleUser, first=false) => {
+export var authFunc2 = () => {
+  let googleUser = signFuncs.auth2.currentUser.get()
   userauth.authResponse = googleUser.getAuthResponse();
   userauth.profile = googleUser.getBasicProfile();
 
   axios
     .post(apiurl.login, { idtoken: userauth.authResponse.id_token })
     .then(data => {
-      console.log("DID", data)
-      if (data == "success") {
-        
-        app.$set(app.loggedin, 'loggedin', true)
-        axios.post(apiurl.data);
-      } else {
-        app.$set(app.loggedin, 'loggedin', true)
-        app.updateData(data.data)
-        axios.post(apiurl.data);
-        if (first) window.location.reload()
-      }
+      app.$set(app.loggedin, 'loggedin', true)
+      app.updateData(data.data)
     })
     .catch(error => {
       if (error.response) {
         console.log("login failed", error.response.status, error.response.data);
 
-        if (error.response.data == "notati" && error.response.status == 403) {
+        if (error.response.data == "notati") {
           alert("ERROR! You are not an ATI user! Please use a google account under alt.app to login successfully.")
         }
       }
     });
-};
+}
 
 signFuncs.signOut = () => {
-  userauth.authInstance = gapi.auth2.getAuthInstance();
-  userauth.authInstance.signOut().then(() => {
+  gapi.auth2.getAuthInstance().signOut().then(() => {
     axios.get(apiurl.logout).then(() => {
       window.location.reload()
     })
   });
 };
-}
