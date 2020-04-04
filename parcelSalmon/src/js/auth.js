@@ -4,7 +4,7 @@ import { app } from '../main';
 
 export var signFuncs = {};
 
-
+//Init google api
 export var authFunc = callback => {
 gapi.load("auth2", () => {
   gapi.auth2
@@ -24,6 +24,7 @@ gapi.load("auth2", () => {
 });
 }
 
+//Verify login with backend API
 export var authFunc2 = () => {
   let googleUser = signFuncs.auth2.currentUser.get()
   userauth.authResponse = googleUser.getAuthResponse();

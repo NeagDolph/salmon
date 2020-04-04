@@ -35,8 +35,8 @@
               </a>
             </div>
             <div v-if="selectedTeacher !== false">
-            <div class="classBlock" @click="teacherToggleClass(parseInt(idx))" v-for="(status, idx) in classToggle" :key="'classBlock' + idx" :class="{selected: parseInt(classToggle[idx])}" :style="{content: classToggle[idx] }">
-              {{sharedData.shortnames[idx]}}
+            <div class="classBlock" @click="teacherToggleClass(parseInt(idx))" v-for="(status, idx) in teacherClassToggle" :key="'classBlock' + idx" :class="{selected: parseInt(teacherClassToggle[idx])}" :style="{content: teacherClassToggle[idx] }">
+              {{shortnames[idx]}}
             </div>
             </div>
           </div>
@@ -51,8 +51,8 @@
               {{sharedData.adminusers[selectedStudent].name}} 
             </div>
             <div v-if="selectedStudent !== false">
-            <div class="classBlock" @click="studentToggleClass(parseInt(idx))" v-for="(status, idx) in studentClassToggle" :key="'classBlock' + idx" :class="{selected: parseInt(studentClassToggle[idx])}" :style="{content: studentClassToggle[idx] }">
-              {{sharedData.shortnames[idx]}}
+            <div class="classBlock" @click="studentToggleClass(parseInt(idx))" v-for="(status, idx) in sharedData.adminusers[selectedStudent].studentclasses" :key="'classBlock' + idx" :class="{selected: parseInt(sharedData.adminusers[selectedStudent].studentclasses[idx])}" :style="{content: sharedData.adminusers[selectedStudent].studentclasses[idx] }">
+              {{shortnames[idx]}}
             </div>
             </div>
           </div>
@@ -71,9 +71,14 @@
 </template>
 
 <script>
+import Vue from "vue";
 import axios from 'axios';
-import { apiurl } from '../js/globals';
+import VueAxios from 'vue-axios';
+
+import { apiurl, shortnames } from '../js/globals';
 import Fuse from 'fuse.js';
+
+Vue.use(VueAxios, axios)
 
 export default {
   data() {
@@ -93,6 +98,7 @@ export default {
       teacherEmail: "",
       searchResults: [],
       listHeight: false,
+      shortnames: shortnames
     };
   },
   methods: {
@@ -131,7 +137,15 @@ export default {
         this.$refs.teacherEmail.focus()
       }
       else {
-        if (this.teacherEmail.length >= 1) this.addTeacher(this.teacherEmail, "000000000000000");
+        if (this.teacherEmail.length) this.addTeacher(this.teacherEmail, "000000000000000", false, res => {
+          if (res.data == "queue") {console.log("User added to queue"); return}
+          
+          this.teacherEmail = ""
+
+          let userIndex = this.sharedData.teacherlist.findIndex(e => {return e[0] == this.teacherEmail})
+          
+          if (userIndex > -1) this.selectedTeacher = userIndex
+        });
         else this.addOpen = false;
       }
     },
@@ -151,46 +165,21 @@ export default {
       this.teacherClassToggle = classCopy.join("")
 
       this.sharedData.teacherlist[this.selectedTeacher].teacherclasses = this.teacherClassToggle
-      this.addTeacher(this.sharedData.teacherlist[this.selectedTeacher].email, this.teacherClassToggle, true)
+      
+      let email = this.sharedData.teacherlist[this.selectedTeacher].email
+
+      this.addTeacher(email, this.teacherClassToggle, true, () => {})
     },
     studentToggleClass(idx) {
-
-      let classCopy = this.studentClassToggle.split("")
-      classCopy[idx] = classCopy[idx] == "1" ? "0" : "1"
-      let newclasses = classCopy.join("")
-
-      this.sharedData.adminusers[this.selectedStudent].studentclasses = newclasses
-
       let userid = this.sharedData.adminusers[this.selectedStudent].userid
+      let studentclasses = this.sharedData.adminusers[this.selectedStudent].studentclasses
 
-      axios
-        .post(apiurl.enrolledClasses, { userid: userid, classes: newclasses })
-        .catch(() => {
-          this.sharedData.adminusers[this.selectedStudent].studentclasses = this.studentClassToggle
-        })
+      this.userEditEnrolled(userid, studentclasses, idx, this.selectedStudent)
     },
     setMenu(isOpen) {
       this.open = isOpen ? 1 : 0;
       this.setGlobal("adminOpen", isOpen)
       setTimeout(this.dataCalc, 400)
-    },
-    addTeacher(email, classes, update) {
-      axios
-        .post(apiurl.addTeacher, { email: email, classes: classes, update: update })
-        .then(res => {
-          if (update) return
-          this.teacherEmail = ""
-
-          let userIndex = res.data.teacherlist.findIndex(e => {return e[0] == email})
-          
-          if (userIndex > -1) {
-            this.selectedTeacher = userIndex
-          } else {
-            console.log(userIndex, res.data, email)
-          }
-
-
-        })
     },
     delTeacher(email, clear=false) {
       let confirmed = confirm("Are you sure you want to revoke this user's teacher privileges?")

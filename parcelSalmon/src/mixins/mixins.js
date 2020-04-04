@@ -5,6 +5,36 @@ import { app } from '../main';
 
 Vue.mixin({
     methods: {
+      userEditEnrolled(userid, userclasses, idx, userindex) {
+        // Flip selected class index
+        let flippedclasses = userclasses.split("")
+        flippedclasses[idx] = flippedclasses[idx] == "1" ? "0" : "1"
+        flippedclasses = flippedclasses.join("")
+        
+        // Create a temp sharedData, modify it and set the app.sharedData as the temp one
+        let tempShared = app.sharedData
+        tempShared.adminusers[userindex].studentclasses = flippedclasses
+        app.sharedData = tempShared
+
+        // Send class change to server
+        axios
+          .post(apiurl.enrolledClasses, { class: idx, userid: userid, new: flippedclasses[idx] })
+          .then(() => {
+            axios.post(apiurl.data);
+          })
+          .catch(error => {
+            let tempShared = app.sharedData
+            tempShared.adminusers[userindex].studentclasses = userclasses
+            app.sharedData = tempShared
+          });
+      },
+      addTeacher(email, classes, update, callback) {
+        axios
+        .post(apiurl.addTeacher, { email: email, classes: classes, update: update })
+        .then(res => {
+          callback(res)
+        })
+      },
       usereditmodal(state, user=false) {
         app.editState = state;
         if (user) app.editSelect = user
@@ -21,7 +51,7 @@ Vue.mixin({
         
         // Create a temp sharedData, modify it and set the app.sharedData as the temp one
         let tempShared = app.sharedData
-        tempShared.users[userindex].classes = classes
+        tempShared.userlist[userindex].classes = classes
         app.$set(app.sharedData, 'sharedData', tempShared)
 
         // Send class change to server
@@ -32,7 +62,7 @@ Vue.mixin({
           })
           .catch(error => {
             let tempShared = app.sharedData
-            tempShared.users[userindex].classes = user.classes
+            tempShared.userlist[userindex].classes = user.classes
             app.$set(app.sharedData, 'sharedData', tempShared)
           });
       },

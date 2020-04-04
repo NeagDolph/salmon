@@ -38,6 +38,7 @@ export default {
   props: ["sharedData", "loggedin"],
   methods: {
     getComment(idx) {
+      if (!this.sharedData.comments) return false
       let returnComment = this.sharedData.comments.find(e => {return e[0] == idx});
       if (returnComment) return returnComment[1];
       else return false;

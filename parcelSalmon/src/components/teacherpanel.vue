@@ -2,7 +2,7 @@
   <div style="width: 100%;" class="row">
 
     <div class="teacherUserArea col-5">
-      <div v-for="(user, index) in sharedData.users" :key="user.userid" class="useritemcol">
+      <div v-for="(user, index) in sharedData.userlist" :key="user.userid" class="useritemcol">
         <div v-if="filteredClasses[index].length >= 1">
           <div class="useritem" @click="openMenu(user, index)">
             <div class="name">{{user.name}}</div>
@@ -23,7 +23,7 @@
               <div
                 class="quickSelectItem"
                 :class="{red: classObj.status === '0', green: classObj.status === '1'}"
-                @click.stop="change(user, classObj.index, index)"
+                @click.stop="change(user, classObj.index, index, true)"
               >
                 {{classObj.name[0]}}
               </div>
@@ -37,13 +37,13 @@
 
     <div class="col-5">
       <div class="teacherClassArea">
-        <label class="title">{{ selectedIndex === false ? "Manage User" : sharedData.users[selectedIndex].name }}<span v-if="commentSelectMode">Selecting</span></label>
+        <label class="title">{{ selectedIndex === false ? "Manage User" : sharedData.userlist[selectedIndex].name }}<span v-if="commentSelectMode">Selecting</span></label>
         <div class="classItemCont">
           <div 
             class="classItem"
             v-for="(classObj, idx) in filteredClasses[selectedIndex]"
             :key="idx"
-            @click.stop="change(sharedData.users[selectedIndex], classObj.index, selectedIndex)"
+            @click.stop="change(sharedData.userlist[selectedIndex], classObj.index, selectedIndex)"
             :class="{red: classObj.status === '0', green: classObj.status === '1', selecting: commentSelectMode}"
           >
             {{classnames[classObj.index]}}
@@ -71,7 +71,7 @@ import commentmodal from "./commentmodal.vue"
 import Vue from "vue"
 import VTooltip from 'v-tooltip'
 import './../css/animations.css'
-import { classnames } from "./../js/globals.js";
+import { classnames, shortnames } from "./../js/globals.js";
 import commentmodalVue from './commentmodal.vue'
 import adminPanel from "./adminPanel.vue";
 
@@ -91,13 +91,14 @@ export default {
       commentSelectMode: false,
       commentSelectedIndex: false,
       currentComment: "",
-      currentName: ""
+      currentName: "",
+      shortnames: shortnames
     };
   },
   props: ["sharedData", "isMobile", "globalData"],
   methods: {
     createCommentLast() {
-      this.addComment({userid: this.sharedData.users[this.selectedIndex].userid}, this.commentSelectedIndex, this.currentComment)
+      this.addComment({userid: this.sharedData.userlist[this.selectedIndex].userid}, this.commentSelectedIndex, this.currentComment)
       .then(data => {
       })
     },
@@ -105,7 +106,7 @@ export default {
       if (this.commentSelectMode) {
         this.commentSelectedIndex = index
         this.typingComment = true;
-        this.currentComment = this.sharedData.users[this.selectedIndex].comments[index]
+        this.currentComment = this.sharedData.userlist[this.selectedIndex].comments[index]
         setTimeout(() => {this.$refs.commentInput.focus()}, 100)
       }
     },
@@ -129,8 +130,8 @@ export default {
       this.commentSelectedIndex = false;
       this.selectedIndex = index;
     },
-    change(user, idx, userindex) {
-      if (this.commentSelectMode) {
+    change(user, idx, userindex, quick=false) {
+      if (this.commentSelectMode && !quick) {
         this.createCommentSecond(idx)
         this.currentName = this.classnames[idx]
         return
@@ -139,25 +140,26 @@ export default {
       this.editUserClasses(user, idx, userindex);
     },
     getComment(user, idx) {
-      let comment = this.sharedData.users.find(x => x.userid == user.userid).comments[idx]
+      let comment = this.sharedData.userlist.find(x => x.userid == user.userid).comments[idx]
       return comment ? comment + "<br/>" : ""
     }
   },
   computed: {
     filteredClasses() {
-      return this.sharedData.users.map(user => {
+      if (!this.sharedData.userlist) return []
+      return this.sharedData.userlist.map(user => {
         return user.classes
           .split("")
           //If teacher has specific class enabled then set it to object else set to false
           .map((el, i) => {
-            return this.sharedData.tclasses[i] === "0" ? false : {index: i, status: el, name: this.sharedData.shortnames[i], fullname: this.classnames[i]};
+            return this.sharedData.tclasses[i] === "0" ? false : {index: i, status: el, name: this.shortnames[i], fullname: this.classnames[i]};
           })
           // Filter out all false elements
           .filter(el => {return el})
       });
     },
     isgreen() {
-      return this.sharedData.users.map(user => {
+      return this.sharedData.userlist.map(user => {
         return !user.classes.includes(0);
       });
     }

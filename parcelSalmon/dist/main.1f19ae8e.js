@@ -13859,7 +13859,7 @@ var userauth = {};
 exports.userauth = userauth;
 var classnames = ["Socratic 1", "Socratic 2", "Writing 1", "Writing 2", "Geometry", "Statistics", "Life Design", "Problem", "Physics", "HRI", "Creative Writing", "Urban Mvmt", "Makerspace", "Practicum", "Cap vs Soc"];
 exports.classnames = classnames;
-var shortnames = ["Soc", "Soc2", "Wr", "Wr2", "Geo", "Stats", "LD", "PS", "Phy", "HRI", "CW", "UM", "Maker", "Pract"];
+var shortnames = ["Soc", "Soc2", "Wr", "Wr2", "Geo", "Stats", "LD", "PS", "Phy", "HRI", "CW", "UM", "Maker", "Pract", "CvS"];
 exports.shortnames = shortnames;
 var apiurl = {
   getdata: "/api/getdata",
@@ -13891,7 +13891,8 @@ var _main = require("../main");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var signFuncs = {};
+var signFuncs = {}; //Init google api
+
 exports.signFuncs = signFuncs;
 
 var authFunc = function authFunc(callback) {
@@ -13905,7 +13906,8 @@ var authFunc = function authFunc(callback) {
       callback(auth2.isSignedIn.get());
     });
   });
-};
+}; //Verify login with backend API
+
 
 exports.authFunc = authFunc;
 
@@ -14263,6 +14265,9 @@ render._withStripped = true
           };
         })());
       
+},{}],"../node_modules/vue-axios/dist/vue-axios.min.js":[function(require,module,exports) {
+var define;
+"use strict";var _typeof="function"==typeof Symbol&&"symbol"==typeof Symbol.iterator?function(o){return typeof o}:function(o){return o&&"function"==typeof Symbol&&o.constructor===Symbol&&o!==Symbol.prototype?"symbol":typeof o};!function(){function o(e,t){if(!o.installed){if(o.installed=!0,!t)return void console.error("You have to install axios");e.axios=t,Object.defineProperties(e.prototype,{axios:{get:function(){return t}},$http:{get:function(){return t}}})}}"object"==("undefined"==typeof exports?"undefined":_typeof(exports))?module.exports=o:"function"==typeof define&&define.amd?define([],function(){return o}):window.Vue&&window.axios&&Vue.use(o,window.axios)}();
 },{}],"../node_modules/fuse.js/dist/fuse.js":[function(require,module,exports) {
 var define;
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function (obj) { return typeof obj; }; } else { _typeof = function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
@@ -14923,7 +14928,11 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = void 0;
 
+var _vue = _interopRequireDefault(require("vue"));
+
 var _axios = _interopRequireDefault(require("axios"));
+
+var _vueAxios = _interopRequireDefault(require("vue-axios"));
 
 var _globals = require("../js/globals");
 
@@ -15003,6 +15012,8 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 //
 //
 //
+_vue.default.use(_vueAxios.default, _axios.default);
+
 var _default = {
   data: function data() {
     return {
@@ -15020,7 +15031,8 @@ var _default = {
       addOpen: false,
       teacherEmail: "",
       searchResults: [],
-      listHeight: false
+      listHeight: false,
+      shortnames: _globals.shortnames
     };
   },
   methods: {
@@ -15051,11 +15063,26 @@ var _default = {
       this.subsection = section;
     },
     toggleAdd: function toggleAdd() {
+      var _this = this;
+
       if (!this.addOpen) {
         this.addOpen = true;
         this.$refs.teacherEmail.focus();
       } else {
-        if (this.teacherEmail.length >= 1) this.addTeacher(this.teacherEmail, "000000000000000");else this.addOpen = false;
+        if (this.teacherEmail.length) this.addTeacher(this.teacherEmail, "000000000000000", false, function (res) {
+          if (res.data == "queue") {
+            console.log("User added to queue");
+            return;
+          }
+
+          _this.teacherEmail = "";
+
+          var userIndex = _this.sharedData.teacherlist.findIndex(function (e) {
+            return e[0] == _this.teacherEmail;
+          });
+
+          if (userIndex > -1) _this.selectedTeacher = userIndex;
+        });else this.addOpen = false;
       }
     },
     selectTeacher: function selectTeacher(idx) {
@@ -15073,59 +15100,28 @@ var _default = {
       classCopy[idx] = classCopy[idx] == "1" ? "0" : "1";
       this.teacherClassToggle = classCopy.join("");
       this.sharedData.teacherlist[this.selectedTeacher].teacherclasses = this.teacherClassToggle;
-      this.addTeacher(this.sharedData.teacherlist[this.selectedTeacher].email, this.teacherClassToggle, true);
+      var email = this.sharedData.teacherlist[this.selectedTeacher].email;
+      this.addTeacher(email, this.teacherClassToggle, true, function () {});
     },
     studentToggleClass: function studentToggleClass(idx) {
-      var _this = this;
-
-      var classCopy = this.studentClassToggle.split("");
-      classCopy[idx] = classCopy[idx] == "1" ? "0" : "1";
-      var newclasses = classCopy.join("");
-      this.sharedData.adminusers[this.selectedStudent].studentclasses = newclasses;
       var userid = this.sharedData.adminusers[this.selectedStudent].userid;
-
-      _axios.default.post(_globals.apiurl.enrolledClasses, {
-        userid: userid,
-        classes: newclasses
-      }).catch(function () {
-        _this.sharedData.adminusers[_this.selectedStudent].studentclasses = _this.studentClassToggle;
-      });
+      var studentclasses = this.sharedData.adminusers[this.selectedStudent].studentclasses;
+      this.userEditEnrolled(userid, studentclasses, idx, this.selectedStudent);
     },
     setMenu: function setMenu(isOpen) {
       this.open = isOpen ? 1 : 0;
       this.setGlobal("adminOpen", isOpen);
       setTimeout(this.dataCalc, 400);
     },
-    addTeacher: function addTeacher(email, classes, update) {
-      var _this2 = this;
-
-      _axios.default.post(_globals.apiurl.addTeacher, {
-        email: email,
-        classes: classes,
-        update: update
-      }).then(function (res) {
-        if (update) return;
-        _this2.teacherEmail = "";
-        var userIndex = res.data.teacherlist.findIndex(function (e) {
-          return e[0] == email;
-        });
-
-        if (userIndex > -1) {
-          _this2.selectedTeacher = userIndex;
-        } else {
-          console.log(userIndex, res.data, email);
-        }
-      });
-    },
     delTeacher: function delTeacher(email) {
-      var _this3 = this;
+      var _this2 = this;
 
       var clear = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
       var confirmed = confirm("Are you sure you want to revoke this user's teacher privileges?");
       if (confirmed) _axios.default.post(_globals.apiurl.delTeacher, {
         email: email
       }).then(function (e) {
-        if (clear) _this3.selectedTeacher = false;
+        if (clear) _this2.selectedTeacher = false;
       });
     },
     dataCalc: function dataCalc() {
@@ -15385,16 +15381,23 @@ exports.default = _default;
                         _vm.selectedTeacher !== false
                           ? _c(
                               "div",
-                              _vm._l(_vm.classToggle, function(status, idx) {
+                              _vm._l(_vm.teacherClassToggle, function(
+                                status,
+                                idx
+                              ) {
                                 return _c(
                                   "div",
                                   {
                                     key: "classBlock" + idx,
                                     staticClass: "classBlock",
                                     class: {
-                                      selected: parseInt(_vm.classToggle[idx])
+                                      selected: parseInt(
+                                        _vm.teacherClassToggle[idx]
+                                      )
                                     },
-                                    style: { content: _vm.classToggle[idx] },
+                                    style: {
+                                      content: _vm.teacherClassToggle[idx]
+                                    },
                                     on: {
                                       click: function($event) {
                                         _vm.teacherToggleClass(parseInt(idx))
@@ -15404,7 +15407,7 @@ exports.default = _default;
                                   [
                                     _vm._v(
                                       "\n          " +
-                                        _vm._s(_vm.sharedData.shortnames[idx]) +
+                                        _vm._s(_vm.shortnames[idx]) +
                                         "\n        "
                                     )
                                   ]
@@ -15461,38 +15464,44 @@ exports.default = _default;
                         _vm.selectedStudent !== false
                           ? _c(
                               "div",
-                              _vm._l(_vm.studentClassToggle, function(
-                                status,
-                                idx
-                              ) {
-                                return _c(
-                                  "div",
-                                  {
-                                    key: "classBlock" + idx,
-                                    staticClass: "classBlock",
-                                    class: {
-                                      selected: parseInt(
-                                        _vm.studentClassToggle[idx]
-                                      )
-                                    },
-                                    style: {
-                                      content: _vm.studentClassToggle[idx]
-                                    },
-                                    on: {
-                                      click: function($event) {
-                                        _vm.studentToggleClass(parseInt(idx))
+                              _vm._l(
+                                _vm.sharedData.adminusers[_vm.selectedStudent]
+                                  .studentclasses,
+                                function(status, idx) {
+                                  return _c(
+                                    "div",
+                                    {
+                                      key: "classBlock" + idx,
+                                      staticClass: "classBlock",
+                                      class: {
+                                        selected: parseInt(
+                                          _vm.sharedData.adminusers[
+                                            _vm.selectedStudent
+                                          ].studentclasses[idx]
+                                        )
+                                      },
+                                      style: {
+                                        content:
+                                          _vm.sharedData.adminusers[
+                                            _vm.selectedStudent
+                                          ].studentclasses[idx]
+                                      },
+                                      on: {
+                                        click: function($event) {
+                                          _vm.studentToggleClass(parseInt(idx))
+                                        }
                                       }
-                                    }
-                                  },
-                                  [
-                                    _vm._v(
-                                      "\n          " +
-                                        _vm._s(_vm.sharedData.shortnames[idx]) +
-                                        "\n        "
-                                    )
-                                  ]
-                                )
-                              }),
+                                    },
+                                    [
+                                      _vm._v(
+                                        "\n          " +
+                                          _vm._s(_vm.shortnames[idx]) +
+                                          "\n        "
+                                      )
+                                    ]
+                                  )
+                                }
+                              ),
                               0
                             )
                           : _vm._e()
@@ -15561,7 +15570,7 @@ render._withStripped = true
           };
         })());
       
-},{"axios":"../node_modules/axios/index.js","../js/globals":"js/globals.js","fuse.js":"../node_modules/fuse.js/dist/fuse.js"}],"components/secondrydata.vue":[function(require,module,exports) {
+},{"vue":"../node_modules/vue/dist/vue.common.js","axios":"../node_modules/axios/index.js","vue-axios":"../node_modules/vue-axios/dist/vue-axios.min.js","../js/globals":"js/globals.js","fuse.js":"../node_modules/fuse.js/dist/fuse.js"}],"components/secondrydata.vue":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -15696,6 +15705,7 @@ var _default = {
   props: ["sharedData", "loggedin"],
   methods: {
     getComment: function getComment(idx) {
+      if (!this.sharedData.comments) return false;
       var returnComment = this.sharedData.comments.find(function (e) {
         return e[0] == idx;
       });
@@ -26382,14 +26392,15 @@ var _default = {
       commentSelectMode: false,
       commentSelectedIndex: false,
       currentComment: "",
-      currentName: ""
+      currentName: "",
+      shortnames: _globals.shortnames
     };
   },
   props: ["sharedData", "isMobile", "globalData"],
   methods: {
     createCommentLast: function createCommentLast() {
       this.addComment({
-        userid: this.sharedData.users[this.selectedIndex].userid
+        userid: this.sharedData.userlist[this.selectedIndex].userid
       }, this.commentSelectedIndex, this.currentComment).then(function (data) {});
     },
     createCommentSecond: function createCommentSecond(index) {
@@ -26398,7 +26409,7 @@ var _default = {
       if (this.commentSelectMode) {
         this.commentSelectedIndex = index;
         this.typingComment = true;
-        this.currentComment = this.sharedData.users[this.selectedIndex].comments[index];
+        this.currentComment = this.sharedData.userlist[this.selectedIndex].comments[index];
         setTimeout(function () {
           _this.$refs.commentInput.focus();
         }, 100);
@@ -26426,7 +26437,9 @@ var _default = {
       this.selectedIndex = index;
     },
     change: function change(user, idx, userindex) {
-      if (this.commentSelectMode) {
+      var quick = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : false;
+
+      if (this.commentSelectMode && !quick) {
         this.createCommentSecond(idx);
         this.currentName = this.classnames[idx];
         return;
@@ -26435,7 +26448,7 @@ var _default = {
       this.editUserClasses(user, idx, userindex);
     },
     getComment: function getComment(user, idx) {
-      var comment = this.sharedData.users.find(function (x) {
+      var comment = this.sharedData.userlist.find(function (x) {
         return x.userid == user.userid;
       }).comments[idx];
       return comment ? comment + "<br/>" : "";
@@ -26445,13 +26458,14 @@ var _default = {
     filteredClasses: function filteredClasses() {
       var _this2 = this;
 
-      return this.sharedData.users.map(function (user) {
+      if (!this.sharedData.userlist) return [];
+      return this.sharedData.userlist.map(function (user) {
         return user.classes.split("") //If teacher has specific class enabled then set it to object else set to false
         .map(function (el, i) {
           return _this2.sharedData.tclasses[i] === "0" ? false : {
             index: i,
             status: el,
-            name: _this2.sharedData.shortnames[i],
+            name: _this2.shortnames[i],
             fullname: _this2.classnames[i]
           };
         }) // Filter out all false elements
@@ -26461,7 +26475,7 @@ var _default = {
       });
     },
     isgreen: function isgreen() {
-      return this.sharedData.users.map(function (user) {
+      return this.sharedData.userlist.map(function (user) {
         return !user.classes.includes(0);
       });
     }
@@ -26484,7 +26498,7 @@ exports.default = _default;
     _c(
       "div",
       { staticClass: "teacherUserArea col-5" },
-      _vm._l(_vm.sharedData.users, function(user, index) {
+      _vm._l(_vm.sharedData.userlist, function(user, index) {
         return _c("div", { key: user.userid, staticClass: "useritemcol" }, [
           _vm.filteredClasses[index].length >= 1
             ? _c("div", [
@@ -26557,7 +26571,12 @@ exports.default = _default;
                             on: {
                               click: function($event) {
                                 $event.stopPropagation()
-                                return _vm.change(user, classObj.index, index)
+                                return _vm.change(
+                                  user,
+                                  classObj.index,
+                                  index,
+                                  true
+                                )
                               }
                             }
                           },
@@ -26593,7 +26612,7 @@ exports.default = _default;
               _vm._s(
                 _vm.selectedIndex === false
                   ? "Manage User"
-                  : _vm.sharedData.users[_vm.selectedIndex].name
+                  : _vm.sharedData.userlist[_vm.selectedIndex].name
               )
             ),
             _vm.commentSelectMode ? _c("span", [_vm._v("Selecting")]) : _vm._e()
@@ -26620,7 +26639,7 @@ exports.default = _default;
                     click: function($event) {
                       $event.stopPropagation()
                       return _vm.change(
-                        _vm.sharedData.users[_vm.selectedIndex],
+                        _vm.sharedData.userlist[_vm.selectedIndex],
                         classObj.index,
                         _vm.selectedIndex
                       )
@@ -27175,6 +27194,37 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 _vue.default.mixin({
   methods: {
+    userEditEnrolled: function userEditEnrolled(userid, userclasses, idx, userindex) {
+      // Flip selected class index
+      var flippedclasses = userclasses.split("");
+      flippedclasses[idx] = flippedclasses[idx] == "1" ? "0" : "1";
+      flippedclasses = flippedclasses.join(""); // Create a temp sharedData, modify it and set the app.sharedData as the temp one
+
+      var tempShared = _main.app.sharedData;
+      tempShared.adminusers[userindex].studentclasses = flippedclasses;
+      _main.app.sharedData = tempShared; // Send class change to server
+
+      _axios.default.post(_globals.apiurl.enrolledClasses, {
+        class: idx,
+        userid: userid,
+        new: flippedclasses[idx]
+      }).then(function () {
+        _axios.default.post(_globals.apiurl.data);
+      }).catch(function (error) {
+        var tempShared = _main.app.sharedData;
+        tempShared.adminusers[userindex].studentclasses = userclasses;
+        _main.app.sharedData = tempShared;
+      });
+    },
+    addTeacher: function addTeacher(email, classes, update, callback) {
+      _axios.default.post(_globals.apiurl.addTeacher, {
+        email: email,
+        classes: classes,
+        update: update
+      }).then(function (res) {
+        callback(res);
+      });
+    },
     usereditmodal: function usereditmodal(state) {
       var user = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
       _main.app.editState = state;
@@ -27190,7 +27240,7 @@ _vue.default.mixin({
       classes = classes.join(""); // Create a temp sharedData, modify it and set the app.sharedData as the temp one
 
       var tempShared = _main.app.sharedData;
-      tempShared.users[userindex].classes = classes;
+      tempShared.userlist[userindex].classes = classes;
 
       _main.app.$set(_main.app.sharedData, 'sharedData', tempShared); // Send class change to server
 
@@ -27203,7 +27253,7 @@ _vue.default.mixin({
         _axios.default.post(_globals.apiurl.data);
       }).catch(function (error) {
         var tempShared = _main.app.sharedData;
-        tempShared.users[userindex].classes = user.classes;
+        tempShared.userlist[userindex].classes = user.classes;
 
         _main.app.$set(_main.app.sharedData, 'sharedData', tempShared);
       });
@@ -34517,7 +34567,12 @@ require("bootstrap/dist/css/bootstrap.min.css");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-// import Vuex from "vuex";
+function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
+
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
 var app = new _vue.default({
   data: function data() {
     return {
@@ -34526,7 +34581,9 @@ var app = new _vue.default({
         comments: [],
         teacher: false,
         admin: false,
-        users: [],
+        userlist: [],
+        teacherlist: [],
+        adminusers: [],
         shortnames: ["Soc", "Soc2", "Wr", "Wr2", "Geo", "Stats", "LD", "PS", "Phy", "HRI", "CW", "UM", "Maker", "Pract", "CvS"]
       },
       userauth: _globals.userauth,
@@ -34549,31 +34606,47 @@ var app = new _vue.default({
     updateData: function updateData(data) {
       var _this = this;
 
-      this.sharedData = data;
-      if (data.classes) this.sharedData.classes = data.classes.split("").map(function (val, idx) {
+      var newdat = data;
+      if (data.classes) newdat.classes = data.classes.split("").map(function (val, idx) {
         return {
           "name": _globals.classnames[idx],
           "status": parseInt(val)
         };
       });
-      if (data.tcomments ? data.tcomments.length >= 1 : false) data.tcomments.forEach(function (comment) {
-        var foundIndex = _this.sharedData.users.findIndex(function (x) {
+      if (data.commentlist) data.commentlist.forEach(function (comment) {
+        var foundIndex = newdat.userlist.findIndex(function (x) {
           return x.userid == comment.userid;
         });
 
-        if (foundIndex > -1) _this.sharedData.users[foundIndex].comments[parseInt(comment.class)] = comment.comment;
+        if (foundIndex > -1) {
+          if (!newdat.userlist[foundIndex].comments) newdat.userlist[foundIndex].comments = ["", "", "", "", "", "", "", "", "", "", "", "", "", "", ""];
+          newdat.userlist[foundIndex].comments[parseInt(comment.class)] = comment.comment; // console.log(eep, eep[foundIndex], eep[foundIndex].comments)
+        }
       });
+
+      if (data.teacher !== this.sharedData.teacher) {
+        this.sharedData.teacher = data.teacher;
+        this.setGlobal("adminOpen", false);
+
+        _axios.default.get(_globals.apiurl.getdata).then(function (data) {
+          _this.updateData(data.data);
+        });
+
+        return;
+      }
+
+      this.sharedData = _objectSpread({}, this.sharedData, {}, newdat);
     },
     updateUsers: function updateUsers(data) {
       var _this2 = this;
 
-      if (data.users) this.sharedData.users = data.users;
+      if (data.userlist) this.sharedData.userlist = data.userlist;
       if (data.comments ? data.comments.length >= 1 : false) data.comments.forEach(function (comment) {
-        var foundIndex = _this2.sharedData.users.findIndex(function (x) {
+        var foundIndex = _this2.sharedData.userlist.findIndex(function (x) {
           return x.userid == comment.userid;
         });
 
-        if (foundIndex > -1) _this2.sharedData.users[foundIndex].comments[parseInt(comment.class)] = comment.comment;
+        if (foundIndex > -1) _this2.sharedData.userlist[foundIndex].comments[parseInt(comment.class)] = comment.comment;
       });
     }
   },
@@ -34587,30 +34660,30 @@ var app = new _vue.default({
     var _this3 = this;
 
     _sockets.default.on("update", function (data) {
-      _this3.updateData(data);
+      _this3.updateData(data); // console.log("Received General data")
 
-      console.log("Received General data");
     }).on("users", function (data) {
-      _this3.updateUsers(data);
+      _this3.updateUsers(data); // console.log("Received Student data")
 
-      console.log("Received Student data");
     }).on("updatereq", function () {
-      return _axios.default.post(_globals.apiurl.data);
+      _axios.default.get(_globals.apiurl.getdata).then(function (data) {
+        _this3.updateData(data.data);
+      });
     }).on('connect', function () {
-      (0, _auth.authFunc)(function (loggedin) {
-        if (!loggedin) return;
+      _axios.default.get(_globals.apiurl.getdata).then(function (data) {
+        _this3.updateData(data.data);
 
-        _axios.default.get(_globals.apiurl.getdata).then(function (data) {
-          _this3.updateData(data.data);
-
-          _this3.loggedin.loggedin = true;
-        }).catch(function (err) {
-          if (err.response) {
-            if (err.response.status == 403) {
+        _this3.loggedin.loggedin = true;
+        (0, _auth.authFunc)(function () {});
+      }).catch(function (err) {
+        if (err.response) {
+          if (err.response.status == 403) {
+            (0, _auth.authFunc)(function (loggedin) {
+              if (!loggedin) return;
               (0, _auth.authFunc2)();
-            }
+            });
           }
-        });
+        }
       });
     }).on('connect_error', function (error) {
       console.log('%c Socket cannot connect to backend API!', 'background: #222; color: #ff6961; font-size: 18px;');
