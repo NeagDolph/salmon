@@ -1,7 +1,7 @@
 import axios from 'axios';
 import Vue from "vue";
-import { apiurl } from "../js/globals";
-import { app } from '../main';
+import { apiurl } from "../js/globals.js";
+import { app } from '../main.js';
 
 Vue.mixin({
     methods: {
@@ -52,7 +52,7 @@ Vue.mixin({
         // Create a temp sharedData, modify it and set the app.sharedData as the temp one
         let tempShared = app.sharedData
         tempShared.userlist[userindex].classes = classes
-        app.$set(app.sharedData, 'sharedData', tempShared)
+        app.sharedData = tempShared
 
         // Send class change to server
         axios
@@ -61,13 +61,28 @@ Vue.mixin({
             axios.post(apiurl.data);
           })
           .catch(error => {
-            let tempShared = app.sharedData
-            tempShared.userlist[userindex].classes = user.classes
-            app.$set(app.sharedData, 'sharedData', tempShared)
+            console.log("EY", user.classes, userindex)
+            let classes = user.classes.split("")
+            classes[idx] = classes[idx] == "1" ? "0" : "1"
+            classes = classes.join("")
+
+            let userlist = app.sharedData.userlist
+            userlist[userindex].classes = classes
+            app.$set(app.sharedData, 'userlist', userlist)
           });
       },
       addComment(user, idx, usercomment) {
-        return axios.post(apiurl.comment, { class: idx, userid: user.userid, comment: usercomment})
+        let tempShared = app.sharedData
+        let oldcomment = tempShared.userlist[user.index].comments[idx]
+        tempShared.userlist[user.index].comments[idx] = usercomment
+        app.sharedData = tempShared
+
+        axios.post(apiurl.comment, { class: idx, userid: user.userid, comment: usercomment})
+        .catch(e => {
+          let tempShared = app.sharedData
+          tempShared.userlist[user.index].comments[idx] = oldcomment
+          app.sharedData = tempShared
+        })
       },
       requestComment(user, idx) {
         axios
@@ -81,7 +96,7 @@ Vue.mixin({
           })
       },
       setGlobal(area, val) {
-        app.global[area] = val
+        app.$set(app.global, area, val)
       }
     }
 })

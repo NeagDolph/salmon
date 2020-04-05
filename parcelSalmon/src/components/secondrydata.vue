@@ -16,11 +16,11 @@ export default {
   methods: {},
   computed: {
     redclassArray() {
-      return this.sharedData.classes.map(e => {if (!e.status) return e.name; else return 7}).filter(e => {if (e == 7) return false; else return true})
+      return this.sharedData.classes.map(e => !e.status ? e.name : false).filter(e => !!e)
     },
     redclasses() {
       return this.sharedData.classes.reduce((tot, el) => {
-        return tot + (!el.status ? 1 : 0);
+        return tot + Number(!el.status);
       }, 0)
     },
     percent() {
@@ -72,6 +72,7 @@ export default {
     padding-top: 7px;
     border-bottom: $accent2 dashed 1px;
     margin-bottom: 6px;
+    font-size: 16px;
 
     height: 50px;
 
@@ -80,7 +81,6 @@ export default {
       height: 30px;
       font-size: 22px;
       width: 30px;
-      padding-right: 4px;
       color: $main;
       line-height: 30px;
       display: block;

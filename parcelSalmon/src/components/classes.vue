@@ -50,15 +50,6 @@ export default {
         return "3.125rem"
       }
     }
-  },
-  computed: {
-    sorted() {
-      return this.sharedData.classes.sort((a, b) => {
-        return a.status - b.status;
-      });
-    }
-  },
-  components: {
   }
 };
 </script>
@@ -82,7 +73,7 @@ export default {
 
 .classescont {
   width: 100%;
-  height: calc(100vh - 165px);
+  height: calc(100vh - 152px);
   overflow-y: auto;
   overflow-x: hidden;
   padding-right: 15px;

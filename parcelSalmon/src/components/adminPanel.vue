@@ -1,5 +1,5 @@
 <template>
-    <div class="percent z-depth-half" ref="percent" v-bind:style="{ height: open ? openHeight + 'px' : false, transform: open == true ? `translateY(${-((adminTop - globalData.dataTop) + buttonTop) + 'px'})` : '', top: buttonTop + 'px'}" @click.stop="open ? false : setMenu(true)" :class="{adminOpen: open === 1, adminClose: open === 0, adminLoad: open === false}">
+    <div class="percent z-depth-half" ref="percent" v-bind:style="{ height: open ? (windowHeight - globalData.dataTop) + 'px' : false, transform: open == true ? `translateY(${-((adminTop - globalData.dataTop) + buttonTop) + 'px'})` : '', top: buttonTop + 'px'}" @click.stop="open ? false : setMenu(true)" :class="{adminOpen: open === 1, adminClose: open === 0, adminLoad: open === false}">
       <div class="row" v-if="!open">
         <div class="buttonBar" v-bind:style="{ top: setMid + 'px' }"></div>
       </div>
@@ -41,7 +41,7 @@
             </div>
           </div>
           <div class="userList" ref="userlist" :style="{height: listHeight + 'px'}">
-            <div class="userItem col-4 z-depth-half" v-for="(teacher, idx) in sharedData.teacherlist" :key="teacher.email" @click="selectTeacher(idx)">{{teacher.name}}</div>
+            <div class="userItem col-4 z-depth-half" v-for="(teacher, idx) in sharedData.teacherlist"  v-tooltip.bottom="{content: teacher.name, offset: '2px'}" :key="teacher.email" @click="selectTeacher(idx)">{{teacher.name.split(" ")[0]}}</div>
           </div>
         </div>
         
@@ -57,7 +57,7 @@
             </div>
           </div>
           <div class="userList" ref="userlist" :style="{height: listHeight + 'px'}">
-            <div class="userItem col-4 z-depth-half" v-for="(student, idx) in sharedData.adminusers" :key="student.email" @click="selectStudent(idx)">{{student.name}}</div>
+            <div class="userItem col-4 z-depth-half" v-tooltip.bottom="{content: student.name, offset: '2px'}" v-for="(student, idx) in sharedData.adminusers" :key="student.email" @click="selectStudent(idx)">{{student.name.split(" ")[0]}}</div>
           </div>
         </div>
 
@@ -73,12 +73,12 @@
 <script>
 import Vue from "vue";
 import axios from 'axios';
-import VueAxios from 'vue-axios';
+import VTooltip from 'v-tooltip'
 
 import { apiurl, shortnames } from '../js/globals';
 import Fuse from 'fuse.js';
 
-Vue.use(VueAxios, axios)
+Vue.use(VTooltip)
 
 export default {
   data() {
@@ -92,13 +92,13 @@ export default {
       selectedTeacher: false,
       selectedStudent: false,
       subsection: 0,
-      openHeight: 800,
       subsections: ["Teachers", "Students", "Stats", "General"],
       addOpen: false,
       teacherEmail: "",
       searchResults: [],
       listHeight: false,
-      shortnames: shortnames
+      shortnames: shortnames,
+      windowHeight: window.innerHeight,
     };
   },
   methods: {
@@ -130,6 +130,9 @@ export default {
     },
     setSection(section) {
       this.subsection = section;
+      this.selectedStudent = false
+      this.selectedTeacher = false
+      this.listHeight = 800
     },
     toggleAdd() {
       if (!this.addOpen) {
@@ -186,7 +189,10 @@ export default {
       if (confirmed) axios
           .post(apiurl.delTeacher, { email: email })
           .then(e => {
-            if (clear) this.selectedTeacher = false;
+            if (clear) {
+              this.selectedTeacher = false;
+              this.listHeight = 800
+            }
           })
     },
     dataCalc() {
@@ -200,7 +206,7 @@ export default {
     this.$nextTick(function() {
       if (this.$refs.percent) {
         this.buttonTop = (window.innerHeight - this.$refs.percent.getBoundingClientRect().top) - this.$refs.percent.offsetHeight + 15
-        this.openHeight = window.innerHeight - this.globalData.dataTop
+        // this.openHeight = window.innerHeight - this.globalData.dataTop
         this.adminTop = this.$refs.percent.getBoundingClientRect().top
         this.setMid = ((this.$refs.percent.offsetHeight - 15) / 2) - (13 / 2 /* bar height */)
       }
@@ -300,6 +306,7 @@ export default {
     display: inline;
     border: 0;
     height: 26px;
+    border: solid 1px gray;
     border-radius: 5px;
     margin-left: -2px;
     outline: 0;
@@ -316,6 +323,7 @@ export default {
   .add {
     background: white;
     border-radius: 4px;
+    border: solid 1px gray;
     // height: 30px;
     line-height: 24px;
     padding: 4px 10px;

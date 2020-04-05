@@ -45,7 +45,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.set('view engine', 'pug')
 
 app.get("/", (req, res) => {
-  let loadData = {userid: req.session.userid ? req.session.userid : false}
+  let loadData = {userid: req.session.userid ? req.session.userid : false, data: req.session.userid ? funcs.getdata(req.session.userid, db, true) : false}
   res.render('home', {loadData: JSON.stringify(loadData)});
 })
 
@@ -137,8 +137,6 @@ app.post("/api/student/enrolled", (req, res) => {
 
     db.prepare('UPDATE users SET studentclasses=? WHERE userid=?').run(newclasses, req.body.userid)
 
-    updateteachers()
-    updatereq(2)
     updateuser(req.body.userid)
 
     res.send("success")
@@ -159,25 +157,25 @@ app.post("/api/student/status", (req, res) => {
 
     if (!teacherclasses) {res.status(500).send("Permission check error cookies may be glitched. Please logout then in"); return}
 
+    //get Studentclasses and classes data of student
+    let studentClassData = db.prepare('SELECT studentclasses, classes FROM users WHERE userid=?').get(req.body.userid)
 
-    if (teacherclasses[req.body.class] == '1') {
-      //get classes of student
-      let studentClasses = db.prepare('SELECT classes FROM users WHERE userid=?').get(req.body.userid).classes
-      if (!studentClasses) {res.status(404).send("User not found"); return;}
-      
-      let newclasses = studentClasses.split("")
-    
-      newclasses[req.body.class] = req.body.new
-      newclasses = newclasses.join("")
+    if (!studentClassData) {res.status(404).send("User not found"); return;}
 
-      db.prepare("UPDATE users SET classes=? WHERE userid=?").run(newclasses, req.body.userid)
+    if (teacherclasses[req.body.class] !== '1') {res.status(403).send("No permission to edit this class"); return;}
+    if (studentClassData.studentclasses[req.body.class] !== '1') {res.status(400).send("Student is not a part of this class"); return;}
+        
+    let newclasses = studentClassData.classes.split("")
+    newclasses[req.body.class] = req.body.new
+    newclasses = newclasses.join("")
 
-      updateteachers()
-      updateuser(req.body.userid)
+    db.prepare("UPDATE users SET classes=? WHERE userid=?").run(newclasses, req.body.userid)
 
-      res.send("success")
-    
-    } else res.status(403).send("No permission to edit this class")
+    updateteachers()
+    updateuser(req.body.userid)
+
+    res.send("success")
+
   } else {
     res.status(403)
     console.log("No perm", req.session)
@@ -239,24 +237,30 @@ app.post("/api/comment/create", (req, res) => {
     if (typeof req.body.comment !== "string") {res.status(400).send("Comment not string"); return;}
     if (!req.body.userid) {res.status(400).send("Userid not provided"); return;}
 
+    // Get teacher classes
     let selfClasses = db.prepare('SELECT teacherclasses FROM users WHERE userid=?').get(req.session.userid).teacherclasses
-    if (!selfClasses) {res.status(400).send("User does not exist"); return;}
+    if (!selfClasses) {res.status(500).send(); return;}
   
     // Check teacher permission
     if (selfClasses[req.body.class] !== '1') {res.status(403).send("No permission to edit this class"); return}
-
-    let commentHash = crypto.createHash("md5").update(req.body.userid + String(req.body.class)).digest('hex')
+    
+    // Get student enrolled classes
+    let studentClasses = db.prepare('SELECT studentclasses FROM users WHERE userid=?').get(req.body.userid).studentclasses
+    if (!studentClasses) {res.status(400).send("User does not exist"); return;}
   
-    // Insert or ignore if error
-    db.prepare('INSERT OR IGNORE INTO comments (userid, comment, class, commentsha) VALUES (?, ?, ?, ?)').run(req.body.userid, req.body.comment, req.body.class, commentHash)
+    // Check student classes
+    if (studentClasses[req.body.class] !== '1') {res.status(403).send("User is not a part of this class"); return}
   
-    // Update with commentsha if already exists
-    db.prepare('UPDATE comments SET comment=? WHERE commentsha=?').run(req.body.comment, commentHash)
+    // Update comment
+    let commentChanges = db.prepare('UPDATE comments SET comment=? WHERE userid=? AND class=?').run(req.body.comment, req.body.userid, req.body.class).changes
+  
+    // Insert if no changes made
+    if (!Boolean(commentChanges)) db.prepare('INSERT INTO comments (userid, comment, class) VALUES (?, ?, ?)').run(req.body.userid, req.body.comment, req.body.class)
 
     updateteachers(true)
     updateuser(req.body.userid)
 
-    res.send("success")
+    res.send("success") 
 
   } else res.status(403).send("No permission")
 })
@@ -276,12 +280,23 @@ app.get('/api/logout', (req, res) => {
 })
 
 var updateteachers = (getcomments=false) => {
-  let userlist = db.prepare('SELECT email, name, userid, classes FROM users WHERE student = 1').all()
-  let commentlist
 
-  if (getcomments) commentlist = db.prepare('SELECT userid, class, comment FROM comments').all()
+  if (getcomments) {
+    let commentlist = db.prepare('SELECT userid, class, comment FROM comments').all()
+    var userlist = db.prepare('SELECT email, name, userid, classes, studentclasses FROM users WHERE student = 1').all().map(user => {
+      let objcomments = commentlist.filter(e => e.userid == user.userid)
+      let arrcomments = []
+      objcomments.forEach(el => {
+        arrcomments[el.class] = el.comment
+      });
+      user.comments = arrcomments
+      return user
+    })
+  } else {
+    var userlist = db.prepare('SELECT email, name, userid, classes FROM users WHERE student = 1').all()
+  }
   
-  io.to("teachers").emit("users", {"users": userlist, "comments": commentlist})
+  io.to("teachers").emit("users", {"users": userlist})
 }
 
 var updateuser = (userid, extradata=false) => {
@@ -314,5 +329,5 @@ io.on('connection', socket => {
   if (isAdmin) socket.join("admins");
 });
 
-
-server.listen(process.env.PORT, () => console.log(`Express server started on port ${process.env.PORT}`));
+var port = process.env.PORT ? process.env.PORT : 8083
+server.listen(port, () => console.log(`Express server started on port ${port}`));

@@ -1,6 +1,4 @@
 import Vue from "vue";
-// import Vuex from "vuex";
-
 import Main from "./App.vue";
 import axios from 'axios';
 import { classnames, userauth, apiurl } from "./js/globals";
@@ -16,7 +14,7 @@ export var app = new Vue({
       sharedData: {
         classes: [],
         comments: [],
-        teacher: false,
+        teacher: 0,
         admin: false,
         userlist: [],
         teacherlist: [],
@@ -41,23 +39,11 @@ export var app = new Vue({
   },
   methods: {
     updateData(data) {
-      var newdat = data
+      if (data.classes) data.classes = data.classes.split("").map((val, idx) => {
+        return {name: classnames[idx], status: parseInt(val), index: idx}
+      }).filter((e, idx) => data.studentclasses[idx] == '1')
 
-      if (data.classes) newdat.classes = data.classes.split("").map((val, idx) => {
-        return {"name": classnames[idx], "status": parseInt(val)}
-      });
- 
-      if (data.commentlist) data.commentlist.forEach(comment => {
-        let foundIndex = newdat.userlist.findIndex(x => x.userid == comment.userid)
-
-        if (foundIndex > -1)  {
-          if (!newdat.userlist[foundIndex].comments) newdat.userlist[foundIndex].comments = ["", "", "", "", "", "", "", "", "", "", "", "", "", "", ""]
-          newdat.userlist[foundIndex].comments[parseInt(comment.class)] = comment.comment;
-          // console.log(eep, eep[foundIndex], eep[foundIndex].comments)
-        }
-      });
-
-      if (data.teacher !== this.sharedData.teacher) {
+      if (data.teacher !== this.sharedData.teacher && this.sharedData.teacher !== 0) {
         this.sharedData.teacher = data.teacher
         this.setGlobal("adminOpen", false)
 
@@ -69,15 +55,13 @@ export var app = new Vue({
         return
       }
 
-      this.sharedData = {...this.sharedData, ...newdat}
+      if (data.adminusers == "userlist") data.adminusers = data.userlist
+
+      this.sharedData = {...this.sharedData, ...data}
     },
 
     updateUsers(data) {
       if (data.userlist) this.sharedData.userlist = data.userlist
-      if (data.comments ? (data.comments.length >= 1) : false) data.comments.forEach(comment => {
-        let foundIndex = this.sharedData.userlist.findIndex(x => x.userid == comment.userid)
-        if (foundIndex > -1) this.sharedData.userlist[foundIndex].comments[parseInt(comment.class)] = comment.comment;
-      });
     }
   },
   computed: {
@@ -86,6 +70,10 @@ export var app = new Vue({
   components: {Main},
   el: "#app",
   created() {
+    if (indexLoadPayload.userid) {
+      this.loggedin.loggedin = true
+      if (indexLoadPayload.data) this.updateData(indexLoadPayload.data)
+    }
     socket.on("update", data => {
       this.updateData(data)
       // console.log("Received General data")
@@ -101,6 +89,7 @@ export var app = new Vue({
       })
     })
     .on('connect', () => {
+        if (this.loggedin.loggedin) return;
         axios.get(apiurl.getdata)
         .then(data => {
           this.updateData(data.data)

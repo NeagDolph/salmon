@@ -23,21 +23,34 @@ module.exports.getdata = (userid, db, extradata=false) => {
     admin: config.admins.includes(userData.email), 
     tclasses: userData.student == 2 ? userData.teacherclasses : "000000000000000", 
     email: userData.email, 
+    studentclasses: userData.studentclasses,
     teacherlist: "", adminusers: "", comments: "", userlist: "", commentlist: "",
   }
 
   if (!userData) return "error"
 
   if (userData.student == 2) {
-    data.userlist = db.prepare('SELECT email, name, userid, classes FROM users WHERE student = 1').all()
-
-    if (extradata) data.commentlist = db.prepare('SELECT userid, class, comment FROM comments').all()
+    if (extradata) {
+      let commentlist = db.prepare('SELECT userid, class, comment FROM comments').all()
+      data.userlist = db.prepare('SELECT email, name, userid, classes, studentclasses FROM users WHERE student = 1').all().map(user => {
+        let objcomments = commentlist.filter(e => e.userid == user.userid)
+        let arrcomments = []
+        objcomments.forEach(el => {
+          arrcomments[el.class] = el.comment
+        });
+        user.comments = arrcomments
+        return user
+      })
+    } else {
+      data.userlist = db.prepare('SELECT email, name, userid, classes, studentclasses FROM users WHERE student = 1').all()
+    }
   } else data.comments = db.prepare('SELECT class, comment FROM comments WHERE userid=?').all(userid)
 
   if (config.admins.includes(userData.email)) {
-    data.teacherlist = db.prepare('SELECT email, name, userid, teacherclasses FROM users WHERE student=2').all()
+    data.teacherlist = db.prepare('SELECT email, name, userid, teacherclasses FROM users WHERE student = 2').all()
 
-    data.adminusers = db.prepare('SELECT email, name, userid, classes, studentclasses, student FROM users WHERE student=1').all()
+    if (data.userlist.length) data.adminusers = "userlist";
+    else data.adminusers = db.prepare('SELECT email, name, userid, classes, studentclasses FROM users WHERE student = 1').all()
   }
 
   return data
