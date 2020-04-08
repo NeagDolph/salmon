@@ -13,6 +13,6 @@ head
   link(rel='apple-touch-icon' href='https://atischool.net/static/favicons/favicon-180.png' sizes='180x180')
 #app
 script.
-  var indexLoadPayload = JSON.parse('!{loadData}');
+  var indexLoadPayload = JSON.parse(atob('!{loadData}'));
 script(src='https://apis.google.com/js/api.js')
 script(src='/static/frontend.bundle.js')

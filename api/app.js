@@ -3,60 +3,67 @@ var config = require('./config.json');
 
 //Import Dependencies
 var redis = require('redis')
-var crypto = require('crypto')
 var uuid4 = require('uuid4');
 var express = require("express")
 var bodyParser = require('body-parser')
 var Server = require("http").Server
-var session = require("express-session")
 var db = require('better-sqlite3')(config.db);
-
+var helmet = require('helmet');
 var compression = require('compression');
+var session = require("express-session")
 
-
-
-//Initializations
-var RedisStore = require("connect-redis")(session);
-let redisClient = redis.createClient()
+const redisClient = redis.createClient();
+const redisStore = require('connect-redis')(session);
 
 var app = express();
 var server = Server(app);
 var io = require("socket.io")(server);
 
-var sessionMiddleware = session({
-  store: new RedisStore({ client: redisClient }),
-  secret: "keyboard cat",
-  resave: true,
-  saveUninitialized: true
+redisClient.on('error', (err) => {
+  console.log('Redis error: ', err);
 });
+
+//Initializations
+app.set('trust proxy', 1) // trust first proxy
+app.use(session({
+  secret: config.Secret,
+  resave: false,
+  saveUninitialized: true,
+  cookie: { secure: true },
+  store: new redisStore({ host: 'localhost', port: 6379, client: redisClient, ttl: 86400 }),
+}))
 
 //Import extra functions
 var funcs = require('./funcs.js');
+var getData = funcs.data
+var expressauth = funcs.expressauth
 
 //Add middleware to app
-io.use((socket, next) => {
-  sessionMiddleware(socket.request, socket.request.res || {}, next);
-});
+app.use(helmet());
 app.use(compression());
-app.use(sessionMiddleware);
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 app.set('view engine', 'pug')
 
 app.get("/", (req, res) => {
-  let loadData = {userid: req.session.userid ? req.session.userid : false, data: req.session.userid ? funcs.getdata(req.session.userid, db, true) : false}
-  res.render('home', {loadData: JSON.stringify(loadData)});
+  let loadData = {userid: req.session.userid ? req.session.userid : false, data: req.session.userid ? getData.all(req.session.userid, db, true) : false}
+  res.render('home', {loadData: Buffer.from((JSON.stringify(loadData))).toString('base64')});
 })
 
-
-//Login function called after google authenticated on frontend
-app.post("/api/login", (req, res) => {
-  let {idtoken} = req.body
+/**
+ * @api {post} /api/auth/:idtoken Authenticates user using Google ID token
+ * @apiGroup Auth
+ * @apiParam {String} idtoken Google ID token
+ * @apiError {String} 403 This google account is not in the alt.app gsuite
+ * @apiError {String} 400 Bad request
+ */
+app.post("/api/auth/:idtoken", (req, res) => {
+  let {idtoken} = req.params
 
   if (!idtoken) {
     req.session.destroy();
-    res.status(500).send("error");
+    res.sendStatus(400);
     return
   }
 
@@ -68,7 +75,7 @@ app.post("/api/login", (req, res) => {
     .catch(console.log)
     .then(googleData => {
       if (!googleData) {
-        res.status(500).send("error")
+        res.sendStatus(500)
         return
       }
 
@@ -84,8 +91,6 @@ app.post("/api/login", (req, res) => {
 
       if (userData) {
         //Login user without cookies
-        console.log("User signed in on email:", googleData.email)
-
         userid = userData.userid
 
         req.session.userid = userid
@@ -93,11 +98,8 @@ app.post("/api/login", (req, res) => {
       } else {
         // Signup user
         userid = String(uuid4())
-        console.log("EY", userid)
         req.session.userid = userid
         req.session.teacher = false
-
-        console.log("User signed up on email:", googleData.email)
 
         db.prepare("INSERT INTO users VALUES (?,?,?,1,'000000000000000','111111111111111','101011000000000')")
           .run(googleData.email, googleData.name, userid)
@@ -108,225 +110,266 @@ app.post("/api/login", (req, res) => {
       req.session.email = googleData.email
       req.session.name = googleData.name
 
-      res.json(funcs.getdata(userid, db))
+      res.json(getData.all(userid, db))
 
     })
 
   } else {
-    res.json(funcs.getdata(req.session.userid, db))
+    res.json(getData.all(req.session.userid, db))
   }
 });
 
-//Edit classes students are enrolled in
-app.post("/api/student/enrolled", (req, res) => {
-  if (req.session.userid && config.admins.includes(req.session.email)) {
+/**
+ * @api {put} /api/student/enroll Modify classes a student is enrolled in
+ * @apiGroup Students
+ * @apiParam {String} userid Salmon user identifier
+ * @apiParam {Int} class Index of class to change enroll status of
+ * @apiParam {Boolean} new New enrollment status of class
+ * @apiError {String} 404 User not found
+ * @apiError {String} 400 Bad request
+ * @apiError {String} 403 No permission
+ */
+app.put("/api/student/enroll", expressauth(2), (req, res) => {
+  if (!req.body.userid) {res.sendStatus(400); return}
 
-    if (!req.body.userid) {res.status(400).send("No userid provided"); return}
+  if (typeof req.body.class !== "number") {res.sendStatus(400); return}
+  else if (req.body.class > 15 || req.body.class < 0) {res.sendStatus(400); return}
 
-    if (typeof req.body.class !== "number") {res.status(400).send("Class input not a number"); return}
-    else if (req.body.class > 15 || req.body.class < 0) {res.status(400).send("Class input out of range"); return}
+  if (req.body.new !== true && req.body.new !== false) {res.sendStatus(400); return;}
+
+  let studentData = db.prepare('SELECT studentclasses, email FROM users WHERE userid=?').get(req.body.userid)
   
-    if (!["0", "1"].includes(req.body.new)) {res.status(400).send("NewClass input not of correct type"); return;}
+  let studentClasses = studentData.studentclasses
+  if (!studentClasses) {res.status(404).send("User not found"); return;}
 
-    let studentClasses = db.prepare('SELECT studentclasses FROM users WHERE userid=?').get(req.body.userid).studentclasses
-    if (!studentClasses) {res.status(404).send("User not found"); return;}
+  let newclasses = studentClasses.split("")
+  newclasses[req.body.class] = req.body.new ? "1" : "0"
+  newclasses = newclasses.join("")
 
-    let newclasses = studentClasses.split("")
-    newclasses[req.body.class] = req.body.new
-    newclasses = newclasses.join("")
+  db.prepare('UPDATE users SET studentclasses=? WHERE userid=?').run(newclasses, req.body.userid)
 
-    db.prepare('UPDATE users SET studentclasses=? WHERE userid=?').run(newclasses, req.body.userid)
+  logchange(req.session.email, studentData.email, "enroll", `${req.body.class} set to ${req.body.new}`)
 
-    updateuser(req.body.userid)
+  updateuser(req.body.userid)
 
-    res.send("success")
-
-  } else res.status(403).send("No permission")
+  res.send()
 })
 
-// Edit student specific class status
-app.post("/api/student/status", (req, res) => {
-  if (req.session.teacher && req.session.userid) {
-    if (typeof req.body.class !== "number") {res.status(400).send("Class input not a number"); return}
-    else if (req.body.class > 15 || req.body.class < 0) {res.status(400).send("Class input out of range"); return}
-  
-    if (!["0", "1"].includes(req.body.new)) {res.status(400).send("NewClass input not of correct type"); return;}
-  
-    //Check teacher permission to edit class
-    let teacherclasses = db.prepare('SELECT teacherclasses FROM users WHERE userid=?').get(req.session.userid).teacherclasses
+/**
+ * @api {put} /api/student/status Edit student specific class status
+ * @apiGroup Students
+ * @apiParam {String} userid Salmon user identifier
+ * @apiParam {Int} class Index of class to change status of
+ * @apiParam {Boolean} new New status of class
+ * @apiError {String} 404 User not found
+ * @apiError {String} 400 Bad request
+ * @apiError {String} 403 No permission
+ * @apiError {String} 403 Class not editable
+ */
+app.put("/api/student/status", expressauth(1), (req, res) => {
+  if (typeof req.body.class !== "number") {res.sendStatus(400); return}
+  else if (req.body.class > 15 || req.body.class < 0) {res.sendStatus(400); return}
 
-    if (!teacherclasses) {res.status(500).send("Permission check error cookies may be glitched. Please logout then in"); return}
+  if (req.body.new !== true && req.body.new !== false) {res.sendStatus(400); return;}
 
-    //get Studentclasses and classes data of student
-    let studentClassData = db.prepare('SELECT studentclasses, classes FROM users WHERE userid=?').get(req.body.userid)
+  //Check teacher permission to edit class
+  let teacherclasses = db.prepare('SELECT teacherclasses FROM users WHERE userid=?').get(req.session.userid).teacherclasses
 
-    if (!studentClassData) {res.status(404).send("User not found"); return;}
+  if (!teacherclasses) {res.sendStatus(500); return}
 
-    if (teacherclasses[req.body.class] !== '1') {res.status(403).send("No permission to edit this class"); return;}
-    if (studentClassData.studentclasses[req.body.class] !== '1') {res.status(400).send("Student is not a part of this class"); return;}
-        
-    let newclasses = studentClassData.classes.split("")
-    newclasses[req.body.class] = req.body.new
-    newclasses = newclasses.join("")
+  //get Studentclasses and classes data of student
+  let studentData = db.prepare('SELECT studentclasses, classes, email FROM users WHERE userid=?').get(req.body.userid)
 
-    db.prepare("UPDATE users SET classes=? WHERE userid=?").run(newclasses, req.body.userid)
+  if (!studentData) {res.status(404).send("User not found"); return;}
 
-    updateteachers()
-    updateuser(req.body.userid)
+  if (teacherclasses[req.body.class] !== '1') {res.status(403).send("Class not editable"); return;}
+  if (studentData.studentclasses[req.body.class] !== '1') {res.sendStatus(400); return;}
+      
+  let newclasses = studentData.classes.split("")
+  newclasses[req.body.class] = req.body.new ? "1" : "0"
+  newclasses = newclasses.join("")
 
-    res.send("success")
+  db.prepare("UPDATE users SET classes=? WHERE userid=?").run(newclasses, req.body.userid)
 
-  } else {
-    res.status(403)
-    console.log("No perm", req.session)
-  }
+  logchange(req.session.email, studentData.email, "status", `${req.body.class} set to ${req.body.new}`)
+
+  updateteachers()
+  updateuser(req.body.userid)
+
+  res.send()
 })
 
-app.post('/api/teacher/add', (req, res) => {
-  if (req.session.userid && config.admins.includes(req.session.email)) {
-    if (typeof req.body.email != "string") res.status(400).end()
-    //Teacher userid from email
-    let userid = db.prepare('SELECT userid FROM users WHERE email=?').get(req.body.email).userid
+/**
+ * @api {put} /api/teacher Edit teacher classes
+ * @apiGroup Teachers
+ * @apiParam {String} email Email of teacher
+ * @apiError {String} 404 User not found
+ * @apiError {String} 400 Bad request
+ * @apiError {String} 403 No permission
+ */
+app.put('/api/teacher', expressauth(2), (req, res) => {
+  if (typeof req.body.email != "string" || !req.body.classes) {res.sendStatus(400); return;}
+  
+  //Teacher userid from email
+  let userData = db.prepare('SELECT userid FROM users WHERE email=?').get(req.body.email)
+  let userid = userData.userid
 
-    if (userid) {
-      if (req.body.update && req.body.classes) {
-        //Checks if all characters in classes are "0" or "1"
-        if (req.body.classes.split("").map(e => {return ["0", "1"].includes(e)}).includes(false)) {res.status(400).send("classes are not in correct format")}
-        
-        db.prepare("UPDATE users SET student=2, teacherclasses=? WHERE email=?").run(req.body.classes, req.body.email)
-      } else {
-        db.prepare("UPDATE users SET student=2 WHERE email=?").run(req.body.email)
-      }
+  if (!userid) {res.status(404).send("User not found"); return;}
 
-      updatereq(2) //Request admins to rerequest data
-
-      updateuser(userid)
-
-      // res.json(funcs.getdata(req.session.userid, db))
-      res.send("success")
-    } else {
-      db.prepare("INSERT INTO teacherqueue VALUES (?, ?)").run(req.body.email, req.session.userid)
+  //Checks if all characters in classes are "0" or "1"
+  if (req.body.classes.split("").map(e => {return ["0", "1"].includes(e)}).includes(false)) {res.sendStatus(400); return}
     
-      res.send("queue")
-    }
-  } else res.status(403).send("No permission")
+  db.prepare("UPDATE users SET student=2, teacherclasses=? WHERE email=?").run(req.body.classes, req.body.email)
+
+  logchange(req.session.email, req.body.email, "modteacher", `classes set to ${req.body.classes}`)
+
+  updatereq(2, req.session.userid) //Request admins to rerequest data
+
+  updateuser(userid)
+
+  // res.json(getData.all(req.session.userid, db))
+  res.send()
 })
 
-app.post('/api/teacher/del', (req, res) => {
-  if (req.session.userid && config.admins.includes(req.session.email)) {
-    if (!req.body.email) {res.status(400).send("No email provided"); return;}
+/**
+ * @api {post} /api/teacher Add a new teacher
+ * @apiGroup Teachers
+ * @apiParam {String} email Email of user
+ * @apiError {String} 404 User not found
+ * @apiError {String} 400 Bad request
+ * @apiError {String} 403 No permission
+ * @apiSuccess (200) {String} success Successfully made user a teacher
+ * @apiSuccess (200) {String} queue Added email to teacher queue
+ */
+app.post('/api/teacher', expressauth(2), (req, res) => {
+  if (typeof req.body.email != "string") {res.sendStatus(400); return;}
+  //Teacher userid from email
+  let userData = db.prepare('SELECT userid, email FROM users WHERE email=?').get(req.body.email)
+  let userid = userData.userid
 
-    let userid = db.prepare('SELECT userid FROM users WHERE email=?').get(req.body.email).userid
+  if (userid) {
+    db.prepare("UPDATE users SET student=2 WHERE email=?").run(req.body.email)
 
-    if (!userid) {res.status(400).send("User does not exist")}
+    logchange(req.session.email, userData.email, "addteacher", '')
 
-    db.prepare("UPDATE users SET student=1 WHERE userid=?").run(userid)
-  
-    updatereq(2)
+    updatereq(2, req.session.userid) //Request admins to rerequest data
+
     updateuser(userid)
 
-    res.send("success")
+    res.send()
+  } else {
+    db.prepare("INSERT INTO teacherqueue VALUES (?, ?)").run(req.body.email, req.session.userid)
   
-  } else res.status(403).send("No permission")
-})
-
-app.post("/api/comment/create", (req, res) => {
-  if (req.session.teacher && req.session.userid) {
-    if (typeof req.body.class !== "number") {res.status(400).send("Class index not an integer"); return;}
-    if (req.body.class > 15 || req.body.class < 0) {res.status(400).send("Class index out of range"); return;}
-    if (typeof req.body.comment !== "string") {res.status(400).send("Comment not string"); return;}
-    if (!req.body.userid) {res.status(400).send("Userid not provided"); return;}
-
-    // Get teacher classes
-    let selfClasses = db.prepare('SELECT teacherclasses FROM users WHERE userid=?').get(req.session.userid).teacherclasses
-    if (!selfClasses) {res.status(500).send(); return;}
-  
-    // Check teacher permission
-    if (selfClasses[req.body.class] !== '1') {res.status(403).send("No permission to edit this class"); return}
-    
-    // Get student enrolled classes
-    let studentClasses = db.prepare('SELECT studentclasses FROM users WHERE userid=?').get(req.body.userid).studentclasses
-    if (!studentClasses) {res.status(400).send("User does not exist"); return;}
-  
-    // Check student classes
-    if (studentClasses[req.body.class] !== '1') {res.status(403).send("User is not a part of this class"); return}
-  
-    // Update comment
-    let commentChanges = db.prepare('UPDATE comments SET comment=? WHERE userid=? AND class=?').run(req.body.comment, req.body.userid, req.body.class).changes
-  
-    // Insert if no changes made
-    if (!Boolean(commentChanges)) db.prepare('INSERT INTO comments (userid, comment, class) VALUES (?, ?, ?)').run(req.body.userid, req.body.comment, req.body.class)
-
-    updateteachers(true)
-    updateuser(req.body.userid)
-
-    res.send("success") 
-
-  } else res.status(403).send("No permission")
-})
-
-app.get('/api/getdata', (req, res) => {
-  if (req.session.userid) {
-    let data = funcs.getdata(req.session.userid, db, true)
-    req.session.teacher = data.teacher
-    res.json(data)
+    res.send("queue")
   }
-  else res.status(403).send("not authorized")
 })
 
-app.get('/api/logout', (req, res) => {
+app.delete('/api/teacher/:email', expressauth(2), (req, res) => {
+  if (!req.params.email) {res.sendStatus(400); return;}
+
+  let userData = db.prepare('SELECT userid, email FROM users WHERE email=?').get(req.params.email)
+  let userid = userData.userid
+
+  if (!userid) {res.status(404).send("User not found")}
+
+  db.prepare("UPDATE users SET student=1 WHERE userid=?").run(userid)
+
+  logchange(req.session.email, userData.email, 'delteacher', '')
+
+  updatereq(2, req.session.userid)
+  updateuser(userid)
+
+  res.send()
+})
+
+app.post("/api/comment/:userid", expressauth(1), (req, res) => {
+  if (typeof req.body.class !== "number") {res.sendStatus(400); return;}
+  if (req.body.class > 15 || req.body.class < 0) {res.sendStatus(400); return;}
+  if (typeof req.body.comment !== "string" || !req.params.userid) {res.sendStatus(400); return;}
+
+  // Get teacher classes
+  let selfClasses = db.prepare('SELECT teacherclasses FROM users WHERE userid=?').get(req.session.userid).teacherclasses
+  if (!selfClasses) {res.sendStatus(500); return;}
+
+  // Check teacher permission
+  if (selfClasses[req.body.class] !== '1') {res.status(403).send("Class not editable"); return}
+  
+  // Get student enrolled classes
+  let userData = db.prepare('SELECT studentclasses, name FROM users WHERE userid=?').get(req.params.userid)
+
+  if (!userData.studentclasses) {res.sendStatus(400); return;}
+
+  // Check student classes
+  if (userData.studentclasses[req.body.class] !== '1') {res.status(403).send("Class not editable"); return}
+
+  // Update comment
+  let commentChanges = db.prepare('UPDATE comments SET comment=? WHERE userid=? AND class=?').run(req.body.comment, req.params.userid, req.body.class).changes
+
+  // Insert if no changes made
+  if (!Boolean(commentChanges)) db.prepare('INSERT INTO comments (userid, comment, class) VALUES (?, ?, ?)').run(req.params.userid, req.body.comment, req.body.class)
+
+  // logchange(req.session.userid, req.body.userid, 'comment', `Added comment on ${config.classnames[req.body.class]}: '${req.body.comment}'`, req.session.name, userData.name)
+
+  updateteachers(true)
+  updateuser(req.body.userid)
+
+  res.send() 
+})
+
+app.get('/api/data', expressauth(), (req, res) => {
+  let userData = getData.all(req.session.userid, db, true)
+  req.session.teacher = userData.teacher
+  res.json(userData)
+})
+
+app.get('/api/logs', expressauth(2), (req, res) => {
+  if (!req.body.subset) {res.sendStatus(400); return;}
+  if (!Number.isInteger(req.body.subset[0]) || !Number.isInteger(req.body.subset[1])) {res.sendStatus(400); return;}
+})
+
+app.post('/api/deauth', expressauth(), (req, res) => {
   req.session.destroy()
   res.end()
 })
 
-var updateteachers = (getcomments=false) => {
-
-  if (getcomments) {
-    let commentlist = db.prepare('SELECT userid, class, comment FROM comments').all()
-    var userlist = db.prepare('SELECT email, name, userid, classes, studentclasses FROM users WHERE student = 1').all().map(user => {
-      let objcomments = commentlist.filter(e => e.userid == user.userid)
-      let arrcomments = []
-      objcomments.forEach(el => {
-        arrcomments[el.class] = el.comment
-      });
-      user.comments = arrcomments
-      return user
-    })
-  } else {
-    var userlist = db.prepare('SELECT email, name, userid, classes FROM users WHERE student = 1').all()
-  }
+var updateteachers = () => {
+  let userlist = getData.userlist(db, true)
   
-  io.to("teachers").emit("users", {"users": userlist})
+  io.to("teachers").emit("users", {"userlist": userlist})
 }
 
 var updateuser = (userid, extradata=false) => {
-  io.to(userid).emit("update", funcs.getdata(userid, db, extradata));
+  io.to(userid).emit("update", getData.all(userid, db, extradata));
+  console.log("send off to", userid)
 }
 
-var updatereq = usertype => {
+var logchange = (email, targetEmail, actiontype, change ) => {
+  try {
+    db.prepare("INSERT INTO changelog (actiontype, change, email, targetEmail) VALUES (?, ?, ?, ?)")
+      .run(
+        actiontype,
+        change,
+        email,
+        targetEmail
+      )
+  }
+  catch (e) {
+    console.log("log error", e)
+  }
+}
+
+var updatereq = (usertype, exception) => {
   const types = ["student", "teacher", "admins"]
 
-  io.to(types[usertype]).emit('updatereq')
+  io.to(types[usertype]).emit('updatereq', {exception: exception})
 }
-
 
 
 io.on('connection', socket => {
-  let {teacher, userid, email, name} = socket.request.session
-  let isAdmin = config.admins.includes(email)
-
-  if (!userid) return;
-
-  // console.log(`User ${email} connected to socket`)
-
-  socket.join(userid)
-
-  if (teacher) socket.join("teachers");
-  else {
-    socket.join("students");
-  }
-
-  if (isAdmin) socket.join("admins");
+  socket.on('room', async room => {
+    socket.join(room);
+    console.log('join', room)
+  })
 });
 
 var port = process.env.PORT ? process.env.PORT : 8083

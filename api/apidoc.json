@@ -1,0 +1,8 @@
+{
+    "name": "Salmon API documentation",
+    "version": "1.0.0",
+    "description": "API Salmon Panel data management",
+    "template": {
+        "forceLanguage": "en"
+    }
+}
