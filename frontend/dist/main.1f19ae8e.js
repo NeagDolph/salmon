@@ -13854,9 +13854,7 @@ module.exports = require('./lib/axios');
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.apiurl = exports.shortnames = exports.classnames = exports.userauth = void 0;
-var userauth = {};
-exports.userauth = userauth;
+exports.apiurl = exports.shortnames = exports.classnames = void 0;
 var classnames = ["Socratic 1", "Socratic 2", "Writing 1", "Writing 2", "Geometry", "Statistics", "Life Design", "Problem Solving", "Physics", "HRI", "Creative Writing", "Urban Mvmt", "Makerspace", "Practicum", "Cap vs Soc"];
 exports.classnames = classnames;
 var shortnames = ["Soc", "Soc2", "Wr", "Wr2", "Geo", "Stats", "LD", "PS", "Phy", "HRI", "CW", "UM", "Maker", "Pract", "CvS"];
@@ -13866,7 +13864,7 @@ var apiurl = {
   auth: "/api/auth/",
   status: "/api/student/status/",
   enroll: "/api/student/enroll/",
-  comment: "/api/comment/",
+  comment: "/api/student/comment/",
   deauth: "/api/deauth/",
   teacher: "/api/teacher/"
 };
@@ -13877,7 +13875,7 @@ exports.apiurl = apiurl;
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.authFunc2 = exports.authFunc = exports.signFuncs = void 0;
+exports.authFunc2 = exports.authFunc = exports.userauth = exports.signFuncs = void 0;
 
 var _axios = _interopRequireDefault(require("axios"));
 
@@ -13887,8 +13885,10 @@ var _main = require("../main");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var signFuncs = {}; //Init google api
+var signFuncs = {},
+    userauth = {}; //Init google api
 
+exports.userauth = userauth;
 exports.signFuncs = signFuncs;
 
 var authFunc = function authFunc(callback) {
@@ -13899,6 +13899,10 @@ var authFunc = function authFunc(callback) {
       scopes: ["https://www.googleapis.com/auth/userinfo.email", "https://www.googleapis.com/auth/userinfo.profile"]
     }).then(function (auth2) {
       signFuncs.auth2 = auth2;
+      var googleUser = auth2.currentUser.get();
+      userauth.profile = googleUser.getBasicProfile();
+      if (userauth.profile) userauth.profilePicture = userauth.profile.getImageUrl();else userauth.profilePicture = "";
+      _main.app.userauth = userauth;
       callback(auth2.isSignedIn.get());
     });
   });
@@ -13909,13 +13913,19 @@ exports.authFunc = authFunc;
 
 var authFunc2 = function authFunc2() {
   var googleUser = signFuncs.auth2.currentUser.get();
-  _globals.userauth.authResponse = googleUser.getAuthResponse();
-  _globals.userauth.profile = googleUser.getBasicProfile();
+  userauth.authResponse = googleUser.getAuthResponse();
+  userauth.profile = googleUser.getBasicProfile();
+  userauth.profilePicture = userauth.profile.getImageUrl();
+  _main.app.userauth = userauth;
 
-  _axios.default.post(_globals.apiurl.auth + _globals.userauth.authResponse.id_token).then(function (data) {
+  _axios.default.post(_globals.apiurl.auth + userauth.authResponse.id_token).then(function (data) {
+    console.log("logg", data);
+
     _main.app.$set(_main.app.loggedin, 'loggedin', true);
 
     _main.app.updateData(data.data);
+
+    _main.app.joinRooms(data.data);
   }).catch(function (error) {
     if (error.response) {
       console.log("login failed", error.response.status, error.response.data);
@@ -13930,6 +13940,7 @@ var authFunc2 = function authFunc2() {
 exports.authFunc2 = authFunc2;
 
 signFuncs.signOut = function () {
+  console.log('signfunc');
   gapi.auth2.getAuthInstance().signOut().then(function () {
     _axios.default.post(_globals.apiurl.deauth).then(function () {
       window.location.reload();
@@ -13962,7 +13973,11 @@ var _default = {
 
       if (!this.loggedin) _auth.signFuncs.auth2.signIn().then(function () {
         return (0, _auth.authFunc2)();
-      });else _auth.signFuncs.signOut();
+      });else {
+        console.log("clicked");
+
+        _auth.signFuncs.signOut();
+      }
     }
   }
 };
@@ -14030,7 +14045,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 //
 //
 var _default = {
-  props: ["loggedin"],
+  props: ["loggedin", "userauth"],
   components: {
     loginButton: _loginbutton.default
   }
@@ -14060,7 +14075,16 @@ exports.default = _default;
               attrs: { loggedin: _vm.loggedin }
             }),
             _vm._v(" "),
-            _c("div", { staticClass: "nightMode" })
+            _c("div", { staticClass: "nightMode" }, [
+              _vm.userauth.profilePicture && _vm.userauth.profilePicture !== ""
+                ? _c("img", {
+                    attrs: {
+                      src: _vm.userauth.profilePicture,
+                      alt: "profile picture"
+                    }
+                  })
+                : _vm._e()
+            ])
           ],
           1
         )
@@ -25788,6 +25812,21 @@ exports.default = void 0;
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 var _default = {
   props: ["sharedData", "loggedin"],
   methods: {
@@ -25878,12 +25917,13 @@ exports.default = _default;
                     : _vm._e(),
                   _vm._v(" "),
                   _c(
-                    "div",
-                    {
-                      staticClass: "title",
-                      style: { fontSize: _vm.titleSize(classItem.name) }
-                    },
-                    [_vm._v(_vm._s(classItem.name))]
+                    "svg",
+                    { staticClass: "title", attrs: { viewBox: "-1 3 70 18" } },
+                    [
+                      _c("text", { attrs: { x: "0", y: "15" } }, [
+                        _vm._v(_vm._s(classItem.name))
+                      ])
+                    ]
                   ),
                   _vm._v(" "),
                   _c("span", { staticClass: "subtext" }, [
@@ -26413,7 +26453,6 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 //
 //
 //
-//
 _vue.default.use(_vTooltip.default);
 
 var _default = {
@@ -26459,7 +26498,6 @@ var _default = {
         clearTimeout(this.typetimer[currentUserId][this.commentSelectedIndex]);
       } catch (_unused) {}
 
-      console.log("E", inputValue);
       if (!this.typetimer[currentUserId]) this.typetimer[currentUserId] = [];
       this.typetimer[currentUserId][this.commentSelectedIndex] = [setTimeout(function (passedInput) {
         _this.addComment(passedInput[0], passedInput[1], passedInput[2].typetimer[passedInput[3]][passedInput[1]][1]);
@@ -26480,6 +26518,8 @@ var _default = {
           _this2.$refs.commentInput.focus();
 
           _this2.calcInputHeight(_this2.currentComment);
+
+          _this2.$refs.commentInput.selectionStart = _this2.$refs.commentInput.selectionEnd = _this2.currentComment.length;
         }, 20);
       }
     },
@@ -26859,10 +26899,6 @@ exports.default = _default;
                       selecting: _vm.commentSelectMode,
                       selected: _vm.commentSelectedIndex == classObj.index,
                       disabled: classObj.disabled
-                    },
-                    style: {
-                      pointerEvents: classObj.disabled ? "none" : "all",
-                      background: classObj.disabled ? "gray" : false
                     },
                     on: {
                       click: function($event) {
@@ -27267,7 +27303,11 @@ exports.default = _default;
     [
       _c("Header", {
         style: _vm.loggedin ? "" : "filter: blur(6px)",
-        attrs: { loggedin: _vm.loggedin, userAuth: _vm.userAuth }
+        attrs: {
+          loggedin: _vm.loggedin,
+          userauth: _vm.userAuth,
+          userAuth: _vm.userAuth
+        }
       }),
       _vm._v(" "),
       !_vm.sharedData.teacher
@@ -27395,20 +27435,24 @@ _vue.default.mixin({
       // Flip selected class index
       var flippedclasses = userclasses.split("");
       flippedclasses[idx] = flippedclasses[idx] == "1" ? "0" : "1";
-      flippedclasses = flippedclasses.join(""); // Create a temp sharedData, modify it and set the app.sharedData as the temp one
+      flippedclasses = flippedclasses.join("");
+      console.log("tmp", tempShared, userindex, flippedclasses); // Create a temp sharedData, modify it and set the app.sharedData as the temp one
 
-      var tempShared = _main.app.sharedData;
-      tempShared.adminusers[userindex].studentclasses = flippedclasses;
-      _main.app.sharedData = tempShared; // Send class change to server
+      var tempShared = _main.app.sharedData.adminusers;
+      tempShared[userindex].studentclasses = flippedclasses;
+
+      _main.app.$set(_main.app.sharedData, "userlist", tempShared); // Send class change to server
+
 
       _axios.default.put(_globals.apiurl.enroll, {
         userid: userid,
         class: idx,
         new: !!Number(flippedclasses[idx])
       }).then(function () {}).catch(function (error) {
-        var tempShared = _main.app.sharedData;
-        tempShared.adminusers[userindex].studentclasses = userclasses;
-        _main.app.sharedData = tempShared;
+        var tempShared = _main.app.sharedData.adminusers;
+        tempShared[userindex].studentclasses = userclasses;
+
+        _main.app.$set(_main.app.sharedData, "userlist", tempShared);
       });
     },
     addTeacher: function addTeacher(email, classes, update, callback) {
@@ -27466,7 +27510,8 @@ _vue.default.mixin({
       tempShared.userlist[user.index].comments[idx] = usercomment;
       _main.app.sharedData = tempShared;
 
-      _axios.default.post(_globals.apiurl.comment + user.userid, {
+      _axios.default.post(_globals.apiurl.comment, {
+        userid: user.userid,
         class: idx,
         comment: usercomment
       }).catch(function (e) {
@@ -34796,7 +34841,9 @@ var app = new _vue.default({
         adminusers: [],
         shortnames: ["Soc", "Soc2", "Wr", "Wr2", "Geo", "Stats", "LD", "PS", "Phy", "HRI", "CW", "UM", "Maker", "Pract", "CvS"]
       },
-      userauth: _globals.userauth,
+      userauth: {
+        profilePicture: ""
+      },
       editSelect: "",
       editState: false,
       rawData: {},
@@ -34842,6 +34889,12 @@ var app = new _vue.default({
     },
     updateUsers: function updateUsers(data) {
       if (data.userlist) this.sharedData.userlist = data.userlist;
+    },
+    joinRooms: function joinRooms(sharedData) {
+      _sockets.default.emit("room", sharedData.userid);
+
+      if (sharedData.admin) _sockets.default.emit("room", "admins");
+      if (sharedData.teacher) _sockets.default.emit("room", "teachers");
     }
   },
   computed: {},
@@ -34873,17 +34926,17 @@ var app = new _vue.default({
         _this2.updateData(data.data);
       });
     }).on('connect', function () {
-      if (indexLoadPayload.userid) {
-        _sockets.default.emit("room", indexLoadPayload.userid);
+      console.log("connected");
 
-        if (indexLoadPayload.data.admin) _sockets.default.emit("room", "admins");
-        if (indexLoadPayload.data.teacher) _sockets.default.emit("room", "teachers");
+      if (indexLoadPayload.userid) {
+        _this2.joinRooms(_objectSpread({}, indexLoadPayload.data, {
+          userid: indexLoadPayload.userid
+        }));
+
         return;
       } else if (_this2.loggedin.loggedin) {
-        _sockets.default.emit("room", _this2.sharedData.userid);
+        _this2.joinRooms(_this2.sharedData);
 
-        if (_this2.sharedData.admin) _sockets.default.emit("room", "admins");
-        if (_this2.sharedData.teacher) _sockets.default.emit("room", "teachers");
         return;
       }
 

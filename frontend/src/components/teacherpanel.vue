@@ -75,7 +75,6 @@
             :key="idx"
             @click.stop="change(sharedData.userlist[selectedIndex], classObj.index, selectedIndex)"
             :class="{red: classObj.status === '0', green: classObj.status === '1', selecting: commentSelectMode, selected: commentSelectedIndex == classObj.index, disabled: classObj.disabled}"
-            :style="{pointerEvents: classObj.disabled ? 'none' : 'all', background: classObj.disabled ? 'gray' : false}"
           >
             {{classnames[classObj.index]}}
           </div>
@@ -150,8 +149,6 @@ export default {
       try {
         clearTimeout(this.typetimer[currentUserId][this.commentSelectedIndex])
       } catch {}
-
-      console.log("E", inputValue,)
       
       if (!this.typetimer[currentUserId]) this.typetimer[currentUserId] = []
       this.typetimer[currentUserId][this.commentSelectedIndex] = [
@@ -168,7 +165,12 @@ export default {
         this.typingComment = true;
         let extractedComment = this.sharedData.userlist[this.selectedIndex].comments[index]
         this.currentComment = extractedComment === 0 ? "" : extractedComment
-        setTimeout(() => {this.$refs.commentInput.focus(); this.calcInputHeight(this.currentComment)}, 20)
+        setTimeout(() => {
+          this.$refs.commentInput.focus(); 
+          this.calcInputHeight(this.currentComment)
+          this.$refs.commentInput.selectionStart = this.$refs.commentInput.selectionEnd = this.currentComment.length
+          
+        }, 20)
       }
     },
     createComment() {
@@ -390,11 +392,19 @@ export default {
       width: 90px;
       height: 90px;
       margin: 10px;
+      cursor: pointer;
       text-align: center;
       transition: 0.3s;
       position: relative;
       display: block;
+      user-select: none;
       border-radius: 5px;
+
+      &.disabled {
+        background: gray !important;
+        cursor: default;
+        pointer-events: none !important; 
+      }
 
 
       &.red {

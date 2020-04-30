@@ -1,0 +1,54 @@
+/**
+ * @api {post} /api/auth/:idtoken Authenticates user using Google ID token
+ * @apiGroup Auth
+ * @apiParam {String} idtoken Google ID token
+ * @apiError {String} 403 This google account is not in the alt.app gsuite
+ * @apiError {String} 400 Bad request
+ */
+
+/**
+ * @api {put} /api/student/enroll Modify classes a student is enrolled in
+ * @apiGroup Students
+ * @apiParam {String} userid Salmon user identifier
+ * @apiParam {Int} class Index of class to change enroll status of
+ * @apiParam {Boolean} new New enrollment status of class
+ * @apiError {String} 404 User not found
+ * @apiError {String} 400 Bad request
+ * @apiError {String} 403 No permission
+ */
+
+/**
+ * @api {put} /api/student/status Edit student specific class status
+ * @apiGroup Students
+ * @apiParam {String} userid Salmon user identifier
+ * @apiParam {Int} class Index of class to change status of
+ * @apiParam {Boolean} new New status of class
+ * @apiError {String} 404 User not found
+ * @apiError {String} 400 Bad request
+ * @apiError {String} 403 No permission
+ * @apiError {String} 403 Class not editable
+ */
+
+/**
+ * @api {put} /api/teacher Edit teacher classes
+ * @apiGroup Teachers
+ * @apiParam {String} email Email of teacher
+ * @apiError {String} 404 User not found
+ * @apiError {String} 400 Bad request
+ * @apiError {String} 403 No permission
+ */
+
+/**
+ * @api {post} /api/teacher Add a new teacher
+ * @apiGroup Teachers
+ * @apiParam {String} email Email of user
+ * @apiError {String} 404 User not found
+ * @apiError {String} 400 Bad request
+ * @apiError {String} 403 No permission
+ * @apiSuccess (200) {String} success Successfully made user a teacher
+ * @apiSuccess (200) {String} queue Added email to teacher queue
+ */
+
+
+
+

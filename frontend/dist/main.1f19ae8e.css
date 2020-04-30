@@ -21,13 +21,20 @@
   width: 50px;
   height: 50px;
   border-radius: 80px;
-  background: #ceceef;
+  background: white;
   float: right;
   margin: auto 0;
+  overflow: hidden;
+  cursor: pointer;
   display: block;
   top: 50%;
   transform: translateY(-50%);
   position: relative;
+}
+#header .nightMode img[data-v-7e2fba] {
+  height: 52px;
+  background: white;
+  border-radius: 80px;
 }
 #header .loginButton[data-v-7e2fba] {
   float: left;
@@ -647,16 +654,10 @@
   border-right: 6px solid transparent;
   border-bottom: 7px solid #c5d0ec;
 }
-.redclass-item .title {
-  font-size: 70px;
-  color: #ff6961;
-  white-space: nowrap;
-  width: 80%;
-  line-height: 40px;
-  display: block;
+.redclass-item .title text {
   font-family: mr-eaves-modern, sans-serif;
   font-weight: 200;
-  font-style: normal;
+  font-size: 17px;
 }
 .redclass-item .subtext {
   text-align: center;
@@ -1006,11 +1007,18 @@ to {
   width: 90px;
   height: 90px;
   margin: 10px;
+  cursor: pointer;
   text-align: center;
   transition: 0.3s;
   position: relative;
   display: block;
+  user-select: none;
   border-radius: 5px;
+}
+.teacherClassArea .classItemCont .classItem.disabled {
+  background: gray !important;
+  cursor: default;
+  pointer-events: none !important;
 }
 .teacherClassArea .classItemCont .classItem.red {
   background: #4f6284;

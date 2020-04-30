@@ -7,7 +7,6 @@
         :class="{greenclass: i % 2 == 1}"
         class="redclass-item mx-auto z-depth-half"
       >
-
         <div class="title" style="font-size: 50px;">Lorem Ipsum</div>
         <span class="subtext">{{i % 2 == 1 ? "Completed" : "Missing"}}</span>
       </div>
@@ -22,10 +21,26 @@
         <div class="commentPopper" v-if="getComment(idx)">
           <div class="commentBody z-depth-half">{{getComment(idx)}}</div>
         </div>
-        <div class="title" :style="{fontSize: titleSize(classItem.name)}">{{classItem.name}}</div>
+        <svg class="title" viewBox="-1 3 70 18">
+          <text x="0" y="15">{{classItem.name}}</text>
+        </svg>
         <span class="subtext">{{classItem.status ? "Completed" : "Missing"}}</span>
         <div class="commentIcon" v-if="getComment(idx)">
-          <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="comment" class="svg-inline--fa fa-comment fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M256 32C114.6 32 0 125.1 0 240c0 49.6 21.4 95 57 130.7C44.5 421.1 2.7 466 2.2 466.5c-2.2 2.3-2.8 5.7-1.5 8.7S4.8 480 8 480c66.3 0 116-31.8 140.6-51.4 32.7 12.3 69 19.4 107.4 19.4 141.4 0 256-93.1 256-208S397.4 32 256 32z"></path></svg>
+          <svg
+            aria-hidden="true"
+            focusable="false"
+            data-prefix="fas"
+            data-icon="comment"
+            class="svg-inline--fa fa-comment fa-w-16"
+            role="img"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 512 512"
+          >
+            <path
+              fill="currentColor"
+              d="M256 32C114.6 32 0 125.1 0 240c0 49.6 21.4 95 57 130.7C44.5 421.1 2.7 466 2.2 466.5c-2.2 2.3-2.8 5.7-1.5 8.7S4.8 480 8 480c66.3 0 116-31.8 140.6-51.4 32.7 12.3 69 19.4 107.4 19.4 141.4 0 256-93.1 256-208S397.4 32 256 32z"
+            />
+          </svg>
         </div>
       </div>
     </div>
@@ -38,16 +53,18 @@ export default {
   props: ["sharedData", "loggedin"],
   methods: {
     getComment(idx) {
-      if (!this.sharedData.comments) return false
-      let returnComment = this.sharedData.comments.find(e => {return e[0] == idx});
+      if (!this.sharedData.comments) return false;
+      let returnComment = this.sharedData.comments.find(e => {
+        return e[0] == idx;
+      });
       if (returnComment) return returnComment[1];
       else return false;
     },
     titleSize(title) {
       if (title.length > 8) {
-        return (3.125 - (title.length - 8) / 4) + "rem"
+        return 3.125 - (title.length - 8) / 4 + "rem";
       } else {
-        return "3.125rem"
+        return "3.125rem";
       }
     }
   }
@@ -80,7 +97,6 @@ export default {
   padding-left: 5px;
 }
 
-
 @media screen and (max-width: 768px) {
   .classescont {
     height: auto;
@@ -89,7 +105,6 @@ export default {
     padding: 25px;
   }
 }
-
 
 .redclass-item {
   border-radius: $curve;
@@ -149,23 +164,16 @@ export default {
         border-right: 6px solid transparent;
         border-bottom: 7px solid $commentcolor;
       }
-
     }
   }
 
   .title {
-    font-size: 70px;
-    color: $red;
-    white-space: nowrap;
-    width: 80%;
-    line-height: 40px;
-    display: block;
-    
-    font-family: mr-eaves-modern, sans-serif;
-    font-weight: 200;
-    font-style: normal;
 
-
+    text {
+      font-family: mr-eaves-modern, sans-serif;
+      font-weight: 200;
+      font-size: 17px;
+    }
   }
 
   .subtext {
@@ -176,22 +184,20 @@ export default {
     position: absolute;
     bottom: 10px;
     background: $red;
-    font-family: futura-pt, sans-serif; 
-    font-weight: 400; 
+    font-family: futura-pt, sans-serif;
+    font-weight: 400;
     font-style: normal;
     line-height: 29px;
     padding-bottom: 0px;
     border-radius: 12px;
     display: block;
   }
-  
-  
+
   &:nth-last-child(1) {
     margin-bottom: 25px;
   }
 
   &.greenclass {
-
     .subtext {
       width: 104px;
       background: $green;

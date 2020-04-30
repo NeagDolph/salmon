@@ -1,8 +1,8 @@
 import axios from 'axios';
-import { userauth, apiurl } from './globals';
+import { apiurl } from './globals';
 import { app } from '../main';
 
-export var signFuncs = {};
+export var signFuncs = {}, userauth = {};
 
 //Init google api
 export var authFunc = callback => {
@@ -19,6 +19,13 @@ gapi.load("auth2", () => {
     })
     .then(auth2 => {
       signFuncs.auth2 = auth2;
+      let googleUser = auth2.currentUser.get()
+      userauth.profile = googleUser.getBasicProfile();
+
+      if (userauth.profile) userauth.profilePicture = userauth.profile.getImageUrl();
+      else userauth.profilePicture = ""
+      app.userauth = userauth
+      
       callback(auth2.isSignedIn.get())
     });
 });
@@ -29,12 +36,17 @@ export var authFunc2 = () => {
   let googleUser = signFuncs.auth2.currentUser.get()
   userauth.authResponse = googleUser.getAuthResponse();
   userauth.profile = googleUser.getBasicProfile();
+  userauth.profilePicture = userauth.profile.getImageUrl();
+
+  app.userauth = userauth
 
   axios
     .post(apiurl.auth + userauth.authResponse.id_token)
     .then(data => {
+      console.log("logg", data)
       app.$set(app.loggedin, 'loggedin', true)
       app.updateData(data.data)
+      app.joinRooms(data.data)
     })
     .catch(error => {
       if (error.response) {
@@ -48,6 +60,7 @@ export var authFunc2 = () => {
 }
 
 signFuncs.signOut = () => {
+  console.log('signfunc')
   gapi.auth2.getAuthInstance().signOut().then(() => {
     axios.post(apiurl.deauth).then(() => {
       window.location.reload()

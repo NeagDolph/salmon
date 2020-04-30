@@ -2,7 +2,7 @@
   <div id="main">
 
     <!-- Header -->
-    <Header :loggedin="loggedin" :style="loggedin ? '' : 'filter: blur(6px)'" :userAuth="userAuth"/>
+    <Header :loggedin="loggedin" :userauth="userAuth" :style="loggedin ? '' : 'filter: blur(6px)'" :userAuth="userAuth"/>
 
     <!-- Student panel -->
     <div id="student" class="pageContainer" v-if="!sharedData.teacher">

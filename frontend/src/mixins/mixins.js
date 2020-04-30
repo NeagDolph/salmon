@@ -10,11 +10,16 @@ Vue.mixin({
         let flippedclasses = userclasses.split("")
         flippedclasses[idx] = flippedclasses[idx] == "1" ? "0" : "1"
         flippedclasses = flippedclasses.join("")
+
+        
+        console.log("tmp", tempShared, userindex, flippedclasses)
         
         // Create a temp sharedData, modify it and set the app.sharedData as the temp one
-        let tempShared = app.sharedData
-        tempShared.adminusers[userindex].studentclasses = flippedclasses
-        app.sharedData = tempShared
+        let tempShared = app.sharedData.adminusers
+        tempShared[userindex].studentclasses = flippedclasses
+        app.$set(app.sharedData, "userlist", tempShared)
+
+
 
         // Send class change to server
         axios
@@ -22,9 +27,9 @@ Vue.mixin({
           .then(() => {
           })
           .catch(error => {
-            let tempShared = app.sharedData
-            tempShared.adminusers[userindex].studentclasses = userclasses
-            app.sharedData = tempShared
+            let tempShared = app.sharedData.adminusers
+            tempShared[userindex].studentclasses = userclasses
+            app.$set(app.sharedData, "userlist", tempShared)
           });
       },
       addTeacher(email, classes, update, callback) {
@@ -83,7 +88,7 @@ Vue.mixin({
         tempShared.userlist[user.index].comments[idx] = usercomment
         app.sharedData = tempShared
 
-        axios.post(apiurl.comment + user.userid, { class: idx, comment: usercomment})
+        axios.post(apiurl.comment, { userid: user.userid, class: idx, comment: usercomment})
         .catch(e => {
           let tempShared = app.sharedData
           tempShared.userlist[user.index].comments[idx] = oldcomment

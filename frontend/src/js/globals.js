@@ -1,4 +1,3 @@
-export let userauth = {};
 export let classnames = ["Socratic 1", "Socratic 2", "Writing 1", "Writing 2", "Geometry", "Statistics", "Life Design", "Problem Solving", "Physics", "HRI", "Creative Writing", "Urban Mvmt", "Makerspace", "Practicum", "Cap vs Soc"]
 export let shortnames = ["Soc", "Soc2", "Wr", "Wr2", "Geo", "Stats", "LD", "PS", "Phy", "HRI", "CW", "UM", "Maker", "Pract", "CvS"]
-export let apiurl = {data: "/api/data/", auth: "/api/auth/", status: "/api/student/status/", enroll: "/api/student/enroll/", comment: "/api/comment/", deauth: "/api/deauth/", teacher: "/api/teacher/"}
+export let apiurl = {data: "/api/data/", auth: "/api/auth/", status: "/api/student/status/", enroll: "/api/student/enroll/", comment: "/api/student/comment/", deauth: "/api/deauth/", teacher: "/api/teacher/"}

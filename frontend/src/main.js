@@ -1,7 +1,7 @@
 import Vue from "vue";
 import Main from "./App.vue";
 import axios from 'axios';
-import { classnames, userauth, apiurl } from "./js/globals";
+import { classnames, apiurl } from "./js/globals";
 import './mixins/mixins';
 import socket from './js/sockets.js';
 import {authFunc, authFunc2} from './js/auth.js';
@@ -21,7 +21,9 @@ export var app = new Vue({
         adminusers: [],
         shortnames: ["Soc", "Soc2", "Wr", "Wr2", "Geo", "Stats", "LD", "PS", "Phy", "HRI", "CW", "UM", "Maker", "Pract", "CvS"]
       },
-      userauth: userauth,
+      userauth: {
+        profilePicture: ""
+      },
       editSelect: "",
       editState: false,
       rawData: {},
@@ -62,6 +64,12 @@ export var app = new Vue({
 
     updateUsers(data) {
       if (data.userlist) this.sharedData.userlist = data.userlist
+    },
+
+    joinRooms(sharedData) {
+      socket.emit("room", sharedData.userid)
+      if (sharedData.admin) socket.emit("room", "admins")
+      if (sharedData.teacher) socket.emit("room", "teachers")
     }
   },
   computed: {
@@ -91,15 +99,13 @@ export var app = new Vue({
     })
     .on('connect', () => {
 
+      console.log("connected")
+
       if (indexLoadPayload.userid) {
-        socket.emit("room", indexLoadPayload.userid)
-        if (indexLoadPayload.data.admin) socket.emit("room", "admins")
-        if (indexLoadPayload.data.teacher) socket.emit("room", "teachers")
+        this.joinRooms({...indexLoadPayload.data, userid: indexLoadPayload.userid})
         return;
       } else if (this.loggedin.loggedin) {
-        socket.emit("room", this.sharedData.userid)
-        if (this.sharedData.admin) socket.emit("room", "admins")
-        if (this.sharedData.teacher) socket.emit("room", "teachers")
+        this.joinRooms(this.sharedData)
         return;
       }
     

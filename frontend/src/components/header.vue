@@ -4,7 +4,7 @@
       <div class="col-12">
         <div id="header" class="z-depth-1">
           <loginButton :loggedin="loggedin" class="loginButton"/>
-          <div class="nightMode"></div>
+          <div class="nightMode"><img v-if="userauth.profilePicture && userauth.profilePicture !== ''" :src="userauth.profilePicture" alt="profile picture"></div>
         </div>
       </div>
     </div>
@@ -15,7 +15,7 @@
 import loginButton from "./loginbutton.vue";
 
 export default {
-  props: ["loggedin"],
+  props: ["loggedin", "userauth"],
   components: {
     
     loginButton
@@ -43,13 +43,21 @@ export default {
     width: 50px;
     height: 50px;
     border-radius: 80px;
-    background: $background;
+    background: white;
     float: right;
     margin: auto 0;
+    overflow: hidden;
+    cursor: pointer;
     display: block;
     top: 50%;
     transform: translateY(-50%);
     position: relative;
+
+    img {
+      height: 52px;
+      background: white;
+      border-radius: 80px;
+    }
   }
 
   .loginButton {

@@ -16,7 +16,10 @@ export default {
         return false
       }
       if (!this.loggedin) signFuncs.auth2.signIn().then(() => authFunc2());
-      else signFuncs.signOut();
+      else {
+        console.log("clicked")
+        signFuncs.signOut();
+      }
     }
   }
 };
