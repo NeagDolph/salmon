@@ -2,34 +2,28 @@ import axios from 'axios';
 import Vue from "vue";
 import { apiurl } from "../js/globals.js";
 import { app } from '../main.js';
+import { store } from "../js/store.js"
 
 Vue.mixin({
     methods: {
       userEditEnrolled(userid, userclasses, idx, userindex) {
         // Flip selected class index
-        let flippedclasses = userclasses.split("")
-        flippedclasses[idx] = flippedclasses[idx] == "1" ? "0" : "1"
-        flippedclasses = flippedclasses.join("")
-
+        let flippedClasses = userclasses.split("").map((e, i) => i == idx ? (e == "1" ? "0" : "1") : e).join("")
         
-        console.log("tmp", tempShared, userindex, flippedclasses)
-        
-        // Create a temp sharedData, modify it and set the app.sharedData as the temp one
-        let tempShared = app.sharedData.adminusers
-        tempShared[userindex].studentclasses = flippedclasses
-        app.$set(app.sharedData, "userlist", tempShared)
-
-
+        // Create a temp sharedData, modify it and set the sharedData as the temp one
+        let tempData = store.state.user.userlist
+        tempData[userindex].studentclasses = flippedClasses
+        store.commit("modifyUserData", ["userlist", tempData])
 
         // Send class change to server
         axios
-          .put(apiurl.enroll, { userid: userid, class: idx, new: !!Number(flippedclasses[idx]) })
+          .put(apiurl.enroll, { userid: userid, class: idx, new: Boolean(Number(flippedClasses[idx])) })
           .then(() => {
           })
           .catch(error => {
-            let tempShared = app.sharedData.adminusers
-            tempShared[userindex].studentclasses = userclasses
-            app.$set(app.sharedData, "userlist", tempShared)
+            let oldTempData = store.state.user.userlist
+            oldTempData[userindex].studentclasses = userclasses
+            store.commit("modifyUserData", ["userlist", oldTempData])
           });
       },
       addTeacher(email, classes, update, callback) {
@@ -47,67 +41,65 @@ Vue.mixin({
           })
         }
       },
-      usereditmodal(state, user=false) {
-        app.editState = state;
-        if (user) app.editSelect = user
-      },
       editUserClasses(user, idx, userindex) {
       //User = object with userid and classes
       //Idx = index of class to be changed
       //User = Index of user in userlist
 
         // Flip selected class index
-        let classes = user.classes.split("")
-        classes[idx] = classes[idx] == "1" ? "0" : "1"
-        classes = classes.join("")
+        let flippedClasses = user.classes.split("").map((e, i) => i == idx ? (e == "1" ? "0" : "1") : e).join("")
         
         // Create a temp sharedData, modify it and set the app.sharedData as the temp one
-        let tempShared = app.sharedData
-        tempShared.userlist[userindex].classes = classes
-        app.sharedData = tempShared
+        let tempData = store.state.user.userlist
+        tempData[userindex].classes = flippedClasses
+        store.commit("modifyUserData", ["userlist", tempData])
 
         // Send class change to server
         axios
-          .put(apiurl.status, { userid: user.userid, class: idx, new: !!Number(classes[idx]) })
+          .put(apiurl.status, { userid: user.userid, class: idx, new: Boolean(Number(flippedClasses[idx])) })
           .then(() => {
           })
           .catch(error => {
-            console.log("EY", user.classes, userindex)
-            let classes = user.classes.split("")
-            classes[idx] = classes[idx] == "1" ? "0" : "1"
-            classes = classes.join("")
-
-            let userlist = app.sharedData.userlist
-            userlist[userindex].classes = classes
-            app.$set(app.sharedData, 'userlist', userlist)
+            let userlist = store.state.user.userlist
+            userlist[userindex].classes = user.classes
+            store.commit("modifyUserData", ["userlist", userlist])
           });
       },
+
       addComment(user, idx, usercomment) {
-        let tempShared = app.sharedData
-        let oldcomment = tempShared.userlist[user.index].comments[idx]
-        tempShared.userlist[user.index].comments[idx] = usercomment
-        app.sharedData = tempShared
+        let tempData = store.state.user.userlist
+        let oldcomment = tempData[user.index].comments[idx]
+
+        tempData[user.index].comments[idx] = usercomment
+        store.commit("modifyUserData", ["userlist", tempData])
 
         axios.post(apiurl.comment, { userid: user.userid, class: idx, comment: usercomment})
         .catch(e => {
-          let tempShared = app.sharedData
-          tempShared.userlist[user.index].comments[idx] = oldcomment
-          app.sharedData = tempShared
+          let oldTempData = store.state.user.userlist
+          oldTempData[user.index].comments[idx] = usercomment
+          store.commit("modifyUserData", ["userlist", oldTempData])
         })
       },
-      requestComment(user, idx) {
-        axios
-          .get(apiurl.comment, { class: idx, userid: user.userid })
-          .then((data) => {
-            return "PEE"
-            // return data
-          })
-          .catch((e) => {
-            console.log("Error requesting comment", e)
-          })
+
+      getUserData() {
+        return new Promise((res, rej) => {
+          axios.get(apiurl.data)
+            .then(data => {
+              store.commit("updateUserData", data.data)
+
+              res(data.data)
+            })
+            .catch(err => rej(err))
+        });
       },
-      setGlobal(area, val) {
-        app.$set(app.global, area, val)
+
+      signOut() {
+        gapi.auth2.getAuthInstance().signOut().then(() => {
+          axios.post(apiurl.deauth).then(() => {
+            window.location.reload()
+          })
+        });
       }
+
     }
 })

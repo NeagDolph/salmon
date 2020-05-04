@@ -13,7 +13,7 @@
           <!--Body-->
           <div class="modal-body text-center mb-1">
             <div class="text-center mt-4">
-              <loginButton :loggedin="loggedin"/>
+              <loginButton/>
             </div>
             
           </div>
@@ -28,11 +28,10 @@
 import loginButton from "./loginbutton.vue";
 
 export default {
-  props: ["loggedin"],
   components: { loginButton },
   computed: {
     animateClasses() {
-      return this.$props.loggedin === false ? "animated fadeInUp fast" : "";
+      return this.$store.state.loggedin === false ? "animated fadeInUp fast" : "";
     }
   }
 };

@@ -2,32 +2,31 @@
   <div id="main">
 
     <!-- Header -->
-    <Header :loggedin="loggedin" :userauth="userAuth" :style="loggedin ? '' : 'filter: blur(6px)'" :userAuth="userAuth"/>
+    <Header :style="loggedin ? '' : 'filter: blur(6px)'"/>
 
     <!-- Student panel -->
-    <div id="student" class="pageContainer" v-if="!sharedData.teacher">
+    <div id="student" class="pageContainer" v-if="!teacher">
 
       <div class="row mainRow" :style="loggedin ? '' : 'filter: blur(8px)'">
         <div class="col-xl-6 col-lg-6 col-sm-6 col-xs-12 xs-mb">
-          <displayData :sharedData="sharedData" :globalData="globalData" :isMobile="isMobile"/>
-          <adminPanel v-if="sharedData.admin && !isMobile" :globalData="globalData" :sharedData="sharedData"/>
+          <displayData :isMobile="isMobile"/>
+          <adminPanel v-if="admin && !isMobile"/>
         </div>
-        <secondrydata :sharedData="sharedData" class="xs-mb"/>
-        <classes :sharedData="sharedData" :loggedin="loggedin"/>
+        <offtarget class="xs-mb"/>
+        <classes/>
       </div>
 
     </div>
 
     <!-- Teacher -->
-    <div id="teacher" class="pageContainer" v-if="sharedData.teacher">
+    <div id="teacher" class="pageContainer" v-if="teacher">
       <div class="row mainRow">
-        <teacherpanel :sharedData="sharedData" :isMobile="isMobile" :globalData="globalData"/>
+        <teacherpanel :isMobile="isMobile"/>
       </div>
     </div>
 
 
-    <loginmodal v-if="loggedin === false" :loggedin="loggedin"/>
-    <modaledit :userdata="editSelect" :tclasses="sharedData.tclasses" :editmodalopen="editState"/>
+    <loginmodal v-if="loggedin === false"/>
   </div>
 </template>
 
@@ -35,20 +34,17 @@
 import Header from "./components/header.vue";
 import displayData from "./components/data.vue";
 import adminPanel from "./components/adminPanel.vue";
-import secondrydata from "./components/secondrydata.vue";
+import offtarget from "./components/offtarget.vue";
 import classes from "./components/classes.vue";
 import loginmodal from "./components/loginmodal.vue";
 import teacherpanel from "./components/teacherpanel.vue";
-import modaledit from "./components/modaledit.vue";
 import './css/box-shadow.min.css';
 
 
 export default {
   name: "app",
-  props: ["loggedin", "sharedData", "editSelect", "editState", "userAuth", "signIn", "signOut", "globalData"],
   data() {
     return {
-      // loggedin: true
       classes: [],
       isMobile: false,
     };
@@ -64,9 +60,19 @@ export default {
     classes,
     loginmodal,
     teacherpanel,
-    modaledit,
-    secondrydata,
+    offtarget,
     Header
+  },
+  computed: {
+    teacher() {
+      return this.$store.state.user.teacher
+    },
+    admin() {
+      return this.$store.state.user.admin
+    },
+    loggedin() {
+      return this.$store.state.loggedin
+    }
   },
   beforeDestroy () {
     if (typeof window !== 'undefined') {

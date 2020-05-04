@@ -12,24 +12,23 @@
 
 <script>
 export default {
-  props: ["sharedData"],
   methods: {},
   computed: {
     redclassArray() {
-      return this.sharedData.classes.map(e => !e.status ? e.name : false).filter(e => !!e)
+      return this.$store.state.user.classes.map(e => !e.status ? e.name : false).filter(e => !!e)
     },
     redclasses() {
-      return this.sharedData.classes.reduce((tot, el) => {
+      return this.$store.state.user.classes.reduce((tot, el) => {
         return tot + Number(!el.status);
       }, 0)
     },
     percent() {
       return parseInt(
         (
-          (this.sharedData.classes.reduce((tot, el) => {
+          (this.$store.state.user.classes.reduce((tot, el) => {
             return tot + el.status;
           }, 0) /
-            this.sharedData.classes.length) *
+            this.$store.state.user.classes.length) *
           100
         ).toFixed(1)
       );
@@ -40,6 +39,12 @@ export default {
 
 <style lang="scss" scoped>
 @import "../css/settings.scss";
+
+@media screen and (max-width: 970px) {
+  .targetHeader {
+    line-height: 15px;
+  }
+}
 
 .percentage {
   background: $main1;

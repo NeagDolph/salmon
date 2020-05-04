@@ -1,5 +1,5 @@
 <template>
-    <div class="percent z-depth-half" ref="mainPercent" :class="{adminOpen: glob}">
+    <div class="percent z-depth-half" ref="mainPercent" :class="{adminOpen: adminOpen}">
       <div class="row" style="width: 100%; margin: 0;">
         <div class="col-12 px-0 mx-0">
           <div class="statusCont">
@@ -37,18 +37,18 @@
 
 <script>
 export default {
-  props: ["sharedData", "globalData", "isMobile"],
+  props: ["isMobile"],
   computed: {
-    glob() {
-      return this.globalData.adminOpen
+    adminOpen() {
+      return this.$store.state.adminPanel.open;
     },
     percent() {
       return parseInt(
         (
-          (this.sharedData.classes.reduce((tot, el) => {
+          (this.$store.state.user.classes.reduce((tot, el) => {
             return tot + el.status;
           }, 0) /
-            this.sharedData.classes.length) *
+            this.$store.state.user.classes.length) *
           100
         ).toFixed(1)
       );
@@ -56,7 +56,7 @@ export default {
   },
   mounted() {
     this.$nextTick(function() {
-      this.setGlobal("dataTop", this.$refs.mainPercent.getBoundingClientRect().top)
+      this.$store.commit("adminSection", this.$refs.mainPercent.getBoundingClientRect().top)
     })
   }
 };

@@ -1,5 +1,5 @@
 <template>
-    <div class="percent z-depth-half" ref="percent" v-bind:style="{ height: open ? (windowHeight - globalData.dataTop) + 'px' : false, transform: open == true ? `translateY(${-((adminTop - globalData.dataTop) + buttonTop) + 'px'})` : '', top: buttonTop + 'px'}" @click.stop="open ? false : setMenu(true)" :class="{adminOpen: open === 1, adminClose: open === 0, adminLoad: open === false}">
+    <div class="percent z-depth-half" ref="percent" v-bind:style="{ height: open ? (windowHeight - dataTop) + 'px' : false, transform: open == true ? `translateY(${-((adminTop - dataTop) + buttonTop) + 'px'})` : '', top: buttonTop + 'px'}" @click.stop="open ? false : setMenu(true)" :class="{adminOpen: open === 1, adminClose: open === 0, adminLoad: open === false}">
       <div class="row" v-if="!open">
         <div class="buttonBar" v-bind:style="{ top: setMid + 'px' }"></div>
       </div>
@@ -27,8 +27,8 @@
           <br>
           <div class="classSelect z-depth-1" v-if="selectedTeacher !== false">
             <div class="selectTitle">
-              {{sharedData.teacherlist[selectedTeacher].name}} 
-              <a @click="delTeacher(sharedData.teacherlist[selectedTeacher].email, true)" style="text-decoration: none; color: black;">
+              {{userData.teacherlist[selectedTeacher].name}} 
+              <a @click="delTeacher(userData.teacherlist[selectedTeacher].email, true)" style="text-decoration: none; color: black;">
                 <svg title="Revoke Teacher" width="20" height="20" v-if="selectedTeacher !== false">       
                   <image href="https://atischool.net/static/delete.svg" width="20" height="20"/>    
                 </svg>
@@ -41,23 +41,23 @@
             </div>
           </div>
           <div class="userList" ref="userlist" :style="{height: listHeight + 'px'}">
-            <div class="userItem col-4 z-depth-half" v-for="(teacher, idx) in sharedData.teacherlist"  v-tooltip.bottom="{content: teacher.name, offset: '2px'}" :key="teacher.email" @click="selectTeacher(idx)">{{teacher.name.split(" ")[0]}}</div>
+            <div class="userItem col-4 z-depth-half" v-for="(teacher, idx) in userData.teacherlist"  v-tooltip.bottom="{content: teacher.name, offset: '2px'}" :key="teacher.email" @click="selectTeacher(idx)">{{teacher.name.split(" ")[0]}}</div>
           </div>
         </div>
         
         <div class="col-12 body student" v-if="subsection == 1">
           <div class="classSelect z-depth-1" v-if="selectedStudent !== false">
             <div class="selectTitle">
-              {{sharedData.adminusers[selectedStudent].name}} 
+              {{userData.adminusers[selectedStudent].name}} 
             </div>
             <div v-if="selectedStudent !== false">
-            <div class="classBlock" @click="studentToggleClass(parseInt(idx))" v-for="(status, idx) in sharedData.adminusers[selectedStudent].studentclasses" :key="'classBlock' + idx" :class="{selected: parseInt(sharedData.adminusers[selectedStudent].studentclasses[idx])}" :style="{content: sharedData.adminusers[selectedStudent].studentclasses[idx] }">
+            <div class="classBlock" @click="studentToggleClass(parseInt(idx))" v-for="(status, idx) in userData.adminusers[selectedStudent].studentclasses" :key="'classBlock' + idx" :class="{selected: parseInt(userData.adminusers[selectedStudent].studentclasses[idx])}" :style="{content: userData.adminusers[selectedStudent].studentclasses[idx] }">
               {{shortnames[idx]}}
             </div>
             </div>
           </div>
           <div class="userList" ref="userlist" :style="{height: listHeight + 'px'}">
-            <div class="userItem col-4 z-depth-half" v-tooltip.bottom="{content: student.name, offset: '2px'}" v-for="(student, idx) in sharedData.adminusers" :key="student.email" @click="selectStudent(idx)">{{student.name.split(" ")[0]}}</div>
+            <div class="userItem col-4 z-depth-half" v-tooltip.bottom="{content: student.name, offset: '2px'}" v-for="(student, idx) in userData.adminusers" :key="student.email" @click="selectStudent(idx)">{{student.name.split(" ")[0]}}</div>
           </div>
         </div>
 
@@ -103,7 +103,7 @@ export default {
   },
   methods: {
     searchCompute() {
-      let userinput = this.sharedData.adminusers.map(user => {
+      let userinput = this.$store.state.user.adminusers.map(user => {
         return {
           email: user.email,
           name: user.email
@@ -145,7 +145,7 @@ export default {
           
           this.teacherEmail = ""
 
-          let userIndex = this.sharedData.teacherlist.findIndex(e => {return e[0] == this.teacherEmail})
+          let userIndex = this.$store.state.user.teacherlist.findIndex(e => {return e[0] == this.teacherEmail})
           
           if (userIndex > -1) this.selectedTeacher = userIndex
         });
@@ -155,33 +155,33 @@ export default {
     selectTeacher(idx) {
       setTimeout(this.dataCalc, 100)
       this.selectedTeacher = idx;
-      this.teacherClassToggle = this.sharedData.teacherlist[idx].teacherclasses
+      this.teacherClassToggle = this.$store.state.user.teacherlist[idx].teacherclasses
     },
     selectStudent(idx) {
       setTimeout(this.dataCalc, 100)
       this.selectedStudent = idx;
-      this.studentClassToggle = this.sharedData.adminusers[idx].studentclasses
+      this.studentClassToggle = this.$store.state.user.adminusers[idx].studentclasses
     },
     teacherToggleClass(idx) {
       let classCopy = this.teacherClassToggle.split("")
       classCopy[idx] = classCopy[idx] == "1" ? "0" : "1"
       this.teacherClassToggle = classCopy.join("")
 
-      this.sharedData.teacherlist[this.selectedTeacher].teacherclasses = this.teacherClassToggle
+      this.$store.state.user.teacherlist[this.selectedTeacher].teacherclasses = this.teacherClassToggle
       
-      let email = this.sharedData.teacherlist[this.selectedTeacher].email
+      let email = this.$store.state.user.teacherlist[this.selectedTeacher].email
 
       this.addTeacher(email, this.teacherClassToggle, true, () => {})
     },
     studentToggleClass(idx) {
-      let userid = this.sharedData.adminusers[this.selectedStudent].userid
-      let studentclasses = this.sharedData.adminusers[this.selectedStudent].studentclasses
+      let userid = this.$store.state.user.adminusers[this.selectedStudent].userid
+      let studentclasses = this.$store.state.user.adminusers[this.selectedStudent].studentclasses
 
       this.userEditEnrolled(userid, studentclasses, idx, this.selectedStudent)
     },
     setMenu(isOpen) {
       this.open = isOpen ? 1 : 0;
-      this.setGlobal("adminOpen", isOpen)
+      this.$store.commit("adminOpen", isOpen)
       setTimeout(this.dataCalc, 400)
     },
     delTeacher(email, clear=false) {
@@ -202,12 +202,18 @@ export default {
       }
     }
   },
-  props: ["classes", "globalData", "sharedData"],
+  computed: {
+    dataTop() {
+      return this.$store.state.adminPanel.dataPx;
+    },
+    userData() {
+      return this.$store.state.user;
+    }
+  },
   mounted() {
     this.$nextTick(function() {
       if (this.$refs.percent) {
         this.buttonTop = (window.innerHeight - this.$refs.percent.getBoundingClientRect().top) - this.$refs.percent.offsetHeight + 15
-        // this.openHeight = window.innerHeight - this.globalData.dataTop
         this.adminTop = this.$refs.percent.getBoundingClientRect().top
         this.setMid = ((this.$refs.percent.offsetHeight - 15) / 2) - (13 / 2 /* bar height */)
       }

@@ -1,11 +1,12 @@
 import axios from 'axios';
-import { apiurl } from './globals';
-import { app } from '../main';
+import { apiurl } from './globals.js';
+import { app } from '../main.js';
+import { store } from "./store.js"
 
-export var signFuncs = {}, userauth = {};
+export var signFuncs = {};
 
 //Init google api
-export var authFunc = callback => {
+export var authFunc = (callback=false) => {
 gapi.load("auth2", () => {
   gapi.auth2
     .init({
@@ -18,34 +19,30 @@ gapi.load("auth2", () => {
       ]
     })
     .then(auth2 => {
-      signFuncs.auth2 = auth2;
       let googleUser = auth2.currentUser.get()
-      userauth.profile = googleUser.getBasicProfile();
+      let profile = googleUser.getBasicProfile();
 
-      if (userauth.profile) userauth.profilePicture = userauth.profile.getImageUrl();
-      else userauth.profilePicture = ""
-      app.userauth = userauth
+      store.commit("mutate", ["auth2", auth2])
+      store.commit("mutate", ["profile", {
+        picture: profile.getImageUrl(),
+        name: profile.getName()
+      }])
       
-      callback(auth2.isSignedIn.get())
+      if (callback) callback(auth2.isSignedIn.get())
     });
 });
 }
 
 //Verify login with backend API
 export var authFunc2 = () => {
-  let googleUser = signFuncs.auth2.currentUser.get()
-  userauth.authResponse = googleUser.getAuthResponse();
-  userauth.profile = googleUser.getBasicProfile();
-  userauth.profilePicture = userauth.profile.getImageUrl();
-
-  app.userauth = userauth
+  let googleUser = store.state.auth2.currentUser.get()
+  let idtoken = googleUser.getAuthResponse().id_token
 
   axios
-    .post(apiurl.auth + userauth.authResponse.id_token)
+    .post(apiurl.auth + idtoken)
     .then(data => {
-      console.log("logg", data)
-      app.$set(app.loggedin, 'loggedin', true)
-      app.updateData(data.data)
+      store.commit("mutate", ['loggedin', true])
+      store.commit("updateUserData", data.data)
       app.joinRooms(data.data)
     })
     .catch(error => {
@@ -58,12 +55,3 @@ export var authFunc2 = () => {
       }
     });
 }
-
-signFuncs.signOut = () => {
-  console.log('signfunc')
-  gapi.auth2.getAuthInstance().signOut().then(() => {
-    axios.post(apiurl.deauth).then(() => {
-      window.location.reload()
-    })
-  });
-};

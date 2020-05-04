@@ -5,21 +5,25 @@
 </template>
 
 <script>
-import { signFuncs, authFunc2 } from '../js/auth.js';
+import { authFunc2 } from '../js/auth.js';
 
 
 export default {
-  props: ["loggedin"],
   methods: {
     toggleSign() {
-      if (!signFuncs.auth2) {
+      if (!this.$store.state.auth2) {
         return false
       }
-      if (!this.loggedin) signFuncs.auth2.signIn().then(() => authFunc2());
+      if (!this.loggedin) this.$store.state.auth2.signIn().then(() => authFunc2());
       else {
         console.log("clicked")
-        signFuncs.signOut();
+        this.signOut();
       }
+    }
+  },
+  computed: {
+    loggedin() {
+      return this.$store.state.loggedin;
     }
   }
 };

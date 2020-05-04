@@ -2,14 +2,13 @@
   <div style="width: 100%;" class="row">
 
     <div class="teacherUserArea col-5">
-      <div v-for="(user, index) in sharedData.userlist" :key="user.userid" class="useritemcol">
+      <div v-for="(user, index) in userlist" :key="user.userid" class="useritemcol">
         <div v-if="filteredClasses[index].length >= 1">
           <div class="useritem" @click="openMenu(user, index)">
             <div class="name">{{user.name}}</div>
             <div
               class="btn"
               :class="{red: !isgreen[index], green: isgreen[index]}"
-              @click="openModal(user)"
             >{{isgreen[index] ? "Green" : "Red"}}</div>
           </div>
 
@@ -61,8 +60,8 @@
     <div class="col-2"></div>
 
     <div class="col-5" ref="classRef">
-      <div class="teacherClassArea" :style="{opacity: globalData.adminOpen ? 0 : 1}">
-        <label class="title">{{ selectedIndex === false ? "Manage User" : sharedData.userlist[selectedIndex].name }}<span class="selecting" v-if="commentSelectMode">Commenting</span> 
+      <div class="teacherClassArea" :style="{opacity: adminOpen ? 0 : 1}">
+        <label class="title">{{ selectedIndex === false ? "Manage User" : userlist[selectedIndex].name }}<span class="selecting" v-if="commentSelectMode">Commenting</span> 
 
         </label>
         <span class="createComment" @click="createComment()" v-if="selectedIndex !== false" v-tooltip.top="{content: (commentSelectMode ? 'Dis' : 'En') + 'able Comment mode', offset: '6px', hideOnTargetClick: false}">
@@ -73,19 +72,19 @@
             class="classItem"
             v-for="(classObj, idx) in filteredClasses[selectedIndex]"
             :key="idx"
-            @click.stop="change(sharedData.userlist[selectedIndex], classObj.index, selectedIndex)"
+            @click.stop="change(userlist[selectedIndex], classObj.index, selectedIndex)"
             :class="{red: classObj.status === '0', green: classObj.status === '1', selecting: commentSelectMode, selected: commentSelectedIndex == classObj.index, disabled: classObj.disabled}"
           >
             {{classnames[classObj.index]}}
           </div>
         </div>
-        <div class="commentarea" :style="{zIndex: globalData.adminOpen ? 0 : 5}">
+        <div class="commentarea" :style="{zIndex: adminOpen ? 0 : 5}">
           <textarea class="commentInput" v-model="currentComment" @keydown="updateType($event)" ref="commentInput" v-if="commentSelectedIndex !== false"></textarea>
           <div class="placeholder" v-if="commentSelectedIndex === false" style="height: 58px;"></div>
         </div>
       </div>
       
-      <adminPanel v-if="sharedData.admin && !isMobile" :globalData="globalData" :sharedData="sharedData"/>
+      <adminPanel v-if="admin && !isMobile"/>
     </div>
 
 
@@ -94,19 +93,16 @@
 </template>
 
 <script>
-import commentmodal from "./commentmodal.vue"
 import Vue from "vue"
 import VTooltip from 'v-tooltip'
 import './../css/animations.css'
 import { classnames, shortnames } from "./../js/globals.js";
-import commentmodalVue from './commentmodal.vue'
 import adminPanel from "./adminPanel.vue";
 
 Vue.use(VTooltip)
 
 export default {
   components: {
-    commentmodal,
     adminPanel
   },
   data() {
@@ -125,7 +121,7 @@ export default {
       typetimer: {}
     };
   },
-  props: ["sharedData", "isMobile", "globalData"],
+  props: ["isMobile"],
   methods: {
     calcInputHeight(input) {
       this.$refs.commentInput.setAttribute("style", "height: auto;");
@@ -136,14 +132,13 @@ export default {
       else return array.slice(Math.ceil(array.length / 2));
     },
     updateType(eventObj) {
-
       let inputValue
 
       if (eventObj.key.length > 1 && eventObj.key == "Backspace") inputValue = eventObj.target.value.slice(0, -1);
       else if (eventObj.key.length > 1) return;
       else inputValue = eventObj.target.value + eventObj.key;
       
-      let currentUserId = this.sharedData.userlist[this.selectedIndex].userid
+      let currentUserId = this.userlist[this.selectedIndex].userid
 
       setTimeout(this.calcInputHeight, 1)
       try {
@@ -163,7 +158,7 @@ export default {
       if (this.commentSelectMode) {
         this.commentSelectedIndex = index
         this.typingComment = true;
-        let extractedComment = this.sharedData.userlist[this.selectedIndex].comments[index]
+        let extractedComment = this.userlist[this.selectedIndex].comments[index]
         this.currentComment = extractedComment === 0 ? "" : extractedComment
         setTimeout(() => {
           this.$refs.commentInput.focus(); 
@@ -201,34 +196,43 @@ export default {
       this.editUserClasses(user, idx, userindex);
     },
     getComment(user, idx) {
-      let comment = this.sharedData.userlist.find(x => x.userid == user.userid).comments[idx]
+      let comment = this.userlist.find(x => x.userid == user.userid).comments[idx]
       comment = comment === 0 ? "" : comment
       return comment ? comment + "<br/>" : ""
     }
   },
   computed: {
     filteredClasses() {
-      if (!this.sharedData.userlist) return []
-      return this.sharedData.userlist.map(user => {
+      if (!this.userlist) return []
+      return this.userlist.map(user => {
         return user.classes
           .split("")
           //If teacher has specific class enabled then set it to object else set to false
           .map((el, i) => {
-            return this.sharedData.tclasses[i] === "0" ? false : {disabled: user.studentclasses[i] === "0", index: i, status: el, name: this.shortnames[i], fullname: this.classnames[i]};
+            return this.$store.state.user.tclasses[i] === "0" ? false : {disabled: user.studentclasses[i] === "0", index: i, status: el, name: this.shortnames[i], fullname: this.classnames[i]};
           })
           // Filter out all false elements
           .filter(el => {return !!el})
       });
     },
     isgreen() {
-      return this.sharedData.userlist.map(user => {
+      return this.userlist.map(user => {
         return !user.classes.includes(0);
       });
+    },
+    userlist() {
+      return this.$store.state.user.userlist;
+    },
+    admin() {
+      return this.$store.state.user.admin;
+    },
+    adminOpen() {
+      return this.$store.state.adminPanel.open;
     }
   },
   mounted() {
     this.$nextTick(function() {
-      this.setGlobal("dataTop", this.$refs.classRef.getBoundingClientRect().top)
+      this.$store.commit("adminSection", this.$refs.classRef.getBoundingClientRect().top)
     })
   }
 };
@@ -368,6 +372,7 @@ export default {
     padding-top: 10px;
     padding-left: 10px;
     align-items: center;
+    white-space: nowrap;
     height: 40px;
 
     .selecting {
