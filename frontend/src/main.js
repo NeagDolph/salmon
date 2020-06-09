@@ -8,6 +8,8 @@ import socket from './js/sockets.js';
 import {authFunc, authFunc2} from './js/auth.js';
 import "bootstrap/dist/css/bootstrap.min.css";
 
+Vue.config.devtools = true
+
 export var app = new Vue({
   store,    
   methods: {
@@ -60,15 +62,10 @@ export var app = new Vue({
 
       this.getUserData().then(data => {
         this.joinRooms(data)
-
         this.$store.commit("mutate", ["loggedin", true])
-        authFunc()
       })
       .catch(err => {
         if (err.response.status == 403) {
-          authFunc(loggedin => {
-            if (loggedin) authFunc2();
-          })
         }
       })
     })

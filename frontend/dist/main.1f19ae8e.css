@@ -609,11 +609,10 @@
   outline: 0 !important;
 }
 .tooltip.popover .classPopper .popover-inner {
-  background: #e3ebff !important;
-  outline: 0 !important;
+  background: #e3ebff;
 }
 .tooltip.popover .classPopper .popover-arrow {
-  border-color: #e3ebff !important;
+  border-color: #e3ebff;
 }
 .tooltip.popover .classPopper .tooltip-inner {
   max-width: unset !important;

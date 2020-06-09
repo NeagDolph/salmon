@@ -13329,7 +13329,8 @@ module.exports.store = new _vuex.default.Store({
       }).filter(function (_, idx) {
         return data.studentclasses[idx] == '1';
       });
-      if (data.adminusers == "userlist") data.adminusers = data.userlist;
+      if (!data.adminusers && data.userlist) data.adminusers = data.userlist;
+      if (!data.userlist && data.adminusers) data.userlist = data.adminusers;
       state.user = _objectSpread({}, state.user, {}, data);
     },
     modifyUserData: function modifyUserData(state, prop) {
@@ -15121,7 +15122,7 @@ module.exports = require('./lib/axios');
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.authFunc2 = exports.authFunc = exports.signFuncs = void 0;
+exports.authFunc2 = exports.signFuncs = void 0;
 
 var _axios = _interopRequireDefault(require("axios"));
 
@@ -15131,49 +15132,58 @@ var _main = require("../main.js");
 
 var _store = require("./store.js");
 
+var _this = void 0;
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var signFuncs = {}; //Init google api
-
+var signFuncs = {};
 exports.signFuncs = signFuncs;
 
-var authFunc = function authFunc() {
-  var callback = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
-  gapi.load("auth2", function () {
-    gapi.auth2.init({
-      client_id: "203450520052-4olsv1k1uj6ditok97qncbho9n8usk36.apps.googleusercontent.com",
-      cookiepolicy: "single_host_origin",
-      scopes: ["https://www.googleapis.com/auth/userinfo.email", "https://www.googleapis.com/auth/userinfo.profile"]
-    }).then(function (auth2) {
-      var googleUser = auth2.currentUser.get();
-      var profile = googleUser.getBasicProfile();
+function loadProfile() {
+  var googleUser = _store.store.state.auth2.currentUser.get();
 
-      _store.store.commit("mutate", ["auth2", auth2]);
+  var profile = googleUser.getBasicProfile();
 
-      _store.store.commit("mutate", ["profile", {
-        picture: profile.getImageUrl(),
-        name: profile.getName()
-      }]);
+  _store.store.commit("mutate", ["profile", {
+    picture: profile.getImageUrl(),
+    name: profile.getName()
+  }]);
+} //Init google api
 
-      if (callback) callback(auth2.isSignedIn.get());
-    });
+
+gapi.load("auth2", function () {
+  gapi.auth2.init({
+    client_id: "203450520052-4olsv1k1uj6ditok97qncbho9n8usk36.apps.googleusercontent.com",
+    cookiepolicy: "single_host_origin",
+    scopes: ["https://www.googleapis.com/auth/userinfo.email", "https://www.googleapis.com/auth/userinfo.profile"]
+  }).then(function (auth2) {
+    _store.store.commit("mutate", ["auth2", auth2]);
+
+    auth2.isSignedIn.listen(authFunc2.bind(_this, auth2.isSignedIn.get()));
+    auth2.currentUser.listen(authFunc2);
+
+    if (auth2.isSignedIn.get()) {
+      loadProfile();
+    }
   });
-}; //Verify login with backend API
+}); //Verify login with backend API
 
+var authFunc2 = function authFunc2(loggedin) {
+  if (!loggedin) return;
 
-exports.authFunc = authFunc;
-
-var authFunc2 = function authFunc2() {
   var googleUser = _store.store.state.auth2.currentUser.get();
 
   var idtoken = googleUser.getAuthResponse().id_token;
+  loadProfile();
 
-  _axios.default.post(_globals.apiurl.auth + idtoken).then(function (data) {
+  _axios.default.post(_globals.apiurl.auth + idtoken).then(function (_ref) {
+    var data = _ref.data;
+
     _store.store.commit("mutate", ['loggedin', true]);
 
-    _store.store.commit("updateUserData", data.data);
+    _store.store.commit("updateUserData", data);
 
-    _main.app.joinRooms(data.data);
+    _main.app.joinRooms(data);
   }).catch(function (error) {
     if (error.response) {
       console.log("login failed", error.response.status, error.response.data);
@@ -27463,6 +27473,7 @@ exports.default = _default;
                         "v-popover",
                         {
                           attrs: {
+                            placement: "left",
                             offset: "8",
                             popoverWrapperClass: "z-depth-half classPopper",
                             trigger: "hover"
@@ -35935,6 +35946,7 @@ function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { va
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
+_vue.default.config.devtools = true;
 var app = new _vue.default({
   store: _store.store,
   methods: {
@@ -35997,14 +36009,8 @@ var app = new _vue.default({
         _this.joinRooms(data);
 
         _this.$store.commit("mutate", ["loggedin", true]);
-
-        (0, _auth.authFunc)();
       }).catch(function (err) {
-        if (err.response.status == 403) {
-          (0, _auth.authFunc)(function (loggedin) {
-            if (loggedin) (0, _auth.authFunc2)();
-          });
-        }
+        if (err.response.status == 403) {}
       });
     }).on('connect_error', function (error) {
       console.log('%c Socket cannot connect to backend API!', 'background: #222; color: #ff6961; font-size: 14px;');

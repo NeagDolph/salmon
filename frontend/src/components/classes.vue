@@ -36,7 +36,7 @@
           </div>
         </div>
 
-        <v-popover v-if="getComment[classItem.index]" offset="8" popoverWrapperClass="z-depth-half classPopper" trigger="hover">
+        <v-popover v-if="getComment[classItem.index]" placement="left" offset="8" popoverWrapperClass="z-depth-half classPopper" trigger="hover">
           <div :class="{greenclass: classItem.status}" class="redclass-item mx-auto z-depth-half">
             <svg class="title" viewBox="-1 3 150 19"><text x="0" y="15">{{classItem.name}}</text></svg>
             <span class="subtext">{{classItem.status ? "Completed" : "Missing"}}</span>
@@ -119,12 +119,11 @@ export default {
 
   .classPopper {
     .popover-inner {
-      background: $main !important;
-      outline: 0 !important;
+      background: $main;
     }
 
     .popover-arrow {
-      border-color: $main !important;
+      border-color: $main;
     }
 
     .tooltip-inner {

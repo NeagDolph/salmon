@@ -5,8 +5,18 @@ import { store } from "./store.js"
 
 export var signFuncs = {};
 
+
+function loadProfile() {
+  let googleUser = store.state.auth2.currentUser.get();
+  let profile = googleUser.getBasicProfile();
+
+  store.commit("mutate", ["profile", {
+    picture: profile.getImageUrl(),
+    name: profile.getName()
+  }]);
+}
+
 //Init google api
-export var authFunc = (callback=false) => {
 gapi.load("auth2", () => {
   gapi.auth2
     .init({
@@ -19,31 +29,32 @@ gapi.load("auth2", () => {
       ]
     })
     .then(auth2 => {
-      let googleUser = auth2.currentUser.get()
-      let profile = googleUser.getBasicProfile();
+      store.commit("mutate", ["auth2", auth2]);
 
-      store.commit("mutate", ["auth2", auth2])
-      store.commit("mutate", ["profile", {
-        picture: profile.getImageUrl(),
-        name: profile.getName()
-      }])
-      
-      if (callback) callback(auth2.isSignedIn.get())
+      auth2.isSignedIn.listen(authFunc2.bind(this, auth2.isSignedIn.get()));
+      auth2.currentUser.listen(authFunc2);
+
+      if (auth2.isSignedIn.get()) {
+        loadProfile();
+      }
     });
 });
-}
 
 //Verify login with backend API
-export var authFunc2 = () => {
-  let googleUser = store.state.auth2.currentUser.get()
-  let idtoken = googleUser.getAuthResponse().id_token
+export var authFunc2 = (loggedin) => {
+  if (!loggedin) return;
+
+  let googleUser = store.state.auth2.currentUser.get();
+  let idtoken = googleUser.getAuthResponse().id_token;
+
+  loadProfile();
 
   axios
     .post(apiurl.auth + idtoken)
-    .then(data => {
+    .then(({data}) => {
       store.commit("mutate", ['loggedin', true])
-      store.commit("updateUserData", data.data)
-      app.joinRooms(data.data)
+      store.commit("updateUserData", data)
+      app.joinRooms(data)
     })
     .catch(error => {
       if (error.response) {
