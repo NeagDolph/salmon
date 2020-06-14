@@ -13280,6 +13280,8 @@ function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { va
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
+function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+
 _vue.default.use(_vuex.default);
 
 module.exports.store = new _vuex.default.Store({
@@ -13329,8 +13331,8 @@ module.exports.store = new _vuex.default.Store({
       }).filter(function (_, idx) {
         return data.studentclasses[idx] == '1';
       });
-      if (!data.adminusers && data.userlist) data.adminusers = data.userlist;
-      if (!data.userlist && data.adminusers) data.userlist = data.adminusers;
+      if (_typeof(data.adminusers) !== "object" && _typeof(data.userlist) === "object") data.adminusers = data.userlist;
+      if (_typeof(data.adminusers) === "object" && _typeof(data.userlist) !== "object") data.userlist = data.adminusers;
       state.user = _objectSpread({}, state.user, {}, data);
     },
     modifyUserData: function modifyUserData(state, prop) {
@@ -15132,8 +15134,6 @@ var _main = require("../main.js");
 
 var _store = require("./store.js");
 
-var _this = void 0;
-
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 var signFuncs = {};
@@ -15157,9 +15157,9 @@ gapi.load("auth2", function () {
     cookiepolicy: "single_host_origin",
     scopes: ["https://www.googleapis.com/auth/userinfo.email", "https://www.googleapis.com/auth/userinfo.profile"]
   }).then(function (auth2) {
-    _store.store.commit("mutate", ["auth2", auth2]);
+    _store.store.commit("mutate", ["auth2", auth2]); // auth2.isSignedIn.listen(authFunc2);
 
-    auth2.isSignedIn.listen(authFunc2.bind(_this, auth2.isSignedIn.get()));
+
     auth2.currentUser.listen(authFunc2);
 
     if (auth2.isSignedIn.get()) {
@@ -15170,6 +15170,7 @@ gapi.load("auth2", function () {
 
 var authFunc2 = function authFunc2(loggedin) {
   if (!loggedin) return;
+  if (!_store.store.state.auth2.isSignedIn.get()) return;
 
   var googleUser = _store.store.state.auth2.currentUser.get();
 
@@ -15219,9 +15220,7 @@ var _default = {
         return false;
       }
 
-      if (!this.loggedin) this.$store.state.auth2.signIn().then(function () {
-        return (0, _auth.authFunc2)();
-      });else {
+      if (!this.loggedin) this.$store.state.auth2.signIn();else {
         console.log("clicked");
         this.signOut();
       }
@@ -35928,13 +35927,9 @@ var _App = _interopRequireDefault(require("./App.vue"));
 
 var _axios = _interopRequireDefault(require("axios"));
 
-var _globals = require("./js/globals");
-
 require("./mixins/mixins");
 
 var _sockets = _interopRequireDefault(require("./js/sockets.js"));
-
-var _auth = require("./js/auth.js");
 
 require("bootstrap/dist/css/bootstrap.min.css");
 
@@ -36018,5 +36013,5 @@ var app = new _vue.default({
   }
 });
 exports.app = app;
-},{"vue":"../node_modules/vue/dist/vue.common.js","./js/store.js":"js/store.js","./App.vue":"App.vue","axios":"../node_modules/axios/index.js","./js/globals":"js/globals.js","./mixins/mixins":"mixins/mixins.js","./js/sockets.js":"js/sockets.js","./js/auth.js":"js/auth.js","bootstrap/dist/css/bootstrap.min.css":"css/animations.css"}]},{},["main.js"], null)
+},{"vue":"../node_modules/vue/dist/vue.common.js","./js/store.js":"js/store.js","./App.vue":"App.vue","axios":"../node_modules/axios/index.js","./mixins/mixins":"mixins/mixins.js","./js/sockets.js":"js/sockets.js","bootstrap/dist/css/bootstrap.min.css":"css/animations.css"}]},{},["main.js"], null)
 //# sourceMappingURL=/dist/main.1f19ae8e.js.map

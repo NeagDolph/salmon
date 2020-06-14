@@ -45,8 +45,8 @@ module.exports.store = new Vuex.Store({
         .map((val, idx) => ({name: classnames[idx], status: parseInt(val), index: idx}))
         .filter((_, idx) => data.studentclasses[idx] == '1')
 
-      if (!data.adminusers && data.userlist) data.adminusers = data.userlist
-      if (!data.userlist && data.adminusers) data.userlist = data.adminusers
+      if (typeof data.adminusers !== "object" && typeof data.userlist === "object") data.adminusers = data.userlist
+      if (typeof data.adminusers === "object" && typeof data.userlist !== "object") data.userlist = data.adminusers
 
       state.user = {...state.user, ...data}
     },

@@ -31,7 +31,7 @@ gapi.load("auth2", () => {
     .then(auth2 => {
       store.commit("mutate", ["auth2", auth2]);
 
-      auth2.isSignedIn.listen(authFunc2.bind(this, auth2.isSignedIn.get()));
+      // auth2.isSignedIn.listen(authFunc2);
       auth2.currentUser.listen(authFunc2);
 
       if (auth2.isSignedIn.get()) {
@@ -43,6 +43,7 @@ gapi.load("auth2", () => {
 //Verify login with backend API
 export var authFunc2 = (loggedin) => {
   if (!loggedin) return;
+  if (!store.state.auth2.isSignedIn.get()) return;
 
   let googleUser = store.state.auth2.currentUser.get();
   let idtoken = googleUser.getAuthResponse().id_token;

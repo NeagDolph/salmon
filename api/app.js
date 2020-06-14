@@ -18,13 +18,12 @@ var redisStore = require('connect-redis')(session);
 app.use(session({
   secret: config.Secret,
   resave: false,
-  saveUninitialized: true,
-  cookie: { secure: true },
+  saveUninitialized: false,
   store: new redisStore({ host: 'localhost', port: 6379, client: redisClient, ttl: 86400 }),
 }))
 
 //Configure express
-app.set('trust proxy', 'loopback')
+app.set('trust proxy', '1')
 app.set('view engine', 'pug')
 
 //Add middleware to app

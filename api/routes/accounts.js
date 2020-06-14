@@ -15,7 +15,6 @@ var express = require('express')
 var account = {
     login(req, userData) {
         //Login user without cookies
-        console.log("EEP")
         req.session.userid = userData.userid;
         req.session.teacher = userData.student == 2;
         req.session.email = userData.email;
@@ -32,6 +31,7 @@ var account = {
         req.session.teacher = false
         req.session.email = googleData.email
         req.session.name = googleData.name
+        req.session.save()
 
         db.prepare("INSERT INTO users VALUES (?,?,?,1,'000000000000000','111111111111111','101011000000000')")
             .run(googleData.email, googleData.name, userid)
@@ -44,6 +44,7 @@ var account = {
 
 
 router.post("/auth/:idtoken", (req, res) => {
+    // console.log("L", req.params.idtoken)
     if (!req.params.idtoken) { res.sendStatus(400); return; }
 
     if (req.session.userid) { res.json(data.all(req.session.userid)); return; }
@@ -61,8 +62,9 @@ router.post("/auth/:idtoken", (req, res) => {
 
             let userid
 
-            if (userData) userid = account.login(req, userData);
-            else userid = account.register(req, googleData)
+            if (userData) {
+                userid = account.login(req, userData);
+            } else userid = account.register(req, googleData)
 
             res.json(data.all(userid, true))
         })

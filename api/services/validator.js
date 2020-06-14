@@ -4,7 +4,6 @@ var validatorFunctions = {
     user(req, res, callback) {
         if (req.session.userid && req.session.email) callback();
         else {
-            console.log('forb', req.session.userid, req.session.email)
             res.sendStatus(403)
         };
     },

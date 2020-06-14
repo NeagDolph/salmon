@@ -14,7 +14,7 @@ export default {
       if (!this.$store.state.auth2) {
         return false
       }
-      if (!this.loggedin) this.$store.state.auth2.signIn().then(() => authFunc2());
+      if (!this.loggedin) this.$store.state.auth2.signIn();
       else {
         console.log("clicked")
         this.signOut();

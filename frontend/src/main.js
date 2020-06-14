@@ -2,10 +2,8 @@ import Vue from "vue";
 import { store } from "./js/store.js"
 import Main from "./App.vue";
 import axios from 'axios';
-import { apiurl } from "./js/globals";
 import './mixins/mixins';
 import socket from './js/sockets.js';
-import {authFunc, authFunc2} from './js/auth.js';
 import "bootstrap/dist/css/bootstrap.min.css";
 
 Vue.config.devtools = true
