@@ -8,8 +8,15 @@
             "type": "chrome",
             "request": "launch",
             "name": "Launch Chrome against localhost",
-            "url": "http://localhost:8080",
-            "webRoot": "${workspaceFolder}"
+            "url": "http://atischool.net/dist",
+            "webRoot": "${workspaceFolder}/frontend/src",
+            "breakOnLoad": true,
+            "name": "vuejs: chrome",
+            "sourceMapPathOverrides": {
+                "webpack:///src/*": "${webRoot}/*"
+            },
+            "runtimeExecutable": "/Program Files/Chromium/chrome.exe"
+
         }
     ]
 }

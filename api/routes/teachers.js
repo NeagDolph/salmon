@@ -4,7 +4,7 @@ var sockets = require("./sockets.js").methods
 var validator = require("../services/validator.js")
 
 var express = require('express')
-    , router = express.Router()
+var router = express.Router()
 
 router.put('/', validator.admin, (req, res) => {
     if (typeof req.body.email != "string" || !req.body.classes) { res.sendStatus(400); return; }
@@ -26,7 +26,6 @@ router.put('/', validator.admin, (req, res) => {
 
     sockets.user(userid)
 
-    // res.json(getData.all(req.session.userid, db))
     res.sendStatus(200)
 })
 

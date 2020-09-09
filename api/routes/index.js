@@ -1,25 +1,42 @@
-var validator = require("../services/validator.js")
-var data = require("../services/data.js")
+var validator = require("../services/validator.js");
+var data = require("../services/data.js");
 
-var express = require('express')
-    , router = express.Router()
+var express = require("express");
+var router = express.Router();
 
 router.get("/", (req, res) => {
-    let userData = req.session.userid ? data.all(req.session.userid, true) : false
-    let loadData = { userid: req.session.userid ? req.session.userid : false, data: userData }
+	let userData = req.session.userid
+		? data.getCompiled(req.session.userid, true)
+		: false;
 
-    res.render('home', { loadData: Buffer.from((JSON.stringify(loadData))).toString('base64') });
-})
+	let loadData = {
+		userid: req.session.userid ? req.session.userid : false,
+		data: userData
+	};
 
-router.get('/api/data', validator.student, (req, res) => {
-    let userData = data.all(req.session.userid, true)
-    req.session.teacher = userData.teacher
-    res.json(userData)
-})
+	res.render("home", {
+		loadData: Buffer.from(JSON.stringify(loadData)).toString("base64")
+	});
+});
 
-router.get('/api/logs', validator.admin, (req, res) => {
-    if (!req.body.subset) { res.sendStatus(400); return; }
-    if (!Number.isInteger(req.body.subset[0]) || !Number.isInteger(req.body.subset[1])) { res.sendStatus(400); return; }
-})
+router.get("/api/data", validator.student, (req, res) => {
+	let userData = data.getCompiled(req.session.userid, true);
+	req.session.teacher = userData.teacher;
+	res.json(userData);
+});
 
-module.exports = router
+router.get("/api/logs", validator.admin, (req, res) => {
+	if (!req.body.subset) {
+		res.sendStatus(400);
+		return;
+	}
+	if (
+		!Number.isInteger(req.body.subset[0]) ||
+		!Number.isInteger(req.body.subset[1])
+	) {
+		res.sendStatus(400);
+		return;
+	}
+});
+
+module.exports = router;

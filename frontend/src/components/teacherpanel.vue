@@ -158,7 +158,8 @@ export default {
       if (this.commentSelectMode) {
         this.commentSelectedIndex = index
         this.typingComment = true;
-        let extractedComment = this.userlist[this.selectedIndex].comments[index]
+        let extractedUser = this.userlist[this.selectedIndex];
+        let extractedComment = extractedUser.comments[index];
         this.currentComment = extractedComment === 0 ? "" : extractedComment
         setTimeout(() => {
           this.$refs.commentInput.focus(); 

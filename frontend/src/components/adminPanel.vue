@@ -48,16 +48,16 @@
         <div class="col-12 body student" v-if="subsection == 1">
           <div class="classSelect z-depth-1" v-if="selectedStudent !== false">
             <div class="selectTitle">
-              {{userData.adminusers[selectedStudent].name}} 
+              {{userData.userlist[selectedStudent].name}} 
             </div>
             <div v-if="selectedStudent !== false">
-            <div class="classBlock" @click="studentToggleClass(parseInt(idx))" v-for="(status, idx) in userData.adminusers[selectedStudent].studentclasses" :key="'classBlock' + idx" :class="{selected: parseInt(userData.adminusers[selectedStudent].studentclasses[idx])}" :style="{content: userData.adminusers[selectedStudent].studentclasses[idx] }">
+            <div class="classBlock" @click="studentToggleClass(parseInt(idx))" v-for="(status, idx) in userData.userlist[selectedStudent].studentclasses" :key="'classBlock' + idx" :class="{selected: parseInt(userData.userlist[selectedStudent].studentclasses[idx])}" :style="{content: userData.userlist[selectedStudent].studentclasses[idx] }">
               {{shortnames[idx]}}
             </div>
             </div>
           </div>
           <div class="userList" ref="userlist" :style="{height: listHeight + 'px'}">
-            <div class="userItem col-4 z-depth-half" v-tooltip.bottom="{content: student.name, offset: '2px'}" v-for="(student, idx) in userData.adminusers" :key="student.email" @click="selectStudent(idx)">{{student.name.split(" ")[0]}}</div>
+            <div class="userItem col-4 z-depth-half" v-tooltip.bottom="{content: student.name, offset: '2px'}" v-for="(student, idx) in userData.userlist" :key="student.email" @click="selectStudent(idx)">{{student.name.split(" ")[0]}}</div>
           </div>
         </div>
 
@@ -103,7 +103,7 @@ export default {
   },
   methods: {
     searchCompute() {
-      let userinput = this.$store.state.user.adminusers.map(user => {
+      let userinput = this.$store.state.user.userlist.map(user => {
         return {
           email: user.email,
           name: user.email
@@ -160,7 +160,7 @@ export default {
     selectStudent(idx) {
       setTimeout(this.dataCalc, 100)
       this.selectedStudent = idx;
-      this.studentClassToggle = this.$store.state.user.adminusers[idx].studentclasses
+      this.studentClassToggle = this.$store.state.user.userlist[idx].studentclasses
     },
     teacherToggleClass(idx) {
       let classCopy = this.teacherClassToggle.split("")
@@ -174,8 +174,8 @@ export default {
       this.addTeacher(email, this.teacherClassToggle, true, () => {})
     },
     studentToggleClass(idx) {
-      let userid = this.$store.state.user.adminusers[this.selectedStudent].userid
-      let studentclasses = this.$store.state.user.adminusers[this.selectedStudent].studentclasses
+      let userid = this.$store.state.user.userlist[this.selectedStudent].userid
+      let studentclasses = this.$store.state.user.userlist[this.selectedStudent].studentclasses
 
       this.userEditEnrolled(userid, studentclasses, idx, this.selectedStudent)
     },

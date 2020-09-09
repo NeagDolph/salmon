@@ -1,16 +1,16 @@
-var uuid4 = require('uuid4');
-var sockets = require("./sockets.js").methods
+var uuid4 = require("uuid4");
+var sockets = require("./sockets.js").methods;
 
-var config = require('../config.json');
+var config = require("../config.json");
 
-var data = require("../services/data.js")
-var auth = require("../services/auth.js")
-var validator = require("../services/validator.js")
-var db = require("../services/dbUtil.js")
+var data = require("../services/data.js");
+var auth = require("../services/auth.js");
+var validator = require("../services/validator.js");
+var db = require("../services/dbUtil.js");
 
-var express = require('express')
-    , router = express.Router()
+var express = require("express");
 
+var router = express.Router();
 
 var account = {
     login(req, userData) {
@@ -20,61 +20,71 @@ var account = {
         req.session.email = userData.email;
         req.session.name = userData.name;
 
-        return userData.userid
-    }, 
-    
+        return userData.userid;
+    },
+
     register(req, googleData) {
         // Signup user
-        userid = String(uuid4())
+        userid = String(uuid4());
 
-        req.session.userid = userid
-        req.session.teacher = false
-        req.session.email = googleData.email
-        req.session.name = googleData.name
-        req.session.save()
+        req.session.userid = userid;
+        req.session.teacher = false;
+        req.session.email = googleData.email;
+        req.session.name = googleData.name;
+        req.session.save();
 
-        db.prepare("INSERT INTO users VALUES (?,?,?,1,'000000000000000','111111111111111','101011000000000')")
-            .run(googleData.email, googleData.name, userid)
+        data.createUser(googleData.email, googleData.name, userid, false);
 
-        sockets.teachers()
+        sockets.teachers();
 
-        return userid
+        return userid;
     }
-}
-
+};
 
 router.post("/auth/:idtoken", (req, res) => {
-    // console.log("L", req.params.idtoken)
-    if (!req.params.idtoken) { res.sendStatus(400); return; }
+    if (!req.params.idtoken) {
+        res.sendStatus(400);
+        return;
+    }
 
-    if (req.session.userid) { res.json(data.all(req.session.userid)); return; }
+    if (req.session.userid) {
+        res.json(data.getCompiled(req.session.userid));
+        return;
+    }
 
     auth(req.params.idtoken)
         .then(googleData => {
-            if (googleData.hd !== "alt.app" && !config.allowedThirdParty.includes(googleData.email)) {
-                console.log("Non ATI email tried signing up (Email:", googleData.email + ")")
-                req.session.destroy()
-                res.status(403).send("This google account is not in the alt.app gsuite")
-                return
+            if (
+                googleData.hd !== "alt.app" &&
+                !config.allowedThirdParty.includes(googleData.email)
+            ) {
+                console.log(
+                    "Non ATI email tried signing up (Email:",
+                    googleData.email + ")"
+                );
+                req.session.destroy();
+                res
+                    .status(403)
+                    .send("This google account is not in the alt.app gsuite");
+                return;
             }
 
-            let userData = db.prepare('SELECT * FROM users WHERE email=?').get(googleData.email)
+            let userid;
 
-            let userid
+            let userData = data.emailExists(googleData.email)
 
             if (userData) {
                 userid = account.login(req, userData);
-            } else userid = account.register(req, googleData)
+            } else userid = account.register(req, googleData);
 
-            res.json(data.all(userid, true))
+            res.json(data.getCompiled(userid, true));
         })
-        .catch(console.log)
+        .catch(console.log);
 });
 
-router.post('/deauth', validator.student, (req, res) => {
-    req.session.destroy()
-    res.end()
-})
-  
+router.post("/deauth", validator.student, (req, res) => {
+    req.session.destroy();
+    res.end();
+});
 
-module.exports = router
+module.exports = router;

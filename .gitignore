@@ -4,3 +4,4 @@ node_modules/
 static/css
 __pycache__/
 parcelSalmon/.cache/
+api/config.json

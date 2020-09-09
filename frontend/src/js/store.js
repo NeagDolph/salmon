@@ -19,7 +19,6 @@ module.exports.store = new Vuex.Store({
       admin: false,
       userlist: [],
       teacherlist: [],
-      adminusers: [],
     },
 
     profile: { //Google profile data
@@ -45,14 +44,15 @@ module.exports.store = new Vuex.Store({
         .map((val, idx) => ({name: classnames[idx], status: parseInt(val), index: idx}))
         .filter((_, idx) => data.studentclasses[idx] == '1')
 
-      if (typeof data.adminusers !== "object" && typeof data.userlist === "object") data.adminusers = data.userlist
-      if (typeof data.adminusers === "object" && typeof data.userlist !== "object") data.userlist = data.adminusers
-
       state.user = {...state.user, ...data}
     },
     modifyUserData: (state, prop) => state.user[prop[0]] = prop[1],
     updateUserList(state, data) { 
-      if (data.userlist) state.userlist = data.userlist
+      if (data.userlist) {
+        state.userlist = state.userlist 
+          ? data.userlist.map((el, idx) => ({...state.userlist[idx], ...el})) 
+          : data.userlist;
+      }
     },
     adminOpen: (state, open) => state.adminPanel.open = open,
     adminSection: (state, px) => state.adminPanel.dataPx = px,
