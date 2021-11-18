@@ -1,29 +1,18 @@
-<p style="text-align: right">
-Neil Agrawal</p>
+<img src="https://raw.githubusercontent.com/NeagDolph/salmon/master/logoCropped.png" alt="Logo" width="200"/>
 
-
-
-# **The Salmon Panel**
-
-
-### A student work management platform built for the Academy of Thought and Industry
-
-
-
-<img src="https://raw.githubusercontent.com/NeagDolph/salmon/master/logoCropped.png" alt="Logo" width="400"/>
-
-
+<h1>Salmon Panel <h3>A student work management platform built for the Academy of Thought and Industry</h3><h1>
+   
+<br/>
 
 # Introduction
 
 The Salmon App is an off campus management system for teachers to use and students to view. The idea is that the application will manage which students have all the work for their classes completed on time, if a student has all their work turned in on time then the teacher can set the student to green. The student will then be able to view it from a web panel which they can log into, eliminating drawbacks from other methods such as making the data public or hiding it from students altogether.
 
 
-### 
-    How it started
+### How it started
 
 
-    The Idea for the Salmon App started from the moment I saw the ATI teachers using Excel as their off campus management system at the time. The teachers had to log into Microsoft and edit cell by cell the status of each individual student. Not only was this system inefficient but students had no way of finding out their off campus status while outside of school or even while their teachers were busy. I wanted to make this project but I didn’t have the right opportunity until the Life Design community stewardship began. Once it was announced I reached out to my classmate Jeremy to help with design mockups and began the development.
+The Idea for the Salmon App started from the moment I saw the ATI teachers using Excel as their off campus management system at the time. The teachers had to log into Microsoft and edit cell by cell the status of each individual student. Not only was this system inefficient but students had no way of finding out their off campus status while outside of school or even while their teachers were busy. I wanted to make this project but I didn’t have the right opportunity until the Life Design community stewardship began. Once it was announced I reached out to my classmate Jeremy to help with design mockups and began the development.
 
 
 ### 
@@ -42,14 +31,14 @@ The functionality of the application is split into three different sections, the
 
 ### Student panel
 
-<img src="https://raw.githubusercontent.com/NeagDolph/salmon/master/studentpanel.png" alt="student panel" width="400"/>
+<img src="https://raw.githubusercontent.com/NeagDolph/salmon/master/studentpanel.png" alt="student panel" width="800"/>
 
 
 The student sees live-updated data for their classes.
 
 
 ### Teacher panel
-<img src="https://raw.githubusercontent.com/NeagDolph/salmon/master/teacherpanel.png" alt="teacher panel" width="400"/>
+<img src="https://raw.githubusercontent.com/NeagDolph/salmon/master/teacherpanel.png" alt="teacher panel" width="800"/>
 
 
 Teachers can change the completion status of classes they have in common with students as well as add comments.
@@ -60,6 +49,6 @@ Teachers can change the completion status of classes they have in common with st
 
 ### 
 
-<img src="https://raw.githubusercontent.com/NeagDolph/salmon/master/adminpanel.png" alt="admin panel" width="400"/>
+<img src="https://raw.githubusercontent.com/NeagDolph/salmon/master/adminpanel.png" alt="admin panel" width="800"/>
 
 Admins can add and remove teachers as well as change the enrolled classes for students and the instructed classes for teachers
