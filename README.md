@@ -10,8 +10,7 @@ Neil Agrawal</p>
 
 
 
-
-![alt_text](https://raw.githubusercontent.com/NeagDolph/salmon/master/logoCropped.png "image_tooltip")
+<img src="https://raw.githubusercontent.com/NeagDolph/salmon/master/logoCropped.png" alt="Logo" width="400"/>
 
 
 
@@ -43,17 +42,14 @@ The functionality of the application is split into three different sections, the
 
 ### Student panel
 
-
-![alt_text](https://raw.githubusercontent.com/NeagDolph/salmon/master/studentpanel.png "image_tooltip")
+<img src="https://raw.githubusercontent.com/NeagDolph/salmon/master/studentpanel.png" alt="student panel" width="400"/>
 
 
 The student sees live-updated data for their classes.
 
 
 ### Teacher panel
-
-
-![alt_text](https://raw.githubusercontent.com/NeagDolph/salmon/master/teacherpanel.png "image_tooltip")
+<img src="https://raw.githubusercontent.com/NeagDolph/salmon/master/teacherpanel.png" alt="teacher panel" width="400"/>
 
 
 Teachers can change the completion status of classes they have in common with students as well as add comments.
@@ -64,8 +60,6 @@ Teachers can change the completion status of classes they have in common with st
 
 ### 
 
-
-![alt_text](images/image4.png "image_tooltip")
-
+<img src="https://raw.githubusercontent.com/NeagDolph/salmon/master/adminpanel.png" alt="admin panel" width="400"/>
 
 Admins can add and remove teachers as well as change the enrolled classes for students and the instructed classes for teachers
