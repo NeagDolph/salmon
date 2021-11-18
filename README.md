@@ -11,7 +11,7 @@ Neil Agrawal</p>
 
 
 
-![alt_text](https://raw.githubusercontent.com/NeagDolph/salmon/master/logo.png "image_tooltip")
+![alt_text](https://raw.githubusercontent.com/NeagDolph/salmon/master/logoCropped.png "image_tooltip")
 
 
 
